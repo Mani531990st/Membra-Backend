@@ -134,7 +134,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -270,7 +269,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -374,7 +372,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -469,7 +466,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -569,7 +565,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -658,7 +653,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -763,7 +757,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -880,7 +873,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -954,7 +946,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -999,7 +990,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -1076,7 +1066,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -1167,7 +1156,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -1335,7 +1323,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -1436,7 +1423,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -1551,7 +1537,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -1698,7 +1683,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -1791,7 +1775,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }
@@ -1900,7 +1883,6 @@
             "increment": "1",
             "startWith": "1",
             "minValue": "1",
-            "maxValue": "9223372036854776000",
             "cache": "1",
             "cycle": false
           }

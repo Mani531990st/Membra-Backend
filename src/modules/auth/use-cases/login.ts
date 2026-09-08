@@ -42,7 +42,7 @@ export class Login {
       expiresAt: toIsoTimestamp(expiresAt),
     });
 
-    await setSessionCookie(rawToken, expiresAt);
+    setSessionCookie(rawToken, expiresAt);
 
     return { user: toSafeUser(user) };
   }

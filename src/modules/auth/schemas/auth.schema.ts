@@ -35,7 +35,14 @@ export const SignupSchema = z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "dob must be YYYY-MM-DD")
       .openapi({ example: "1990-01-15" }),
-    gender: genderEnumSchema,
+    gender: z
+      .number()
+      .int()
+      .positive()
+      .openapi({
+        description: "Gender row ID from app.genders (seeded reference data)",
+        example: 1,
+      }),
     preferred_lang: z
       .string()
       .trim()

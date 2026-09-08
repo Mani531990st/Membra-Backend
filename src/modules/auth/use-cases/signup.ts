@@ -16,12 +16,9 @@ export class Signup {
 
     try {
       const user = await db.transaction(async (tx) => {
-        const genderId = await authRepository.findGenderIdByEnum(
-          tx,
-          input.gender,
-        );
-        if (genderId === null) {
-          throw new ValidationError("Invalid gender value");
+        const genderRow = await authRepository.findGenderById(tx, input.gender);
+        if (!genderRow) {
+          throw new ValidationError("Invalid gender id");
         }
 
         if (await authRepository.emailExists(tx, input.email)) {
@@ -33,7 +30,7 @@ export class Signup {
           surname: input.surname,
           nickname: input.nickname,
           dob: input.dob,
-          genderId,
+          genderId: genderRow.id,
           preferredLang: input.preferred_lang,
         });
 
@@ -54,8 +51,8 @@ export class Signup {
           surname: input.surname,
           nickname: input.nickname,
           dob: input.dob,
-          gender: genderId,
-          genderEnum: input.gender,
+          gender: genderRow.id,
+          genderEnum: genderRow.gender,
           preferredLang: input.preferred_lang,
           passwordHash: null,
         };

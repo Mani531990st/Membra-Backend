@@ -9,7 +9,7 @@ export default defineConfig([
   eslintConfigPrettier,
   globalIgnores(["dist/**", "node_modules/**", "drizzle/migrations/**"]),
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.ts"],
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",

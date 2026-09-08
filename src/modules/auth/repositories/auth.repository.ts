@@ -42,17 +42,17 @@ function mapAuthUser(row: {
 }
 
 export class AuthRepository {
-  async findGenderIdByEnum(
+  async findGenderById(
     dbOrTx: DbOrTx,
-    gender: GenderEnum,
-  ): Promise<number | null> {
+    genderId: number,
+  ): Promise<{ id: number; gender: GenderEnum } | null> {
     const [row] = await dbOrTx
-      .select({ id: gendersInApp.id })
+      .select({ id: gendersInApp.id, gender: gendersInApp.gender })
       .from(gendersInApp)
-      .where(eq(gendersInApp.gender, gender))
+      .where(eq(gendersInApp.id, genderId))
       .limit(1);
 
-    return row?.id ?? null;
+    return row ?? null;
   }
 
   /**

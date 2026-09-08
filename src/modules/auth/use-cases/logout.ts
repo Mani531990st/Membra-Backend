@@ -10,7 +10,7 @@ import { toIsoTimestamp } from "../lib/auth-helpers";
 
 export class Logout {
   async execute(): Promise<{ message: string }> {
-    const rawToken = await readSessionCookie();
+    const rawToken = readSessionCookie();
 
     if (rawToken) {
       const session = await sessionRepository.findValidSessionByTokenHash(
@@ -24,7 +24,7 @@ export class Logout {
       }
     }
 
-    await clearSessionCookie();
+    clearSessionCookie();
 
     return { message: "Logged out" };
   }

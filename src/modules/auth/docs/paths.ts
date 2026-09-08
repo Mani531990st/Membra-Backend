@@ -26,7 +26,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     path: "/api/auth/signup",
     tags: [AUTH_TAG],
     summary: "Sign up",
-    description: `Create a user profile, primary active email, and password credentials in one transaction. ${rateLimitNote}`,
+    description: `Create a user profile, primary active email, and password credentials in one transaction. Request \`gender\` is the numeric ID from \`app.genders\` (run \`npm run db:seed:genders\` first). ${rateLimitNote}`,
     request: {
       body: {
         required: true,

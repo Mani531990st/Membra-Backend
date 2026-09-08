@@ -15,6 +15,13 @@
       "when": 1788849685201,
       "tag": "0001_thick_the_twelve",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788865221455,
+      "tag": "0002_fix_identity_maxvalue",
+      "breakpoints": true
     }
   ]
 }

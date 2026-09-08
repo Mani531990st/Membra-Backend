@@ -13,7 +13,7 @@ import type { SafeAuthUser } from "../types/auth.types";
 
 export class GetMe {
   async execute(): Promise<{ user: SafeAuthUser }> {
-    const rawToken = await readSessionCookie();
+    const rawToken = readSessionCookie();
     if (!rawToken) {
       throw new UnauthorizedError();
     }
@@ -25,13 +25,13 @@ export class GetMe {
     );
 
     if (!session) {
-      await clearSessionCookie();
+      clearSessionCookie();
       throw new UnauthorizedError();
     }
 
     const user = await authRepository.findSafeUserById(db, session.userId);
     if (!user) {
-      await clearSessionCookie();
+      clearSessionCookie();
       throw new UnauthorizedError();
     }
 

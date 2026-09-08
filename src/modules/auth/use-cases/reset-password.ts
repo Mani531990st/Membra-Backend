@@ -32,7 +32,7 @@ export class ResetPassword {
       await sessionRepository.revokeAllForUser(tx, reset.userId);
     });
 
-    await clearSessionCookie();
+    clearSessionCookie();
 
     return { message: "Password has been reset successfully" };
   }

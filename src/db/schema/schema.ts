@@ -7,7 +7,7 @@ export const genderTypeInApp = app.enum("gender_type", ['male', 'female', 'other
 
 export const userSecurityNumbersInApp = app.table("user_security_numbers", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.user_security_numbers_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.user_security_numbers_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
 	socialSecurityNumber: varchar("social_security_number", { length: 11 }),
 	active: boolean().notNull(),
@@ -23,7 +23,7 @@ export const userSecurityNumbersInApp = app.table("user_security_numbers", {
 
 export const clubAgeGroupsInApp = app.table("club_age_groups", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_age_group_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_age_group_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	name: varchar({ length: 30 }).notNull(),
@@ -45,7 +45,7 @@ export const clubAgeGroupsInApp = app.table("club_age_groups", {
 
 export const clubEmailsInApp = app.table("club_emails", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_email_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_email_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	email: varchar({ length: 255 }),
@@ -65,7 +65,7 @@ export const clubEmailsInApp = app.table("club_emails", {
 
 export const clubQuestionnaireDetailsInApp = app.table("club_questionnaire_details", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_questionnaire_detail_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_questionnaire_detail_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	questionnaireId: bigint("questionnaire_id", { mode: "number" }).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -85,7 +85,7 @@ export const clubQuestionnaireDetailsInApp = app.table("club_questionnaire_detai
 
 export const clubWaitlistsInApp = app.table("club_waitlists", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_waitlist_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_waitlist_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	waitlist: varchar({ length: 30 }).notNull(),
@@ -116,7 +116,7 @@ export const clubWaitlistsInApp = app.table("club_waitlists", {
 
 export const userAddressesInApp = app.table("user_addresses", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.address_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.address_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
 	streetName: varchar("street_name", { length: 60 }).notNull(),
 	streetNumber: varchar("street_number", { length: 20 }).notNull(),
@@ -138,7 +138,7 @@ export const userAddressesInApp = app.table("user_addresses", {
 
 export const gendersInApp = app.table("genders", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.gender_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.gender_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	gender: genderTypeInApp().notNull(),
 }, (table) => [
 	unique("genders_gender_key").on(table.gender),
@@ -146,7 +146,7 @@ export const gendersInApp = app.table("genders", {
 
 export const clubPhoneNumbersInApp = app.table("club_phone_numbers", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_telephone_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_telephone_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	countryCode: smallint("country_code"),
@@ -167,7 +167,7 @@ export const clubPhoneNumbersInApp = app.table("club_phone_numbers", {
 
 export const clubQuestionnairesInApp = app.table("club_questionnaires", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_questionnaire_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_questionnaire_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	questionnaireName: varchar("questionnaire_name", { length: 60 }).notNull(),
@@ -190,7 +190,7 @@ export const clubQuestionnairesInApp = app.table("club_questionnaires", {
 
 export const clubsInApp = app.table("clubs", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.clubs_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.clubs_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	name: varchar({ length: 255 }).notNull(),
 	sn: varchar({ length: 10 }).notNull(),
 	date: date(),
@@ -204,7 +204,7 @@ export const clubsInApp = app.table("clubs", {
 
 export const locationGroupsInApp = app.table("location_groups", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.location_group_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.location_group_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	name: varchar({ length: 80 }).notNull(),
@@ -221,7 +221,7 @@ export const locationGroupsInApp = app.table("location_groups", {
 
 export const locationRelationsInApp = app.table("location_relations", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.location_relation_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.location_relation_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	locationGroupId: bigint("location_group_id", { mode: "number" }).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -244,7 +244,7 @@ export const locationRelationsInApp = app.table("location_relations", {
 
 export const locationsInApp = app.table("locations", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.locations_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.locations_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	name: varchar({ length: 60 }).notNull(),
@@ -284,7 +284,7 @@ export const locationsInApp = app.table("locations", {
 
 export const userAliasesInApp = app.table("user_aliases", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.alias_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.alias_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
 	alias: varchar({ length: 11 }).notNull(),
 	primary: boolean().default(false).notNull(),
@@ -302,7 +302,7 @@ export const userAliasesInApp = app.table("user_aliases", {
 
 export const userEmailsInApp = app.table("user_emails", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.mail_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.mail_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
 	email: varchar({ length: 254 }),
 	primary: boolean().default(false),
@@ -320,7 +320,7 @@ export const userEmailsInApp = app.table("user_emails", {
 
 export const userPhoneNumbersInApp = app.table("user_phone_numbers", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.phone_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.phone_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
 	countryCode: integer("country_code"),
 	phoneNumber: varchar("phone_number", { length: 14 }),
@@ -361,7 +361,7 @@ export const usersInApp = app.table("users", {
 
 export const clubAddressesInApp = app.table("club_addresses", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_address_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_address_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	streetName: varchar("street_name", { length: 60 }).notNull(),
 	streetNumber: varchar("street_number", { length: 20 }).notNull(),
 	zip: varchar({ length: 14 }).notNull(),
@@ -420,7 +420,7 @@ export const authSessionsInApp = app.table("auth_sessions", {
 ]);
 
 export const passwordResetTokensInApp = app.table("password_reset_tokens", {
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.password_reset_token_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.password_reset_token_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
 	tokenHash: text("token_hash").notNull(),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),

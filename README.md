@@ -98,7 +98,7 @@ Authentication security schemes use an HTTP-only session cookie (`SessionCookie`
 
 | Method | Path | Notes |
 |--------|------|-------|
-| POST | `/api/auth/signup` | Profile + email + credentials (atomic) |
+| POST | `/api/auth/signup` | Profile + email + credentials (atomic); `gender` is genders.id |
 | POST | `/api/auth/login` | Active email + password; sets session cookie |
 | GET | `/api/auth/me` | Current user from session cookie |
 | POST | `/api/auth/logout` | Revokes session + clears cookie |
@@ -122,9 +122,12 @@ Migrations: `drizzle/migrations/` (committed SQL + `meta/`).
 npm run db:generate
 # review the SQL under drizzle/migrations/
 npm run db:migrate
+# seed reference genders (idempotent)
+npm run db:seed:genders
 ```
 
 - Do **not** use `db:push` as the production migration strategy.
 - Development and production both use `DATABASE_URL` (local Postgres vs Neon).
+- Signup expects `gender` as a numeric ID from `app.genders` (not `"male"` / `"female"` / `"others"`).
 
 If adopting an already-populated database, mark the baseline migration applied without re-running its DDL (see `scripts/mark-baseline-applied.mjs`).

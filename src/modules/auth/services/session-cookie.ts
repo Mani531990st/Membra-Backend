@@ -22,15 +22,12 @@ export function sessionCookieOptions(expiresAt: Date) {
   };
 }
 
-export async function setSessionCookie(
-  rawToken: string,
-  expiresAt: Date,
-): Promise<void> {
+export function setSessionCookie(rawToken: string, expiresAt: Date): void {
   const { res } = getRequestContext();
   res.cookie(getSessionCookieName(), rawToken, sessionCookieOptions(expiresAt));
 }
 
-export async function clearSessionCookie(): Promise<void> {
+export function clearSessionCookie(): void {
   const { res } = getRequestContext();
   res.cookie(getSessionCookieName(), "", {
     ...sessionCookieOptions(new Date(0)),
@@ -38,7 +35,7 @@ export async function clearSessionCookie(): Promise<void> {
   });
 }
 
-export async function readSessionCookie(): Promise<string | undefined> {
+export function readSessionCookie(): string | undefined {
   const { req } = getRequestContext();
   const value = req.cookies?.[getSessionCookieName()];
   return typeof value === "string" && value.length > 0 ? value : undefined;

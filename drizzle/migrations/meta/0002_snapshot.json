@@ -1,9 +1,123 @@
 {
-  "id": "d3c70cb0-a299-4b28-9b35-7d15b6bbb3e3",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "b7e2c1a0-4d5f-4e8a-9c3b-1f6a2d8e0c44",
+  "prevId": "a2c6c341-7f4e-48b2-9512-79065ab022e9",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "app.auth_sessions": {
+      "name": "auth_sessions",
+      "schema": "app",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "auth_sessions_user_id_idx": {
+          "name": "auth_sessions_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "uuid_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "auth_sessions_expires_at_idx": {
+          "name": "auth_sessions_expires_at_idx",
+          "columns": [
+            {
+              "expression": "expires_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamptz_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "auth_sessions_user_id_fkey": {
+          "name": "auth_sessions_user_id_fkey",
+          "tableFrom": "auth_sessions",
+          "tableTo": "users",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "auth_sessions_token_hash_key": {
+          "name": "auth_sessions_token_hash_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "app.club_addresses": {
       "name": "club_addresses",
       "schema": "app",
@@ -21,7 +135,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "street_name": {
@@ -156,7 +271,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "club_id": {
@@ -259,7 +375,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "club_id": {
@@ -353,7 +470,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "club_id": {
@@ -452,7 +570,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "questionnaire_id": {
@@ -540,7 +659,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "club_id": {
@@ -644,7 +764,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "club_id": {
@@ -760,7 +881,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "name": {
@@ -833,7 +955,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "gender": {
@@ -877,7 +1000,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "club_id": {
@@ -953,7 +1077,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "location_group_id": {
@@ -1043,7 +1168,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "club_id": {
@@ -1193,6 +1319,107 @@
       },
       "isRLSEnabled": false
     },
+    "app.password_reset_tokens": {
+      "name": "password_reset_tokens",
+      "schema": "app",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "app.password_reset_token_id_seq",
+            "schema": "app",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "cache": "1",
+            "cycle": false,
+            "maxValue": "9223372036854775807"
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumed_at": {
+          "name": "consumed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "password_reset_tokens_user_id_idx": {
+          "name": "password_reset_tokens_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "uuid_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "password_reset_tokens_user_id_fkey": {
+          "name": "password_reset_tokens_user_id_fkey",
+          "tableFrom": "password_reset_tokens",
+          "tableTo": "users",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "password_reset_tokens_token_hash_key": {
+          "name": "password_reset_tokens_token_hash_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "app.user_addresses": {
       "name": "user_addresses",
       "schema": "app",
@@ -1210,7 +1437,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "user_id": {
@@ -1324,7 +1552,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "user_id": {
@@ -1399,6 +1628,60 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "app.user_credentials": {
+      "name": "user_credentials",
+      "schema": "app",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_credentials_user_id_fkey": {
+          "name": "user_credentials_user_id_fkey",
+          "tableFrom": "user_credentials",
+          "tableTo": "users",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "app.user_emails": {
       "name": "user_emails",
       "schema": "app",
@@ -1416,7 +1699,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "user_id": {
@@ -1508,7 +1792,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "user_id": {
@@ -1616,7 +1901,8 @@
             "startWith": "1",
             "minValue": "1",
             "cache": "1",
-            "cycle": false
+            "cycle": false,
+            "maxValue": "9223372036854775807"
           }
         },
         "user_id": {
