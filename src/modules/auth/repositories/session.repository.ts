@@ -1,4 +1,4 @@
-import { and, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
 
 import type { DbOrTx } from "@/db";
 import { authSessionsInApp } from "@/db/schema";
@@ -40,6 +40,74 @@ export class SessionRepository {
           eq(authSessionsInApp.tokenHash, tokenHash),
           isNull(authSessionsInApp.revokedAt),
           gt(authSessionsInApp.expiresAt, nowIso),
+        ),
+      )
+      .limit(1);
+
+    return row ?? null;
+  }
+
+  /** Active sessions for a user, oldest first, locked for update (caller must be in a transaction). */
+  async listActiveSessionsForUpdate(
+    dbOrTx: DbOrTx,
+    userId: string,
+    nowIso: string,
+  ): Promise<{ id: string }[]> {
+    return dbOrTx
+      .select({ id: authSessionsInApp.id })
+      .from(authSessionsInApp)
+      .where(
+        and(
+          eq(authSessionsInApp.userId, userId),
+          isNull(authSessionsInApp.revokedAt),
+          gt(authSessionsInApp.expiresAt, nowIso),
+        ),
+      )
+      .orderBy(asc(authSessionsInApp.createdAt))
+      .for("update");
+  }
+
+  /** Active sessions for a user (read-only list; excludes token hashes). */
+  async listActiveSessions(
+    dbOrTx: DbOrTx,
+    userId: string,
+    nowIso: string,
+  ): Promise<{ id: string; createdAt: string; expiresAt: string }[]> {
+    return dbOrTx
+      .select({
+        id: authSessionsInApp.id,
+        createdAt: authSessionsInApp.createdAt,
+        expiresAt: authSessionsInApp.expiresAt,
+      })
+      .from(authSessionsInApp)
+      .where(
+        and(
+          eq(authSessionsInApp.userId, userId),
+          isNull(authSessionsInApp.revokedAt),
+          gt(authSessionsInApp.expiresAt, nowIso),
+        ),
+      )
+      .orderBy(asc(authSessionsInApp.createdAt));
+  }
+
+  /** Active session owned by userId, or null if missing/revoked/expired/not owned. */
+  async findActiveSessionForUser(
+    dbOrTx: DbOrTx,
+    input: { sessionId: string; userId: string; nowIso: string },
+  ): Promise<{ id: string; createdAt: string; expiresAt: string } | null> {
+    const [row] = await dbOrTx
+      .select({
+        id: authSessionsInApp.id,
+        createdAt: authSessionsInApp.createdAt,
+        expiresAt: authSessionsInApp.expiresAt,
+      })
+      .from(authSessionsInApp)
+      .where(
+        and(
+          eq(authSessionsInApp.id, input.sessionId),
+          eq(authSessionsInApp.userId, input.userId),
+          isNull(authSessionsInApp.revokedAt),
+          gt(authSessionsInApp.expiresAt, input.nowIso),
         ),
       )
       .limit(1);

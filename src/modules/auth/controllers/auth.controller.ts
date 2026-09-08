@@ -4,13 +4,17 @@ import { ZodError } from "zod";
 import { ValidationError } from "@/shared/errors";
 
 import {
+  CompleteProfileSchema,
   ForgotPasswordSchema,
   LoginSchema,
+  LogoutSchema,
   ResetPasswordSchema,
   SignupSchema,
 } from "../schemas/auth.schema";
+import { completeProfile } from "../use-cases/complete-profile";
 import { forgotPassword } from "../use-cases/forgot-password";
 import { getMe } from "../use-cases/get-me";
+import { listActiveSessions } from "../use-cases/list-active-sessions";
 import { login } from "../use-cases/login";
 import { logout } from "../use-cases/logout";
 import { resetPassword } from "../use-cases/reset-password";
@@ -32,6 +36,16 @@ export class AuthController {
     return signup.execute(parsed.data);
   }
 
+  @Post("complete-profile")
+  @HttpCode(200)
+  async completeProfile(@Body() body: unknown) {
+    const parsed = CompleteProfileSchema.safeParse(body);
+    if (!parsed.success) {
+      throw validationFromZod(parsed.error);
+    }
+    return completeProfile.execute(parsed.data);
+  }
+
   @Post("login")
   @HttpCode(200)
   async login(@Body() body: unknown) {
@@ -42,10 +56,20 @@ export class AuthController {
     return login.execute(parsed.data);
   }
 
+  @Get("active-sessions")
+  @HttpCode(200)
+  async activeSessions() {
+    return listActiveSessions.execute();
+  }
+
   @Post("logout")
   @HttpCode(200)
-  async logout() {
-    return logout.execute();
+  async logout(@Body() body: unknown) {
+    const parsed = LogoutSchema.safeParse(body);
+    if (!parsed.success) {
+      throw validationFromZod(parsed.error);
+    }
+    return logout.execute(parsed.data);
   }
 
   @Get("me")

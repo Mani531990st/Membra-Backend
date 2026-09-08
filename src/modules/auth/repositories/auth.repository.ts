@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, eq, gt, isNull, sql } from "drizzle-orm";
 
 import type { DbOrTx } from "@/db";
 import {
@@ -13,14 +13,14 @@ import type { AuthUserRow, GenderEnum } from "../types/auth.types";
 
 function mapAuthUser(row: {
   uuid: string;
-  firstname: string;
-  surname: string;
-  nickname: string;
-  dob: string;
-  gender: number;
-  preferredLang: string;
+  firstname: string | null;
+  surname: string | null;
+  nickname: string | null;
+  dob: string | null;
+  gender: number | null;
+  preferredLang: string | null;
   email: string | null;
-  genderEnum: GenderEnum;
+  genderEnum: GenderEnum | null;
   passwordHash: string | null;
 }): AuthUserRow | null {
   if (!row.email) {
@@ -56,8 +56,7 @@ export class AuthRepository {
   }
 
   /**
-   * Resolve login / forgot-password by normalized email where active IS TRUE.
-   * primary is not required (email is globally unique).
+   * Resolve login / forgot-password by credentials email (auth source of truth).
    */
   async findActiveUserByNormalizedEmail(
     dbOrTx: DbOrTx,
@@ -72,20 +71,14 @@ export class AuthRepository {
         dob: usersInApp.dob,
         gender: usersInApp.gender,
         preferredLang: usersInApp.preferredLang,
-        email: userEmailsInApp.email,
+        email: userCredentialsInApp.email,
         genderEnum: gendersInApp.gender,
         passwordHash: userCredentialsInApp.passwordHash,
       })
-      .from(userEmailsInApp)
-      .innerJoin(usersInApp, eq(userEmailsInApp.userId, usersInApp.uuid))
-      .innerJoin(gendersInApp, eq(usersInApp.gender, gendersInApp.id))
-      .leftJoin(
-        userCredentialsInApp,
-        eq(userCredentialsInApp.userId, usersInApp.uuid),
-      )
-      .where(
-        and(eq(userEmailsInApp.email, email), eq(userEmailsInApp.active, true)),
-      )
+      .from(userCredentialsInApp)
+      .innerJoin(usersInApp, eq(userCredentialsInApp.userId, usersInApp.uuid))
+      .leftJoin(gendersInApp, eq(usersInApp.gender, gendersInApp.id))
+      .where(eq(userCredentialsInApp.email, email))
       .limit(1);
 
     return row ? mapAuthUser(row) : null;
@@ -93,7 +86,7 @@ export class AuthRepository {
 
   /**
    * Load profile for an authenticated session.
-   * Requires an active email; prefers primary when multiple exist.
+   * Email comes from user_credentials (auth source of truth).
    */
   async findSafeUserById(
     dbOrTx: DbOrTx,
@@ -108,20 +101,16 @@ export class AuthRepository {
         dob: usersInApp.dob,
         gender: usersInApp.gender,
         preferredLang: usersInApp.preferredLang,
-        email: userEmailsInApp.email,
+        email: userCredentialsInApp.email,
         genderEnum: gendersInApp.gender,
       })
       .from(usersInApp)
-      .innerJoin(gendersInApp, eq(usersInApp.gender, gendersInApp.id))
       .innerJoin(
-        userEmailsInApp,
-        and(
-          eq(userEmailsInApp.userId, usersInApp.uuid),
-          eq(userEmailsInApp.active, true),
-        ),
+        userCredentialsInApp,
+        eq(userCredentialsInApp.userId, usersInApp.uuid),
       )
+      .leftJoin(gendersInApp, eq(usersInApp.gender, gendersInApp.id))
       .where(eq(usersInApp.uuid, userId))
-      .orderBy(desc(userEmailsInApp.primary))
       .limit(1);
 
     if (!row) {
@@ -133,35 +122,18 @@ export class AuthRepository {
 
   async emailExists(dbOrTx: DbOrTx, email: string): Promise<boolean> {
     const [row] = await dbOrTx
-      .select({ id: userEmailsInApp.id })
-      .from(userEmailsInApp)
-      .where(eq(userEmailsInApp.email, email))
+      .select({ userId: userCredentialsInApp.userId })
+      .from(userCredentialsInApp)
+      .where(eq(userCredentialsInApp.email, email))
       .limit(1);
 
     return Boolean(row);
   }
 
-  async insertUser(
-    dbOrTx: DbOrTx,
-    input: {
-      firstname: string;
-      surname: string;
-      nickname: string;
-      dob: string;
-      genderId: number;
-      preferredLang: string;
-    },
-  ): Promise<{ uuid: string }> {
+  async insertUser(dbOrTx: DbOrTx): Promise<{ uuid: string }> {
     const [row] = await dbOrTx
       .insert(usersInApp)
-      .values({
-        firstname: input.firstname,
-        surname: input.surname,
-        nickname: input.nickname,
-        dob: input.dob,
-        gender: input.genderId,
-        preferredLang: input.preferredLang,
-      })
+      .values({})
       .returning({ uuid: usersInApp.uuid });
 
     if (!row) {
@@ -185,12 +157,39 @@ export class AuthRepository {
 
   async insertCredentials(
     dbOrTx: DbOrTx,
-    input: { userId: string; passwordHash: string },
+    input: { userId: string; email: string; passwordHash: string },
   ): Promise<void> {
     await dbOrTx.insert(userCredentialsInApp).values({
       userId: input.userId,
+      email: input.email,
       passwordHash: input.passwordHash,
     });
+  }
+
+  async updateUserProfile(
+    dbOrTx: DbOrTx,
+    userId: string,
+    input: {
+      firstname: string;
+      surname: string;
+      nickname: string;
+      dob: string;
+      genderId: number;
+      preferredLang: string;
+    },
+  ): Promise<void> {
+    await dbOrTx
+      .update(usersInApp)
+      .set({
+        firstname: input.firstname,
+        surname: input.surname,
+        nickname: input.nickname,
+        dob: input.dob,
+        gender: input.genderId,
+        preferredLang: input.preferredLang,
+        updatedAt: sql`CURRENT_TIMESTAMP`,
+      })
+      .where(eq(usersInApp.uuid, userId));
   }
 
   async updatePasswordHash(

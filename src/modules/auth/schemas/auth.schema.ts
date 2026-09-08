@@ -24,10 +24,22 @@ export const emailSchema = z
   .transform((value) => value.toLowerCase())
   .openapi({ example: "user@example.com" });
 
+export const preferredLangSchema = z
+  .string()
+  .trim()
+  .min(2)
+  .max(15)
+  .openapi({ example: "en" });
+
 export const SignupSchema = z
   .object({
     email: emailSchema,
     password: passwordSchema,
+  })
+  .openapi("SignupRequest");
+
+export const CompleteProfileSchema = z
+  .object({
     firstname: z.string().trim().min(1).max(200).openapi({ example: "Ada" }),
     surname: z.string().trim().min(1).max(200).openapi({ example: "Lovelace" }),
     nickname: z.string().trim().min(1).max(200).openapi({ example: "Ada" }),
@@ -43,19 +55,19 @@ export const SignupSchema = z
         description: "Gender row ID from app.genders (seeded reference data)",
         example: 1,
       }),
-    preferred_lang: z
-      .string()
-      .trim()
-      .min(2)
-      .max(15)
-      .openapi({ example: "en" }),
+    preferred_lang: preferredLangSchema,
   })
-  .openapi("SignupRequest");
+  .openapi("CompleteProfileRequest");
 
 export const LoginSchema = z
   .object({
     email: emailSchema,
     password: passwordSchema,
+    rememberMe: z.boolean().optional().default(false).openapi({
+      description:
+        "If true, session lasts 7 days; otherwise 24 hours. Defaults to false when omitted.",
+      example: false,
+    }),
   })
   .openapi("LoginRequest");
 
@@ -74,16 +86,42 @@ export const ResetPasswordSchema = z
   })
   .openapi("ResetPasswordRequest");
 
+export const LogoutSchema = z
+  .object({
+    sessionId: z.string().uuid().openapi({
+      description: "UUID of an active session belonging to the authenticated user",
+      example: "01936a2f-8c4a-7b2e-9f1d-4a5b6c7d8e9f",
+    }),
+  })
+  .openapi("LogoutRequest");
+
+export const ActiveSessionSchema = z
+  .object({
+    id: z.string().uuid(),
+    createdAt: z.string().datetime(),
+    expiresAt: z.string().datetime(),
+    isCurrent: z.boolean().openapi({
+      description: "True when this session matches the caller's membra_session cookie",
+    }),
+  })
+  .openapi("ActiveSession");
+
+export const ActiveSessionsResponseSchema = z
+  .object({
+    sessions: z.array(ActiveSessionSchema),
+  })
+  .openapi("ActiveSessionsResponse");
+
 export const SafeUserSchema = z
   .object({
     uuid: z.string().uuid(),
     email: z.string().email(),
-    firstname: z.string(),
-    surname: z.string(),
-    nickname: z.string(),
-    dob: z.string(),
-    gender: genderEnumSchema,
-    preferred_lang: z.string(),
+    firstname: z.string().nullable(),
+    surname: z.string().nullable(),
+    nickname: z.string().nullable(),
+    dob: z.string().nullable(),
+    gender: genderEnumSchema.nullable(),
+    preferred_lang: z.string().nullable(),
   })
   .openapi("SafeUser");
 
@@ -99,6 +137,12 @@ export const LoginResponseSchema = z
   })
   .openapi("LoginResponse");
 
+export const CompleteProfileResponseSchema = z
+  .object({
+    user: SafeUserSchema,
+  })
+  .openapi("CompleteProfileResponse");
+
 export const MessageResponseSchema = z
   .object({
     message: z.string(),
@@ -106,7 +150,10 @@ export const MessageResponseSchema = z
   .openapi("MessageResponse");
 
 export type SignupInput = z.infer<typeof SignupSchema>;
+export type CompleteProfileInput = z.infer<typeof CompleteProfileSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+export type LogoutInput = z.infer<typeof LogoutSchema>;
 export type SafeUser = z.infer<typeof SafeUserSchema>;
+export type ActiveSession = z.infer<typeof ActiveSessionSchema>;

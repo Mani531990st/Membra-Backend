@@ -3,9 +3,13 @@ import type { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { standardErrorResponses } from "@/docs/openapi";
 
 import {
+  ActiveSessionsResponseSchema,
+  CompleteProfileResponseSchema,
+  CompleteProfileSchema,
   ForgotPasswordSchema,
   LoginResponseSchema,
   LoginSchema,
+  LogoutSchema,
   MessageResponseSchema,
   ResetPasswordSchema,
   SignupResponseSchema,
@@ -26,7 +30,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     path: "/api/auth/signup",
     tags: [AUTH_TAG],
     summary: "Sign up",
-    description: `Create a user profile, primary active email, and password credentials in one transaction. Request \`gender\` is the numeric ID from \`app.genders\` (run \`npm run db:seed:genders\` first). ${rateLimitNote}`,
+    description: `Create a user with email and password, dual-write credentials and user_emails, and set an HTTP-only session cookie. Profile fields remain null until complete-profile. ${rateLimitNote}`,
     request: {
       body: {
         required: true,
@@ -39,7 +43,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     },
     responses: {
       201: {
-        description: "User created",
+        description: "User created; session cookie set",
         content: {
           "application/json": {
             schema: SignupResponseSchema,
@@ -52,10 +56,40 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
 
   registry.registerPath({
     method: "post",
+    path: "/api/auth/complete-profile",
+    tags: [AUTH_TAG],
+    summary: "Complete profile",
+    description: `Update the authenticated user's profile fields. Requires a valid session cookie from signup or login. Request \`gender\` is the numeric ID from \`app.genders\` (run \`npm run db:seed:genders\` first). ${rateLimitNote}`,
+    security: [{ SessionCookie: [] }],
+    request: {
+      body: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: CompleteProfileSchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Profile updated",
+        content: {
+          "application/json": {
+            schema: CompleteProfileResponseSchema,
+          },
+        },
+      },
+      ...standardErrorResponses([400, 401, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
     path: "/api/auth/login",
     tags: [AUTH_TAG],
     summary: "Log in",
-    description: `Authenticate with an active email and password. Sets an HTTP-only session cookie on success. ${rateLimitNote}`,
+    description: `Authenticate with credentials email and password. Sets an HTTP-only session cookie on success. Optional \`rememberMe\` (default false) sets session and cookie expiry to 7 days when true, or 24 hours when false/omitted. Each user may have at most 5 active sessions; creating another revokes the oldest active session first. ${rateLimitNote}`,
     request: {
       body: {
         required: true,
@@ -80,23 +114,54 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
   });
 
   registry.registerPath({
-    method: "post",
-    path: "/api/auth/logout",
+    method: "get",
+    path: "/api/auth/active-sessions",
     tags: [AUTH_TAG],
-    summary: "Log out",
+    summary: "List active sessions",
     description:
-      "Revokes the current server-side session (if any) and clears the session cookie.",
+      "Returns all non-expired, non-revoked sessions for the authenticated user. Marks the session matching the current membra_session cookie with isCurrent. Does not expose session tokens or token hashes.",
     security: [{ SessionCookie: [] }],
     responses: {
       200: {
-        description: "Logged out",
+        description: "Active sessions for the authenticated user",
+        content: {
+          "application/json": {
+            schema: ActiveSessionsResponseSchema,
+          },
+        },
+      },
+      ...standardErrorResponses([401, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
+    path: "/api/auth/logout",
+    tags: [AUTH_TAG],
+    summary: "Log out a session",
+    description:
+      "Revokes the selected active session belonging to the authenticated user. If the selected session is the current cookie session, also clears the membra_session cookie. Logging out another of the user's sessions leaves the cookie unchanged.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      body: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: LogoutSchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Session revoked",
         content: {
           "application/json": {
             schema: MessageResponseSchema,
           },
         },
       },
-      ...standardErrorResponses([500]),
+      ...standardErrorResponses([400, 401, 404, 500]),
     },
   });
 
@@ -106,7 +171,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [AUTH_TAG],
     summary: "Current user",
     description:
-      "Returns the authenticated user for a valid HTTP-only session cookie. Responds with 401 if the session is missing, expired, or revoked.",
+      "Returns the authenticated user for a valid HTTP-only session cookie. Responds with 401 if the session is missing, expired, or revoked. Profile fields may be null until complete-profile.",
     security: [{ SessionCookie: [] }],
     responses: {
       200: {
@@ -126,7 +191,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     path: "/api/auth/forgot-password",
     tags: [AUTH_TAG],
     summary: "Forgot password",
-    description: `Always returns a generic success message. If an active account email exists, stores a hashed reset token and sends email after commit. ${rateLimitNote}`,
+    description: `Always returns a generic success message. If a credentials email exists, stores a hashed reset token and sends email after commit. ${rateLimitNote}`,
     request: {
       body: {
         required: true,

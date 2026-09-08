@@ -1,7 +1,8 @@
 import { db } from "@/db";
-import { ConflictError, ValidationError } from "@/shared/errors";
+import { ConflictError } from "@/shared/errors";
 
 import {
+  createSessionCookieForUser,
   isUniqueViolation,
   toSafeUser,
 } from "../lib/auth-helpers";
@@ -16,22 +17,16 @@ export class Signup {
 
     try {
       const user = await db.transaction(async (tx) => {
-        const genderRow = await authRepository.findGenderById(tx, input.gender);
-        if (!genderRow) {
-          throw new ValidationError("Invalid gender id");
-        }
-
         if (await authRepository.emailExists(tx, input.email)) {
           throw new ConflictError("An account with this email already exists");
         }
 
-        const created = await authRepository.insertUser(tx, {
-          firstname: input.firstname,
-          surname: input.surname,
-          nickname: input.nickname,
-          dob: input.dob,
-          genderId: genderRow.id,
-          preferredLang: input.preferred_lang,
+        const created = await authRepository.insertUser(tx);
+
+        await authRepository.insertCredentials(tx, {
+          userId: created.uuid,
+          email: input.email,
+          passwordHash,
         });
 
         await authRepository.insertUserEmail(tx, {
@@ -39,28 +34,25 @@ export class Signup {
           email: input.email,
         });
 
-        await authRepository.insertCredentials(tx, {
-          userId: created.uuid,
-          passwordHash,
-        });
-
         return {
           uuid: created.uuid,
           email: input.email,
-          firstname: input.firstname,
-          surname: input.surname,
-          nickname: input.nickname,
-          dob: input.dob,
-          gender: genderRow.id,
-          genderEnum: genderRow.gender,
-          preferredLang: input.preferred_lang,
+          firstname: null,
+          surname: null,
+          nickname: null,
+          dob: null,
+          gender: null,
+          genderEnum: null,
+          preferredLang: null,
           passwordHash: null,
         };
       });
 
+      await createSessionCookieForUser(user.uuid);
+
       return { user: toSafeUser(user) };
     } catch (error) {
-      if (error instanceof ConflictError || error instanceof ValidationError) {
+      if (error instanceof ConflictError) {
         throw error;
       }
       if (isUniqueViolation(error)) {

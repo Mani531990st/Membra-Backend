@@ -1,30 +1,34 @@
 import { db } from "@/db";
+import { NotFoundError } from "@/shared/errors";
 
 import {
-  clearSessionCookie,
-  readSessionCookie,
-} from "../services/session-cookie";
-import { hashToken } from "../services/token";
+  requireValidSession,
+  toIsoTimestamp,
+} from "../lib/auth-helpers";
 import { sessionRepository } from "../repositories/session.repository";
-import { toIsoTimestamp } from "../lib/auth-helpers";
+import { clearSessionCookie } from "../services/session-cookie";
+import type { LogoutInput } from "../schemas/auth.schema";
 
 export class Logout {
-  async execute(): Promise<{ message: string }> {
-    const rawToken = readSessionCookie();
+  async execute(input: LogoutInput): Promise<{ message: string }> {
+    const current = await requireValidSession();
+    const nowIso = toIsoTimestamp(new Date());
 
-    if (rawToken) {
-      const session = await sessionRepository.findValidSessionByTokenHash(
-        db,
-        hashToken(rawToken),
-        toIsoTimestamp(new Date()),
-      );
+    const target = await sessionRepository.findActiveSessionForUser(db, {
+      sessionId: input.sessionId,
+      userId: current.userId,
+      nowIso,
+    });
 
-      if (session) {
-        await sessionRepository.revokeSession(db, session.id);
-      }
+    if (!target) {
+      throw new NotFoundError("Session not found");
     }
 
-    clearSessionCookie();
+    await sessionRepository.revokeSession(db, target.id);
+
+    if (target.id === current.id) {
+      clearSessionCookie();
+    }
 
     return { message: "Logged out" };
   }

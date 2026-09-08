@@ -341,13 +341,13 @@ export const userPhoneNumbersInApp = app.table("user_phone_numbers", {
 
 export const usersInApp = app.table("users", {
 	uuid: uuid().default(sql`uuidv7()`).primaryKey().notNull(),
-	firstname: text().notNull(),
-	surname: text().notNull(),
-	nickname: text().notNull(),
-	dob: date().notNull(),
+	firstname: text(),
+	surname: text(),
+	nickname: text(),
+	dob: date(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	gender: bigint({ mode: "number" }).notNull(),
-	preferredLang: varchar("preferred_lang", { length: 15 }).notNull(),
+	gender: bigint({ mode: "number" }),
+	preferredLang: varchar("preferred_lang", { length: 15 }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
@@ -389,6 +389,7 @@ export const clubAddressesInApp = app.table("club_addresses", {
 
 export const userCredentialsInApp = app.table("user_credentials", {
 	userId: uuid("user_id").primaryKey().notNull(),
+	email: varchar({ length: 254 }).notNull(),
 	passwordHash: text("password_hash").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -398,6 +399,7 @@ export const userCredentialsInApp = app.table("user_credentials", {
 			foreignColumns: [usersInApp.uuid],
 			name: "user_credentials_user_id_fkey"
 		}).onDelete("cascade"),
+	unique("user_credentials_email_key").on(table.email),
 ]);
 
 export const authSessionsInApp = app.table("auth_sessions", {

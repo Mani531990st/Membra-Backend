@@ -1,16 +1,14 @@
 import { db } from "@/db";
 import { UnauthorizedError } from "@/shared/errors";
 
-import { toIsoTimestamp, toSafeUser } from "../lib/auth-helpers";
+import {
+  createSessionCookieForUser,
+  LOGIN_SESSION_TTL_MS,
+  toSafeUser,
+} from "../lib/auth-helpers";
 import { authRepository } from "../repositories/auth.repository";
-import { sessionRepository } from "../repositories/session.repository";
 import type { LoginInput } from "../schemas/auth.schema";
 import { verifyPassword } from "../services/password-hasher";
-import {
-  getSessionTtlDays,
-  setSessionCookie,
-} from "../services/session-cookie";
-import { generateOpaqueToken, hashToken } from "../services/token";
 import type { SafeAuthUser } from "../types/auth.types";
 
 const INVALID_CREDENTIALS = "Invalid email or password";
@@ -31,18 +29,11 @@ export class Login {
       throw new UnauthorizedError(INVALID_CREDENTIALS);
     }
 
-    const rawToken = generateOpaqueToken();
-    const tokenHash = hashToken(rawToken);
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + getSessionTtlDays());
-
-    await sessionRepository.createSession(db, {
-      userId: user.uuid,
-      tokenHash,
-      expiresAt: toIsoTimestamp(expiresAt),
+    await createSessionCookieForUser(user.uuid, {
+      ttlMs: input.rememberMe
+        ? LOGIN_SESSION_TTL_MS.rememberMe
+        : LOGIN_SESSION_TTL_MS.default,
     });
-
-    setSessionCookie(rawToken, expiresAt);
 
     return { user: toSafeUser(user) };
   }
