@@ -1,9 +1,11 @@
 import { Controller, Get, Header, NotFoundException, Res } from "@nestjs/common";
+import { SkipThrottle } from "@nestjs/throttler";
 import type { Response } from "express";
 
 import { generateOpenApiDocument, isApiDocsEnabled } from "./openapi";
 import { swaggerUiHtml } from "./swagger-ui";
 
+@SkipThrottle()
 @Controller()
 export class DocsController {
   @Get("openapi.json")

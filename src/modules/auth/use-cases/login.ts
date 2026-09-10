@@ -1,42 +1,50 @@
-import { db } from "@/db";
+import { Inject, Injectable } from "@nestjs/common";
+
+import { DRIZZLE } from "@/db/drizzle.token";
+import type { Database } from "@/db/types";
 import { UnauthorizedError } from "@/shared/errors";
 
-import {
-  createSessionCookieForUser,
-  LOGIN_SESSION_TTL_MS,
-  toSafeUser,
-} from "../lib/auth-helpers";
-import { authRepository } from "../repositories/auth.repository";
+import { LOGIN_SESSION_TTL_MS, toSafeUser } from "../lib/auth-helpers";
+import { AuthRepository } from "../repositories/auth.repository";
 import type { LoginInput } from "../schemas/auth.schema";
-import { verifyPassword } from "../services/password-hasher";
-import type { SafeAuthUser } from "../types/auth.types";
+import { PasswordHasher } from "../services/password-hasher";
+import { SessionIssuer } from "../services/session-issuer";
+import type { IssuedSession, SafeAuthUser } from "../types/auth.types";
 
 const INVALID_CREDENTIALS = "Invalid email or password";
 
+@Injectable()
 export class Login {
-  async execute(input: LoginInput): Promise<{ user: SafeAuthUser }> {
-    const user = await authRepository.findActiveUserByNormalizedEmail(
-      db,
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(AuthRepository) private readonly authRepository: AuthRepository,
+    @Inject(SessionIssuer) private readonly sessionIssuer: SessionIssuer,
+    @Inject(PasswordHasher) private readonly passwordHasher: PasswordHasher,
+  ) {}
+
+  async execute(
+    input: LoginInput,
+  ): Promise<{ user: SafeAuthUser; session: IssuedSession }> {
+    const user = await this.authRepository.findActiveUserByNormalizedEmail(
+      this.db,
       input.email,
     );
 
-    if (!user?.passwordHash) {
+    const passwordOk = await this.passwordHasher.verifyLogin(
+      user?.passwordHash,
+      input.password,
+    );
+    if (!user || !passwordOk) {
       throw new UnauthorizedError(INVALID_CREDENTIALS);
     }
 
-    const passwordOk = await verifyPassword(user.passwordHash, input.password);
-    if (!passwordOk) {
-      throw new UnauthorizedError(INVALID_CREDENTIALS);
-    }
-
-    await createSessionCookieForUser(user.uuid, {
-      ttlMs: input.rememberMe
+    const session = await this.sessionIssuer.issue(
+      user.uuid,
+      input.rememberMe
         ? LOGIN_SESSION_TTL_MS.rememberMe
         : LOGIN_SESSION_TTL_MS.default,
-    });
+    );
 
-    return { user: toSafeUser(user) };
+    return { user: toSafeUser(user), session };
   }
 }
-
-export const login = new Login();

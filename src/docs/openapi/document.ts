@@ -10,7 +10,7 @@ const openApiInfo = {
     title: "Membra API",
     version: "0.1.0",
     description:
-      "HTTP API for Membra. Feature modules register paths and schemas as they are implemented.\n\nAuthentication uses HTTP-only session cookies (see SessionCookie security scheme).\n\nTODO: rate limiting is not yet implemented for auth endpoints (signup, login, forgot-password, reset-password).",
+      "HTTP API for Membra. Feature modules register paths and schemas as they are implemented.\n\nAuthentication uses HTTP-only session cookies (see SessionCookie security scheme). Auth signup/login/forgot-password/reset-password are rate limited.",
   },
   servers: [
     {

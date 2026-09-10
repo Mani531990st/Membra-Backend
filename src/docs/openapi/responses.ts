@@ -2,7 +2,7 @@ import type { ResponseConfig } from "@asteasolutions/zod-to-openapi";
 
 import { errorResponseSchema } from "./components/errors";
 
-type ErrorStatus = 400 | 401 | 403 | 404 | 409 | 500;
+type ErrorStatus = 400 | 401 | 403 | 404 | 409 | 429 | 500;
 
 const errorDescriptions: Record<ErrorStatus, string> = {
   400: "Validation Error",
@@ -10,6 +10,7 @@ const errorDescriptions: Record<ErrorStatus, string> = {
   403: "Forbidden",
   404: "Not Found",
   409: "Conflict",
+  429: "Too Many Requests",
   500: "Internal Server Error",
 };
 

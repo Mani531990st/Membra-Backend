@@ -4,6 +4,7 @@ export type AppErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "RATE_LIMITED"
   | "INTERNAL";
 
 export class AppError extends Error {
@@ -36,6 +37,8 @@ function defaultStatusForCode(code: AppErrorCode): number {
       return 404;
     case "CONFLICT":
       return 409;
+    case "RATE_LIMITED":
+      return 429;
     case "INTERNAL":
       return 500;
   }
@@ -73,6 +76,13 @@ export class ConflictError extends AppError {
   constructor(message: string, details?: unknown) {
     super("CONFLICT", message, { details });
     this.name = "ConflictError";
+  }
+}
+
+export class RateLimitedError extends AppError {
+  constructor(message = "Too many requests") {
+    super("RATE_LIMITED", message);
+    this.name = "RateLimitedError";
   }
 }
 

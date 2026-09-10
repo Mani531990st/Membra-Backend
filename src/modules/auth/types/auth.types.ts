@@ -1,5 +1,15 @@
 export type GenderEnum = "male" | "female" | "others";
 
+export type AuthSessionContext = {
+  id: string;
+  userId: string;
+};
+
+export type IssuedSession = {
+  rawToken: string;
+  expiresAt: Date;
+};
+
 export type SafeAuthUser = {
   uuid: string;
   email: string;
@@ -9,6 +19,7 @@ export type SafeAuthUser = {
   dob: string | null;
   gender: GenderEnum | null;
   preferred_lang: string | null;
+  profileComplete: boolean;
 };
 
 export type AuthUserRow = {

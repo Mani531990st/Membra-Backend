@@ -1,16 +1,27 @@
-import { db } from "@/db";
+import { Inject, Injectable } from "@nestjs/common";
 
-import { requireValidSession, toIsoTimestamp } from "../lib/auth-helpers";
-import { sessionRepository } from "../repositories/session.repository";
+import { DRIZZLE } from "@/db/drizzle.token";
+import type { Database } from "@/db/types";
+
+import { toIsoTimestamp } from "../lib/auth-helpers";
+import { SessionRepository } from "../repositories/session.repository";
 import type { ActiveSession } from "../schemas/auth.schema";
+import type { AuthSessionContext } from "../types/auth.types";
 
+@Injectable()
 export class ListActiveSessions {
-  async execute(): Promise<{ sessions: ActiveSession[] }> {
-    const current = await requireValidSession();
-    const nowIso = toIsoTimestamp(new Date());
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(SessionRepository)
+    private readonly sessionRepository: SessionRepository,
+  ) {}
 
-    const rows = await sessionRepository.listActiveSessions(
-      db,
+  async execute(
+    current: AuthSessionContext,
+  ): Promise<{ sessions: ActiveSession[] }> {
+    const nowIso = toIsoTimestamp(new Date());
+    const rows = await this.sessionRepository.listActiveSessions(
+      this.db,
       current.userId,
       nowIso,
     );
@@ -25,5 +36,3 @@ export class ListActiveSessions {
     };
   }
 }
-
-export const listActiveSessions = new ListActiveSessions();

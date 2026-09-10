@@ -1,8 +1,10 @@
+import { Injectable } from "@nestjs/common";
 import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
 
-import type { DbOrTx } from "@/db";
+import type { DbOrTx } from "@/db/types";
 import { authSessionsInApp } from "@/db/schema";
 
+@Injectable()
 export class SessionRepository {
   async createSession(
     dbOrTx: DbOrTx,
@@ -47,7 +49,11 @@ export class SessionRepository {
     return row ?? null;
   }
 
-  /** Active sessions for a user, oldest first, locked for update (caller must be in a transaction). */
+  /**
+   * Active sessions for a user, oldest first, locked for update.
+   * Caller must be in a transaction. Requires a session-mode Postgres
+   * connection (not transaction-mode PgBouncer/Neon pooler).
+   */
   async listActiveSessionsForUpdate(
     dbOrTx: DbOrTx,
     userId: string,
@@ -140,5 +146,3 @@ export class SessionRepository {
       );
   }
 }
-
-export const sessionRepository = new SessionRepository();

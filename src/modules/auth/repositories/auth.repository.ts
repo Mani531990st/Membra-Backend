@@ -1,6 +1,7 @@
-import { and, eq, gt, isNull, sql } from "drizzle-orm";
+import { Injectable } from "@nestjs/common";
+import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
 
-import type { DbOrTx } from "@/db";
+import type { DbOrTx } from "@/db/types";
 import {
   gendersInApp,
   passwordResetTokensInApp,
@@ -41,18 +42,28 @@ function mapAuthUser(row: {
   };
 }
 
+@Injectable()
 export class AuthRepository {
-  async findGenderById(
+  async listGenders(
     dbOrTx: DbOrTx,
-    genderId: number,
-  ): Promise<{ id: number; gender: GenderEnum } | null> {
-    const [row] = await dbOrTx
+  ): Promise<{ id: number; gender: GenderEnum }[]> {
+    return dbOrTx
       .select({ id: gendersInApp.id, gender: gendersInApp.gender })
       .from(gendersInApp)
-      .where(eq(gendersInApp.id, genderId))
+      .orderBy(asc(gendersInApp.id));
+  }
+
+  async findGenderIdByEnum(
+    dbOrTx: DbOrTx,
+    gender: GenderEnum,
+  ): Promise<number | null> {
+    const [row] = await dbOrTx
+      .select({ id: gendersInApp.id })
+      .from(gendersInApp)
+      .where(eq(gendersInApp.gender, gender))
       .limit(1);
 
-    return row ?? null;
+    return row?.id ?? null;
   }
 
   /**
@@ -232,17 +243,18 @@ export class AuthRepository {
     });
   }
 
-  async findValidResetByTokenHash(
+  /**
+   * Atomically consume a still-valid reset token.
+   * Returns null when the token is missing, expired, or already consumed.
+   */
+  async consumeValidResetByTokenHash(
     dbOrTx: DbOrTx,
     tokenHash: string,
     nowIso: string,
   ): Promise<{ id: number; userId: string } | null> {
     const [row] = await dbOrTx
-      .select({
-        id: passwordResetTokensInApp.id,
-        userId: passwordResetTokensInApp.userId,
-      })
-      .from(passwordResetTokensInApp)
+      .update(passwordResetTokensInApp)
+      .set({ consumedAt: sql`CURRENT_TIMESTAMP` })
       .where(
         and(
           eq(passwordResetTokensInApp.tokenHash, tokenHash),
@@ -250,17 +262,11 @@ export class AuthRepository {
           gt(passwordResetTokensInApp.expiresAt, nowIso),
         ),
       )
-      .limit(1);
+      .returning({
+        id: passwordResetTokensInApp.id,
+        userId: passwordResetTokensInApp.userId,
+      });
 
     return row ?? null;
   }
-
-  async consumeResetToken(dbOrTx: DbOrTx, resetTokenId: number): Promise<void> {
-    await dbOrTx
-      .update(passwordResetTokensInApp)
-      .set({ consumedAt: sql`CURRENT_TIMESTAMP` })
-      .where(eq(passwordResetTokensInApp.id, resetTokenId));
-  }
 }
-
-export const authRepository = new AuthRepository();

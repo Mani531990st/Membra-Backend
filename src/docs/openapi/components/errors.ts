@@ -15,6 +15,7 @@ export const errorResponseSchema = z
         "FORBIDDEN",
         "NOT_FOUND",
         "CONFLICT",
+        "RATE_LIMITED",
         "INTERNAL",
       ]),
       message: z.string(),

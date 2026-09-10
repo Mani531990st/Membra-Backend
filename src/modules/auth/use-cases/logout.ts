@@ -1,37 +1,47 @@
-import { db } from "@/db";
+import { Inject, Injectable } from "@nestjs/common";
+
+import { DRIZZLE } from "@/db/drizzle.token";
+import type { Database } from "@/db/types";
 import { NotFoundError } from "@/shared/errors";
 
-import {
-  requireValidSession,
-  toIsoTimestamp,
-} from "../lib/auth-helpers";
-import { sessionRepository } from "../repositories/session.repository";
-import { clearSessionCookie } from "../services/session-cookie";
+import { toIsoTimestamp } from "../lib/auth-helpers";
+import { SessionRepository } from "../repositories/session.repository";
 import type { LogoutInput } from "../schemas/auth.schema";
+import type { AuthSessionContext } from "../types/auth.types";
 
+@Injectable()
 export class Logout {
-  async execute(input: LogoutInput): Promise<{ message: string }> {
-    const current = await requireValidSession();
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(SessionRepository)
+    private readonly sessionRepository: SessionRepository,
+  ) {}
+
+  async execute(
+    current: AuthSessionContext,
+    input: LogoutInput,
+  ): Promise<{ message: string; clearCookie: boolean }> {
+    const sessionId = input.sessionId ?? current.id;
     const nowIso = toIsoTimestamp(new Date());
 
-    const target = await sessionRepository.findActiveSessionForUser(db, {
-      sessionId: input.sessionId,
-      userId: current.userId,
-      nowIso,
-    });
+    const target = await this.sessionRepository.findActiveSessionForUser(
+      this.db,
+      {
+        sessionId,
+        userId: current.userId,
+        nowIso,
+      },
+    );
 
     if (!target) {
       throw new NotFoundError("Session not found");
     }
 
-    await sessionRepository.revokeSession(db, target.id);
+    await this.sessionRepository.revokeSession(this.db, target.id);
 
-    if (target.id === current.id) {
-      clearSessionCookie();
-    }
-
-    return { message: "Logged out" };
+    return {
+      message: "Logged out",
+      clearCookie: target.id === current.id,
+    };
   }
 }
-
-export const logout = new Logout();

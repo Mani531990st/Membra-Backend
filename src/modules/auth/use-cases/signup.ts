@@ -1,35 +1,50 @@
-import { db } from "@/db";
+import { Inject, Injectable } from "@nestjs/common";
+
+import { DRIZZLE } from "@/db/drizzle.token";
+import type { Database } from "@/db/types";
 import { ConflictError } from "@/shared/errors";
 
 import {
-  createSessionCookieForUser,
   isUniqueViolation,
+  LOGIN_SESSION_TTL_MS,
   toSafeUser,
 } from "../lib/auth-helpers";
-import { authRepository } from "../repositories/auth.repository";
+import { AuthRepository } from "../repositories/auth.repository";
 import type { SignupInput } from "../schemas/auth.schema";
-import { hashPassword } from "../services/password-hasher";
-import type { SafeAuthUser } from "../types/auth.types";
+import { PasswordHasher } from "../services/password-hasher";
+import { SessionIssuer } from "../services/session-issuer";
+import type { IssuedSession, SafeAuthUser } from "../types/auth.types";
 
+@Injectable()
 export class Signup {
-  async execute(input: SignupInput): Promise<{ user: SafeAuthUser }> {
-    const passwordHash = await hashPassword(input.password);
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(AuthRepository) private readonly authRepository: AuthRepository,
+    @Inject(SessionIssuer) private readonly sessionIssuer: SessionIssuer,
+    @Inject(PasswordHasher) private readonly passwordHasher: PasswordHasher,
+  ) {}
+
+  async execute(
+    input: SignupInput,
+  ): Promise<{ user: SafeAuthUser; session: IssuedSession }> {
+    const passwordHash = await this.passwordHasher.hash(input.password);
 
     try {
-      const user = await db.transaction(async (tx) => {
-        if (await authRepository.emailExists(tx, input.email)) {
+      const user = await this.db.transaction(async (tx) => {
+        if (await this.authRepository.emailExists(tx, input.email)) {
           throw new ConflictError("An account with this email already exists");
         }
 
-        const created = await authRepository.insertUser(tx);
+        const created = await this.authRepository.insertUser(tx);
 
-        await authRepository.insertCredentials(tx, {
+        await this.authRepository.insertCredentials(tx, {
           userId: created.uuid,
           email: input.email,
           passwordHash,
         });
 
-        await authRepository.insertUserEmail(tx, {
+        // Contact copy only. Login identity is user_credentials.email.
+        await this.authRepository.insertUserEmail(tx, {
           userId: created.uuid,
           email: input.email,
         });
@@ -48,9 +63,12 @@ export class Signup {
         };
       });
 
-      await createSessionCookieForUser(user.uuid);
+      const session = await this.sessionIssuer.issue(
+        user.uuid,
+        LOGIN_SESSION_TTL_MS.default,
+      );
 
-      return { user: toSafeUser(user) };
+      return { user: toSafeUser(user), session };
     } catch (error) {
       if (error instanceof ConflictError) {
         throw error;
@@ -62,5 +80,3 @@ export class Signup {
     }
   }
 }
-
-export const signup = new Signup();

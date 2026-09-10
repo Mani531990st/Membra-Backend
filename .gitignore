@@ -16,6 +16,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+migrate-output.txt
 
 # env files — keep .env.example commit-safe
 .env

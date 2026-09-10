@@ -1,8 +1,9 @@
-import { Global, Module } from "@nestjs/common";
+import { Global, Module, OnModuleDestroy } from "@nestjs/common";
 
-import { db } from "./index";
+import { DRIZZLE } from "./drizzle.token";
+import { closeDatabase, db } from "./index";
 
-export const DRIZZLE = Symbol("DRIZZLE");
+export { DRIZZLE } from "./drizzle.token";
 
 @Global()
 @Module({
@@ -14,4 +15,8 @@ export const DRIZZLE = Symbol("DRIZZLE");
   ],
   exports: [DRIZZLE],
 })
-export class DatabaseModule {}
+export class DatabaseModule implements OnModuleDestroy {
+  async onModuleDestroy(): Promise<void> {
+    await closeDatabase();
+  }
+}

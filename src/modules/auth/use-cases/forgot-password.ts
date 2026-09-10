@@ -1,14 +1,17 @@
-import { db } from "@/db";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+
+import { DRIZZLE } from "@/db/drizzle.token";
+import type { Database } from "@/db/types";
 
 import {
   getAppBaseUrl,
   getPasswordResetTtlMinutes,
   toIsoTimestamp,
 } from "../lib/auth-helpers";
-import { authRepository } from "../repositories/auth.repository";
+import { AuthRepository } from "../repositories/auth.repository";
 import type { ForgotPasswordInput } from "../schemas/auth.schema";
 import {
-  passwordResetMailer,
+  PASSWORD_RESET_MAILER,
   type PasswordResetMailer,
 } from "../services/password-reset-mailer";
 import { generateResetToken, hashToken } from "../services/token";
@@ -16,12 +19,19 @@ import { generateResetToken, hashToken } from "../services/token";
 const GENERIC_MESSAGE =
   "If the account exists, password reset instructions have been sent.";
 
+@Injectable()
 export class ForgotPassword {
-  constructor(private readonly mailer: PasswordResetMailer = passwordResetMailer) {}
+  private readonly logger = new Logger(ForgotPassword.name);
+
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(AuthRepository) private readonly authRepository: AuthRepository,
+    @Inject(PASSWORD_RESET_MAILER) private readonly mailer: PasswordResetMailer,
+  ) {}
 
   async execute(input: ForgotPasswordInput): Promise<{ message: string }> {
-    const user = await authRepository.findActiveUserByNormalizedEmail(
-      db,
+    const user = await this.authRepository.findActiveUserByNormalizedEmail(
+      this.db,
       input.email,
     );
 
@@ -33,10 +43,12 @@ export class ForgotPassword {
         expiresAt.getMinutes() + getPasswordResetTtlMinutes(),
       );
 
-      // Commit token writes first — never hold the transaction open while mailing.
-      await db.transaction(async (tx) => {
-        await authRepository.invalidateUnusedResetTokensForUser(tx, user.uuid);
-        await authRepository.insertResetToken(tx, {
+      await this.db.transaction(async (tx) => {
+        await this.authRepository.invalidateUnusedResetTokensForUser(
+          tx,
+          user.uuid,
+        );
+        await this.authRepository.insertResetToken(tx, {
           userId: user.uuid,
           tokenHash,
           expiresAt: toIsoTimestamp(expiresAt),
@@ -44,14 +56,19 @@ export class ForgotPassword {
       });
 
       const resetUrl = `${getAppBaseUrl()}/reset-password?token=${encodeURIComponent(rawToken)}`;
-      await this.mailer.sendPasswordResetEmail({
-        to: user.email,
-        resetUrl,
-      });
+      try {
+        await this.mailer.sendPasswordResetEmail({
+          to: user.email,
+          resetUrl,
+        });
+      } catch (error) {
+        this.logger.error(
+          "Failed to send password reset email",
+          error instanceof Error ? error.stack : undefined,
+        );
+      }
     }
 
     return { message: GENERIC_MESSAGE };
   }
 }
-
-export const forgotPassword = new ForgotPassword();

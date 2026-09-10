@@ -1,15 +1,19 @@
 import {
   ArgumentsHost,
-  BadRequestException,
   Catch,
   ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import type { Response } from "express";
+import { ThrottlerException } from "@nestjs/throttler";
 
-import { ValidationError, toHttpError } from "@/shared/errors";
+import { RateLimitedError, ValidationError, toHttpError } from "@/shared/errors";
+import type { RequestWithId } from "@/shared/http/request-id.middleware";
 
-function httpExceptionMessage(exception: BadRequestException): string {
+function httpExceptionMessage(exception: HttpException): string {
   const response = exception.getResponse();
   if (typeof response === "string") {
     return response;
@@ -43,7 +47,11 @@ function isInvalidJsonBody(exception: unknown): boolean {
     return true;
   }
 
-  if (!(exception instanceof BadRequestException)) {
+  if (!(exception instanceof HttpException)) {
+    return false;
+  }
+
+  if (exception.getStatus() !== HttpStatus.BAD_REQUEST) {
     return false;
   }
 
@@ -53,10 +61,20 @@ function isInvalidJsonBody(exception: unknown): boolean {
 
 @Catch()
 export class AppErrorFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost): void {
-    const response = host.switchToHttp().getResponse<Response>();
+  private readonly logger = new Logger(AppErrorFilter.name);
 
-    // Preserve previous OpenAPI JSON 404 body shape when docs are disabled.
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<RequestWithId>();
+    const requestId = request.requestId;
+
+    if (exception instanceof ThrottlerException) {
+      const mapped = toHttpError(new RateLimitedError());
+      response.status(mapped.status).json(mapped.body);
+      return;
+    }
+
     if (exception instanceof NotFoundException) {
       const status = exception.getStatus();
       const body = exception.getResponse();
@@ -84,6 +102,15 @@ export class AppErrorFilter implements ExceptionFilter {
       : exception;
 
     const mapped = toHttpError(error);
+
+    if (mapped.status >= 500) {
+      const prefix = requestId ? `[${requestId}] ` : "";
+      this.logger.error(
+        `${prefix}${exception instanceof Error ? exception.message : "Unhandled error"}`,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+    }
+
     response.status(mapped.status).json(mapped.body);
   }
 }

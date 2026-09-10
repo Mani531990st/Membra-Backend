@@ -47,14 +47,7 @@ export const CompleteProfileSchema = z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "dob must be YYYY-MM-DD")
       .openapi({ example: "1990-01-15" }),
-    gender: z
-      .number()
-      .int()
-      .positive()
-      .openapi({
-        description: "Gender row ID from app.genders (seeded reference data)",
-        example: 1,
-      }),
+    gender: genderEnumSchema,
     preferred_lang: preferredLangSchema,
   })
   .openapi("CompleteProfileRequest");
@@ -88,8 +81,9 @@ export const ResetPasswordSchema = z
 
 export const LogoutSchema = z
   .object({
-    sessionId: z.string().uuid().openapi({
-      description: "UUID of an active session belonging to the authenticated user",
+    sessionId: z.string().uuid().optional().openapi({
+      description:
+        "UUID of an active session to revoke. Omit to log out the current cookie session.",
       example: "01936a2f-8c4a-7b2e-9f1d-4a5b6c7d8e9f",
     }),
   })
@@ -112,6 +106,19 @@ export const ActiveSessionsResponseSchema = z
   })
   .openapi("ActiveSessionsResponse");
 
+export const GenderRowSchema = z
+  .object({
+    id: z.number().int(),
+    gender: genderEnumSchema,
+  })
+  .openapi("GenderRow");
+
+export const GendersResponseSchema = z
+  .object({
+    genders: z.array(GenderRowSchema),
+  })
+  .openapi("GendersResponse");
+
 export const SafeUserSchema = z
   .object({
     uuid: z.string().uuid(),
@@ -122,6 +129,7 @@ export const SafeUserSchema = z
     dob: z.string().nullable(),
     gender: genderEnumSchema.nullable(),
     preferred_lang: z.string().nullable(),
+    profileComplete: z.boolean(),
   })
   .openapi("SafeUser");
 

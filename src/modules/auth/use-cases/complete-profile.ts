@@ -1,59 +1,47 @@
-import { db } from "@/db";
+import { Inject, Injectable } from "@nestjs/common";
+
+import { DRIZZLE } from "@/db/drizzle.token";
+import type { Database } from "@/db/types";
 import { UnauthorizedError, ValidationError } from "@/shared/errors";
 
-import { toIsoTimestamp, toSafeUser } from "../lib/auth-helpers";
-import { authRepository } from "../repositories/auth.repository";
-import { sessionRepository } from "../repositories/session.repository";
+import { toSafeUser } from "../lib/auth-helpers";
+import { AuthRepository } from "../repositories/auth.repository";
 import type { CompleteProfileInput } from "../schemas/auth.schema";
-import {
-  clearSessionCookie,
-  readSessionCookie,
-} from "../services/session-cookie";
-import { hashToken } from "../services/token";
 import type { SafeAuthUser } from "../types/auth.types";
 
+@Injectable()
 export class CompleteProfile {
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(AuthRepository) private readonly authRepository: AuthRepository,
+  ) {}
+
   async execute(
+    userId: string,
     input: CompleteProfileInput,
   ): Promise<{ user: SafeAuthUser }> {
-    const rawToken = readSessionCookie();
-    if (!rawToken) {
-      throw new UnauthorizedError();
-    }
-
-    const session = await sessionRepository.findValidSessionByTokenHash(
-      db,
-      hashToken(rawToken),
-      toIsoTimestamp(new Date()),
+    const genderId = await this.authRepository.findGenderIdByEnum(
+      this.db,
+      input.gender,
     );
-
-    if (!session) {
-      clearSessionCookie();
-      throw new UnauthorizedError();
+    if (genderId === null) {
+      throw new ValidationError("Invalid gender value");
     }
 
-    const genderRow = await authRepository.findGenderById(db, input.gender);
-    if (!genderRow) {
-      throw new ValidationError("Invalid gender id");
-    }
-
-    await authRepository.updateUserProfile(db, session.userId, {
+    await this.authRepository.updateUserProfile(this.db, userId, {
       firstname: input.firstname,
       surname: input.surname,
       nickname: input.nickname,
       dob: input.dob,
-      genderId: genderRow.id,
+      genderId,
       preferredLang: input.preferred_lang,
     });
 
-    const user = await authRepository.findSafeUserById(db, session.userId);
+    const user = await this.authRepository.findSafeUserById(this.db, userId);
     if (!user) {
-      clearSessionCookie();
       throw new UnauthorizedError();
     }
 
     return { user: toSafeUser(user) };
   }
 }
-
-export const completeProfile = new CompleteProfile();

@@ -31,6 +31,12 @@ if (process.env.NODE_ENV !== "production") {
   globalForDb.postgresClient = client;
 }
 
+export const postgresClient = client;
+
 export const db = drizzle(client, { schema });
+
+export async function closeDatabase(): Promise<void> {
+  await client.end({ timeout: 5 });
+}
 
 export type { Database, DbOrTx, DbTransaction } from "./types";

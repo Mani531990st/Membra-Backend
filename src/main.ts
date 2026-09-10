@@ -4,20 +4,24 @@ import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import cookieParser from "cookie-parser";
-import type { NextFunction, Request, Response } from "express";
 
 import { AppModule } from "./app.module";
 import { AppErrorFilter } from "./shared/filters/app-error.filter";
-import { requestContext } from "./shared/http/request-context";
+import { getAllowedOrigins } from "./shared/http/origins";
+import { requestIdMiddleware } from "./shared/http/request-id.middleware";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix("api");
-  app.use(cookieParser());
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    requestContext.run({ req, res }, () => next());
+  app.enableShutdownHooks();
+  app.set("trust proxy", 1);
+  app.enableCors({
+    origin: getAllowedOrigins(),
+    credentials: true,
   });
+  app.use(cookieParser());
+  app.use(requestIdMiddleware);
   app.useGlobalFilters(new AppErrorFilter());
 
   const port = Number.parseInt(process.env.PORT ?? "3000", 10);

@@ -1,8 +1,21 @@
-import { Body, Controller, Get, HttpCode, Post } from "@nestjs/common";
-import { ZodError } from "zod";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Post,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import type { Response } from "express";
 
-import { ValidationError } from "@/shared/errors";
+import { UnauthorizedError } from "@/shared/errors";
+import { ZodValidationPipe } from "@/shared/validation/zod-pipe";
 
+import { AuthSession } from "../decorators/auth-session.decorator";
+import { SessionAuthGuard } from "../guards/session-auth.guard";
 import {
   CompleteProfileSchema,
   ForgotPasswordSchema,
@@ -10,91 +23,155 @@ import {
   LogoutSchema,
   ResetPasswordSchema,
   SignupSchema,
+  type CompleteProfileInput,
+  type ForgotPasswordInput,
+  type LoginInput,
+  type LogoutInput,
+  type ResetPasswordInput,
+  type SignupInput,
 } from "../schemas/auth.schema";
-import { completeProfile } from "../use-cases/complete-profile";
-import { forgotPassword } from "../use-cases/forgot-password";
-import { getMe } from "../use-cases/get-me";
-import { listActiveSessions } from "../use-cases/list-active-sessions";
-import { login } from "../use-cases/login";
-import { logout } from "../use-cases/logout";
-import { resetPassword } from "../use-cases/reset-password";
-import { signup } from "../use-cases/signup";
+import {
+  clearSessionCookie,
+  setSessionCookie,
+} from "../services/session-cookie";
+import type { AuthSessionContext } from "../types/auth.types";
+import { CompleteProfile } from "../use-cases/complete-profile";
+import { ForgotPassword } from "../use-cases/forgot-password";
+import { GetMe } from "../use-cases/get-me";
+import { ListActiveSessions } from "../use-cases/list-active-sessions";
+import { ListGenders } from "../use-cases/list-genders";
+import { Login } from "../use-cases/login";
+import { Logout } from "../use-cases/logout";
+import { ResetPassword } from "../use-cases/reset-password";
+import { Signup } from "../use-cases/signup";
 
-function validationFromZod(error: ZodError): ValidationError {
-  return new ValidationError("Validation failed", error.flatten());
-}
+const AUTH_ABUSE_THROTTLE = { default: { limit: 5, ttl: 60_000 } };
 
 @Controller("auth")
 export class AuthController {
+  constructor(
+    @Inject(Signup) private readonly signupUseCase: Signup,
+    @Inject(CompleteProfile)
+    private readonly completeProfileUseCase: CompleteProfile,
+    @Inject(Login) private readonly loginUseCase: Login,
+    @Inject(ListActiveSessions)
+    private readonly listActiveSessionsUseCase: ListActiveSessions,
+    @Inject(Logout) private readonly logoutUseCase: Logout,
+    @Inject(GetMe) private readonly getMeUseCase: GetMe,
+    @Inject(ForgotPassword)
+    private readonly forgotPasswordUseCase: ForgotPassword,
+    @Inject(ResetPassword)
+    private readonly resetPasswordUseCase: ResetPassword,
+    @Inject(ListGenders) private readonly listGendersUseCase: ListGenders,
+  ) {}
+
   @Post("signup")
   @HttpCode(201)
-  async signup(@Body() body: unknown) {
-    const parsed = SignupSchema.safeParse(body);
-    if (!parsed.success) {
-      throw validationFromZod(parsed.error);
-    }
-    return signup.execute(parsed.data);
+  @Throttle(AUTH_ABUSE_THROTTLE)
+  async signup(
+    @Body(new ZodValidationPipe(SignupSchema)) body: SignupInput,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { user, session } = await this.signupUseCase.execute(body);
+    setSessionCookie(res, session.rawToken, session.expiresAt);
+    return { user };
   }
 
   @Post("complete-profile")
   @HttpCode(200)
-  async completeProfile(@Body() body: unknown) {
-    const parsed = CompleteProfileSchema.safeParse(body);
-    if (!parsed.success) {
-      throw validationFromZod(parsed.error);
+  @UseGuards(SessionAuthGuard)
+  async completeProfile(
+    @AuthSession() session: AuthSessionContext,
+    @Body(new ZodValidationPipe(CompleteProfileSchema))
+    body: CompleteProfileInput,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      return await this.completeProfileUseCase.execute(session.userId, body);
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        clearSessionCookie(res);
+      }
+      throw error;
     }
-    return completeProfile.execute(parsed.data);
   }
 
   @Post("login")
   @HttpCode(200)
-  async login(@Body() body: unknown) {
-    const parsed = LoginSchema.safeParse(body);
-    if (!parsed.success) {
-      throw validationFromZod(parsed.error);
-    }
-    return login.execute(parsed.data);
+  @Throttle(AUTH_ABUSE_THROTTLE)
+  async login(
+    @Body(new ZodValidationPipe(LoginSchema)) body: LoginInput,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { user, session } = await this.loginUseCase.execute(body);
+    setSessionCookie(res, session.rawToken, session.expiresAt);
+    return { user };
+  }
+
+  @Get("genders")
+  @HttpCode(200)
+  async genders() {
+    return this.listGendersUseCase.execute();
   }
 
   @Get("active-sessions")
   @HttpCode(200)
-  async activeSessions() {
-    return listActiveSessions.execute();
+  @UseGuards(SessionAuthGuard)
+  async activeSessions(@AuthSession() session: AuthSessionContext) {
+    return this.listActiveSessionsUseCase.execute(session);
   }
 
   @Post("logout")
   @HttpCode(200)
-  async logout(@Body() body: unknown) {
-    const parsed = LogoutSchema.safeParse(body);
-    if (!parsed.success) {
-      throw validationFromZod(parsed.error);
+  @UseGuards(SessionAuthGuard)
+  async logout(
+    @AuthSession() session: AuthSessionContext,
+    @Body(new ZodValidationPipe(LogoutSchema)) body: LogoutInput,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.logoutUseCase.execute(session, body);
+    if (result.clearCookie) {
+      clearSessionCookie(res);
     }
-    return logout.execute(parsed.data);
+    return { message: result.message };
   }
 
   @Get("me")
   @HttpCode(200)
-  async me() {
-    return getMe.execute();
+  @UseGuards(SessionAuthGuard)
+  async me(
+    @AuthSession() session: AuthSessionContext,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      return await this.getMeUseCase.execute(session.userId);
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        clearSessionCookie(res);
+      }
+      throw error;
+    }
   }
 
   @Post("forgot-password")
   @HttpCode(200)
-  async forgotPassword(@Body() body: unknown) {
-    const parsed = ForgotPasswordSchema.safeParse(body);
-    if (!parsed.success) {
-      throw validationFromZod(parsed.error);
-    }
-    return forgotPassword.execute(parsed.data);
+  @Throttle(AUTH_ABUSE_THROTTLE)
+  async forgotPassword(
+    @Body(new ZodValidationPipe(ForgotPasswordSchema))
+    body: ForgotPasswordInput,
+  ) {
+    return this.forgotPasswordUseCase.execute(body);
   }
 
   @Post("reset-password")
   @HttpCode(200)
-  async resetPassword(@Body() body: unknown) {
-    const parsed = ResetPasswordSchema.safeParse(body);
-    if (!parsed.success) {
-      throw validationFromZod(parsed.error);
-    }
-    return resetPassword.execute(parsed.data);
+  @Throttle(AUTH_ABUSE_THROTTLE)
+  async resetPassword(
+    @Body(new ZodValidationPipe(ResetPasswordSchema)) body: ResetPasswordInput,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.resetPasswordUseCase.execute(body);
+    clearSessionCookie(res);
+    return result;
   }
 }
