@@ -6,9 +6,11 @@ import {
   HttpStatus,
   Logger,
   NotFoundException,
+  PayloadTooLargeException,
 } from "@nestjs/common";
 import type { Response } from "express";
 import { ThrottlerException } from "@nestjs/throttler";
+import { MulterError } from "multer";
 
 import { RateLimitedError, ValidationError, toHttpError } from "@/shared/errors";
 import type { RequestWithId } from "@/shared/http/request-id.middleware";
@@ -71,6 +73,19 @@ export class AppErrorFilter implements ExceptionFilter {
 
     if (exception instanceof ThrottlerException) {
       const mapped = toHttpError(new RateLimitedError());
+      response.status(mapped.status).json(mapped.body);
+      return;
+    }
+
+    if (
+      exception instanceof MulterError ||
+      exception instanceof PayloadTooLargeException
+    ) {
+      const message =
+        exception instanceof MulterError && exception.code === "LIMIT_FILE_SIZE"
+          ? "Avatar file must be at most 8 MB"
+          : exception.message || "Invalid upload";
+      const mapped = toHttpError(new ValidationError(message));
       response.status(mapped.status).json(mapped.body);
       return;
     }

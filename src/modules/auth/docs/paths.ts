@@ -4,6 +4,7 @@ import { standardErrorResponses } from "@/docs/openapi";
 
 import {
   ActiveSessionsResponseSchema,
+  AvatarsResponseSchema,
   CompleteProfileResponseSchema,
   CompleteProfileSchema,
   ForgotPasswordSchema,
@@ -17,11 +18,30 @@ import {
   SignupSchema,
 } from "../schemas/auth.schema";
 import { registerAuthSchemas } from "./schemas";
+import { z } from "@/shared/validation/zod";
 
 const AUTH_TAG = "Authentication";
 
+const avatarBinaryField = z
+  .string()
+  .optional()
+  .openapi({
+    type: "string",
+    format: "binary",
+    description: "JPEG, PNG, HEIC, HEIF, WebP, or AVIF image (max 8 MB)",
+  });
+
+const UploadAvatarsRequestSchema = z
+  .object({
+    avatar1: avatarBinaryField,
+    avatar2: avatarBinaryField,
+    avatar3: avatarBinaryField,
+  })
+  .openapi("UploadAvatarsRequest");
+
 export function registerAuthDocs(registry: OpenAPIRegistry): void {
   registerAuthSchemas(registry);
+  registry.register("UploadAvatarsRequest", UploadAvatarsRequestSchema);
 
   registry.registerPath({
     method: "post",
@@ -169,6 +189,48 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
       200: {
         description: "Authenticated user",
         content: { "application/json": { schema: LoginResponseSchema } },
+      },
+      ...standardErrorResponses([401, 429, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "put",
+    path: "/api/auth/avatars",
+    tags: [AUTH_TAG],
+    summary: "Upload or update avatars",
+    description:
+      "Upsert one or more avatar slots for the authenticated user. Send multipart fields avatar1, avatar2, and/or avatar3 (JPEG, PNG, HEIC, HEIF, WebP, or AVIF). Omitted slots are left unchanged. Images are converted to AVIF and stored in Scaleway Object Storage. Returns signed GET URLs (1 hour).",
+    security: [{ SessionCookie: [] }],
+    request: {
+      body: {
+        required: true,
+        content: {
+          "multipart/form-data": { schema: UploadAvatarsRequestSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Current avatar signed URLs after update",
+        content: { "application/json": { schema: AvatarsResponseSchema } },
+      },
+      ...standardErrorResponses([400, 401, 429, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/auth/avatars",
+    tags: [AUTH_TAG],
+    summary: "Get avatars",
+    description:
+      "Returns signed GET URLs (1 hour) for the authenticated user's avatar slots. Unset slots are null.",
+    security: [{ SessionCookie: [] }],
+    responses: {
+      200: {
+        description: "Avatar signed URLs",
+        content: { "application/json": { schema: AvatarsResponseSchema } },
       },
       ...standardErrorResponses([401, 429, 500]),
     },

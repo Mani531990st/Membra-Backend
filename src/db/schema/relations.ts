@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInApp, userSecurityNumbersInApp, clubsInApp, clubAgeGroupsInApp, clubEmailsInApp, clubQuestionnairesInApp, clubQuestionnaireDetailsInApp, clubWaitlistsInApp, gendersInApp, userAddressesInApp, clubPhoneNumbersInApp, locationGroupsInApp, locationRelationsInApp, locationsInApp, clubAddressesInApp, userAliasesInApp, userEmailsInApp, userPhoneNumbersInApp, userCredentialsInApp, authSessionsInApp, passwordResetTokensInApp } from "./schema";
+import { usersInApp, userSecurityNumbersInApp, clubsInApp, clubAgeGroupsInApp, clubEmailsInApp, clubQuestionnairesInApp, clubQuestionnaireDetailsInApp, clubWaitlistsInApp, gendersInApp, userAddressesInApp, clubPhoneNumbersInApp, locationGroupsInApp, locationRelationsInApp, locationsInApp, clubAddressesInApp, userAliasesInApp, userEmailsInApp, userPhoneNumbersInApp, userCredentialsInApp, authSessionsInApp, passwordResetTokensInApp, userAvatarsInApp } from "./schema";
 
 export const userSecurityNumbersInAppRelations = relations(userSecurityNumbersInApp, ({one}) => ({
 	usersInApp: one(usersInApp, {
@@ -20,6 +20,10 @@ export const usersInAppRelations = relations(usersInApp, ({one, many}) => ({
 	}),
 	authSessionsInApps: many(authSessionsInApp),
 	passwordResetTokensInApps: many(passwordResetTokensInApp),
+	userAvatarsInApp: one(userAvatarsInApp, {
+		fields: [usersInApp.uuid],
+		references: [userAvatarsInApp.userId]
+	}),
 	gendersInApp: one(gendersInApp, {
 		fields: [usersInApp.gender],
 		references: [gendersInApp.id]
@@ -186,6 +190,13 @@ export const authSessionsInAppRelations = relations(authSessionsInApp, ({one}) =
 export const passwordResetTokensInAppRelations = relations(passwordResetTokensInApp, ({one}) => ({
 	usersInApp: one(usersInApp, {
 		fields: [passwordResetTokensInApp.userId],
+		references: [usersInApp.uuid]
+	}),
+}));
+
+export const userAvatarsInAppRelations = relations(userAvatarsInApp, ({one}) => ({
+	usersInApp: one(usersInApp, {
+		fields: [userAvatarsInApp.userId],
 		references: [usersInApp.uuid]
 	}),
 }));

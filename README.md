@@ -64,6 +64,8 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | POST | `/api/auth/login` | Credentials email + password; optional `rememberMe` |
 | GET | `/api/auth/genders` | Reference rows from `app.genders` |
 | GET | `/api/auth/me` | Current user; includes `profileComplete` |
+| PUT | `/api/auth/avatars` | Session required. Multipart `avatar1`/`avatar2`/`avatar3` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); partial upsert; stored as AVIF on Scaleway |
+| GET | `/api/auth/avatars` | Session required. Signed GET URLs (1h) or null per slot |
 | GET | `/api/auth/active-sessions` | Lists sessions; `isCurrent` marks the cookie |
 | POST | `/api/auth/logout` | Optional `sessionId`; omit to log out current cookie |
 | POST | `/api/auth/forgot-password` | Generic 200; mailer after token commit |
@@ -74,6 +76,8 @@ Signup / login / forgot-password / reset-password are rate limited (5 requests /
 Password hashing: Argon2id (`@node-rs/argon2`, 19 MiB, 2 iterations). Unknown emails still run a dummy verify so login timing does not enumerate accounts.
 
 Production **refuses to boot** unless `SMTP_HOST` and `SMTP_FROM` are set. Development uses a console mailer.
+
+Avatar uploads require Scaleway Object Storage env (`SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_S3_BUCKET`, region/endpoint). See `.env.example`.
 
 CORS and CSRF Origin checks use `APP_BASE_URL` (and optional `CORS_ORIGINS`). Browser mutating requests with an `Origin` header must match that allowlist.
 

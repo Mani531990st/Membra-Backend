@@ -157,6 +157,23 @@ export const MessageResponseSchema = z
   })
   .openapi("MessageResponse");
 
+export const AvatarsResponseSchema = z
+  .object({
+    avatar1: z.string().url().nullable().openapi({
+      description:
+        "Signed GET URL for avatar1 (expires in 1 hour), or null when unset",
+    }),
+    avatar2: z.string().url().nullable().openapi({
+      description:
+        "Signed GET URL for avatar2 (expires in 1 hour), or null when unset",
+    }),
+    avatar3: z.string().url().nullable().openapi({
+      description:
+        "Signed GET URL for avatar3 (expires in 1 hour), or null when unset",
+    }),
+  })
+  .openapi("AvatarsResponse");
+
 export type SignupInput = z.infer<typeof SignupSchema>;
 export type CompleteProfileInput = z.infer<typeof CompleteProfileSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
@@ -165,3 +182,4 @@ export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
 export type LogoutInput = z.infer<typeof LogoutSchema>;
 export type SafeUser = z.infer<typeof SafeUserSchema>;
 export type ActiveSession = z.infer<typeof ActiveSessionSchema>;
+export type AvatarsResponse = z.infer<typeof AvatarsResponseSchema>;

@@ -437,3 +437,20 @@ export const passwordResetTokensInApp = app.table("password_reset_tokens", {
 	unique("password_reset_tokens_token_hash_key").on(table.tokenHash),
 	index("password_reset_tokens_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 ]);
+
+export const userAvatarsInApp = app.table("user_avatars", {
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.user_avatar_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
+	userId: uuid("user_id").notNull(),
+	avatar1: text("avatar1"),
+	avatar2: text("avatar2"),
+	avatar3: text("avatar3"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [usersInApp.uuid],
+			name: "user_avatars_user_id_fkey"
+		}).onDelete("cascade"),
+	unique("user_avatars_user_id_key").on(table.userId),
+]);

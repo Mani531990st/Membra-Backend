@@ -29,6 +29,13 @@
       "when": 1788881259513,
       "tag": "0003_new_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789029253989,
+      "tag": "0004_lowly_gorgon",
+      "breakpoints": true
     }
   ]
 }
