@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -57,6 +58,33 @@ export class ScalewayObjectStorage {
       }),
     );
     this.logger.debug(`Uploaded object ${input.key}`);
+  }
+
+  /**
+   * Deletes an object. Missing keys are ignored so replace flows stay idempotent.
+   */
+  async deleteObject(key: string): Promise<void> {
+    try {
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        }),
+      );
+      this.logger.debug(`Deleted object ${key}`);
+    } catch (error) {
+      const code =
+        typeof error === "object" &&
+        error !== null &&
+        "name" in error &&
+        typeof (error as { name?: unknown }).name === "string"
+          ? (error as { name: string }).name
+          : undefined;
+      if (code === "NoSuchKey" || code === "NotFound") {
+        return;
+      }
+      throw error;
+    }
   }
 
   async getSignedGetUrl(key: string): Promise<string> {

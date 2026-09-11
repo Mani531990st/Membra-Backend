@@ -1,4 +1,6 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
+
+import { Inject, Injectable, Logger } from "@nestjs/common";
 
 import { DRIZZLE } from "@/db/drizzle.token";
 import type { Database } from "@/db/types";
@@ -10,14 +12,12 @@ import {
 
 import {
   avatarObjectKey,
-  convertAvatarToAvif,
+  buildAvatarVariants,
 } from "../services/avatar-image";
 import {
   UserAvatarsRepository,
   type UserAvatarSlots,
 } from "../repositories/user-avatars.repository";
-
-export type AvatarSlotName = 1 | 2 | 3;
 
 export type AvatarUploadFile = {
   buffer: Buffer;
@@ -26,9 +26,7 @@ export type AvatarUploadFile = {
 };
 
 export type UpdateAvatarsInput = {
-  avatar1?: AvatarUploadFile;
-  avatar2?: AvatarUploadFile;
-  avatar3?: AvatarUploadFile;
+  avatar: AvatarUploadFile;
 };
 
 export type AvatarsResponse = {
@@ -39,6 +37,8 @@ export type AvatarsResponse = {
 
 @Injectable()
 export class UpdateAvatars {
+  private readonly logger = new Logger(UpdateAvatars.name);
+
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     @Inject(UserAvatarsRepository)
@@ -51,43 +51,83 @@ export class UpdateAvatars {
     userId: string,
     input: UpdateAvatarsInput,
   ): Promise<AvatarsResponse> {
-    const provided = (
-      [
-        [1, input.avatar1],
-        [2, input.avatar2],
-        [3, input.avatar3],
-      ] as const
-    ).filter((entry): entry is [AvatarSlotNumber, AvatarUploadFile] =>
-      Boolean(entry[1]),
-    );
-
-    if (provided.length === 0) {
-      throw new ValidationError(
-        "At least one of avatar1, avatar2, or avatar3 is required",
-      );
+    if (!input.avatar?.buffer?.length) {
+      throw new ValidationError("avatar file is required");
     }
 
-    const slotKeys: { avatar1?: string; avatar2?: string; avatar3?: string } =
-      {};
+    const existing = await this.avatarsRepository.findByUserId(this.db, userId);
 
-    for (const [slot, file] of provided) {
-      const avif = await convertAvatarToAvif(file.buffer, file.mimetype);
-      const key = avatarObjectKey(userId, slot);
-      await this.storage.putObject({
-        key,
-        body: avif,
+    const variants = await buildAvatarVariants(
+      input.avatar.buffer,
+      input.avatar.mimetype,
+    );
+
+    // Unique revision so re-uploads create new objects; old keys can be deleted.
+    const revision = randomUUID().replaceAll("-", "").slice(0, 16);
+    const keys = {
+      avatar1: avatarObjectKey(userId, 1, revision),
+      avatar2: avatarObjectKey(userId, 2, revision),
+      avatar3: avatarObjectKey(userId, 3, revision),
+    } as const;
+
+    await Promise.all([
+      this.storage.putObject({
+        key: keys.avatar1,
+        body: variants.original,
         contentType: "image/avif",
         cacheControl: "private, max-age=3600",
-      });
-      slotKeys[`avatar${slot}` as const] = key;
+      }),
+      this.storage.putObject({
+        key: keys.avatar2,
+        body: variants.medium,
+        contentType: "image/avif",
+        cacheControl: "private, max-age=3600",
+      }),
+      this.storage.putObject({
+        key: keys.avatar3,
+        body: variants.small,
+        contentType: "image/avif",
+        cacheControl: "private, max-age=3600",
+      }),
+    ]);
+
+    const row = await this.avatarsRepository.upsertSlots(this.db, userId, {
+      avatar1: keys.avatar1,
+      avatar2: keys.avatar2,
+      avatar3: keys.avatar3,
+    });
+
+    await this.deletePreviousObjects(existing);
+
+    return this.toSignedResponse(row);
+  }
+
+  private async deletePreviousObjects(
+    existing: UserAvatarSlots | null,
+  ): Promise<void> {
+    if (!existing) {
+      return;
     }
 
-    const row = await this.avatarsRepository.upsertSlots(
-      this.db,
-      userId,
-      slotKeys,
+    const previousKeys = [
+      existing.avatar1,
+      existing.avatar2,
+      existing.avatar3,
+    ].filter((key): key is string => Boolean(key));
+
+    await Promise.all(
+      previousKeys.map(async (key) => {
+        try {
+          await this.storage.deleteObject(key);
+        } catch (error) {
+          this.logger.warn(
+            `Failed to delete previous avatar object ${key}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }),
     );
-    return this.toSignedResponse(row);
   }
 
   private async toSignedResponse(

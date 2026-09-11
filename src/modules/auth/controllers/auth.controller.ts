@@ -15,7 +15,7 @@ import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { Throttle } from "@nestjs/throttler";
 import type { Response } from "express";
 
-import { UnauthorizedError } from "@/shared/errors";
+import { UnauthorizedError, ValidationError } from "@/shared/errors";
 import { ZodValidationPipe } from "@/shared/validation/zod-pipe";
 
 import { AuthSession } from "../decorators/auth-session.decorator";
@@ -55,9 +55,7 @@ import { UpdateAvatars } from "../use-cases/update-avatars";
 type MulterFile = Express.Multer.File;
 
 type AvatarUploadFields = {
-  avatar1?: MulterFile[];
-  avatar2?: MulterFile[];
-  avatar3?: MulterFile[];
+  avatar?: MulterFile[];
 };
 
 const AUTH_ABUSE_THROTTLE = { default: { limit: 5, ttl: 60_000 } };
@@ -179,14 +177,9 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(SessionAuthGuard)
   @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: "avatar1", maxCount: 1 },
-        { name: "avatar2", maxCount: 1 },
-        { name: "avatar3", maxCount: 1 },
-      ],
-      { limits: { fileSize: MAX_AVATAR_BYTES } },
-    ),
+    FileFieldsInterceptor([{ name: "avatar", maxCount: 1 }], {
+      limits: { fileSize: MAX_AVATAR_BYTES },
+    }),
   )
   async updateAvatars(
     @AuthSession() session: AuthSessionContext,
@@ -194,37 +187,16 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
-      const avatar1 = firstFile(files?.avatar1);
-      const avatar2 = firstFile(files?.avatar2);
-      const avatar3 = firstFile(files?.avatar3);
+      const avatar = firstFile(files?.avatar);
+      if (!avatar) {
+        throw new ValidationError("avatar file is required");
+      }
       return await this.updateAvatarsUseCase.execute(session.userId, {
-        ...(avatar1
-          ? {
-              avatar1: {
-                buffer: avatar1.buffer,
-                mimetype: avatar1.mimetype,
-                size: avatar1.size,
-              },
-            }
-          : {}),
-        ...(avatar2
-          ? {
-              avatar2: {
-                buffer: avatar2.buffer,
-                mimetype: avatar2.mimetype,
-                size: avatar2.size,
-              },
-            }
-          : {}),
-        ...(avatar3
-          ? {
-              avatar3: {
-                buffer: avatar3.buffer,
-                mimetype: avatar3.mimetype,
-                size: avatar3.size,
-              },
-            }
-          : {}),
+        avatar: {
+          buffer: avatar.buffer,
+          mimetype: avatar.mimetype,
+          size: avatar.size,
+        },
       });
     } catch (error) {
       if (error instanceof UnauthorizedError) {

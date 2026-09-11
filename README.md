@@ -64,7 +64,7 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | POST | `/api/auth/login` | Credentials email + password; optional `rememberMe` |
 | GET | `/api/auth/genders` | Reference rows from `app.genders` |
 | GET | `/api/auth/me` | Current user; includes `profileComplete` |
-| PUT | `/api/auth/avatars` | Session required. Multipart `avatar1`/`avatar2`/`avatar3` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); partial upsert; stored as AVIF on Scaleway |
+| PUT | `/api/auth/avatars` | Session required. Multipart field `avatar` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); server stores original / 512px / 128px AVIF as avatar1–3 on Scaleway |
 | GET | `/api/auth/avatars` | Session required. Signed GET URLs (1h) or null per slot |
 | GET | `/api/auth/active-sessions` | Lists sessions; `isCurrent` marks the cookie |
 | POST | `/api/auth/logout` | Optional `sessionId`; omit to log out current cookie |

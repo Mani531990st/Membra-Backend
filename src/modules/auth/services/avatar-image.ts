@@ -111,24 +111,66 @@ export function detectAvatarFormat(
   );
 }
 
-export async function convertAvatarToAvif(
+export async function decodeAvatarInput(
   buffer: Buffer,
   mimeType?: string,
 ): Promise<Buffer> {
   const format = detectAvatarFormat(buffer, mimeType);
 
-  let input: Buffer = buffer;
   if (format === "heic" || format === "heif") {
     const jpeg = await convert({
       buffer,
       format: "JPEG",
       quality: 0.92,
     });
-    input = Buffer.from(jpeg);
+    return Buffer.from(jpeg);
   }
 
+  return buffer;
+}
+
+export type AvatarVariants = {
+  original: Buffer;
+  medium: Buffer;
+  small: Buffer;
+};
+
+export const AVATAR_MEDIUM_MAX_PX = 512;
+export const AVATAR_SMALL_MAX_PX = 128;
+
+async function encodeAvif(
+  input: Buffer,
+  maxEdgePx?: number,
+): Promise<Buffer> {
+  let pipeline = sharp(input).rotate();
+  if (maxEdgePx !== undefined) {
+    pipeline = pipeline.resize({
+      width: maxEdgePx,
+      height: maxEdgePx,
+      fit: "inside",
+      withoutEnlargement: true,
+    });
+  }
+  return pipeline.avif({ quality: 50 }).toBuffer();
+}
+
+/**
+ * Decode once, then produce original / medium (512) / small (128) AVIF variants.
+ * Medium and small fit inside the box and are not upscaled.
+ */
+export async function buildAvatarVariants(
+  buffer: Buffer,
+  mimeType?: string,
+): Promise<AvatarVariants> {
+  const input = await decodeAvatarInput(buffer, mimeType);
+
   try {
-    return await sharp(input).rotate().avif({ quality: 50 }).toBuffer();
+    const [original, medium, small] = await Promise.all([
+      encodeAvif(input),
+      encodeAvif(input, AVATAR_MEDIUM_MAX_PX),
+      encodeAvif(input, AVATAR_SMALL_MAX_PX),
+    ]);
+    return { original, medium, small };
   } catch (error) {
     throw new ValidationError(
       "Unable to process avatar image",
@@ -137,8 +179,12 @@ export async function convertAvatarToAvif(
   }
 }
 
-export function avatarObjectKey(userId: string, slot: 1 | 2 | 3): string {
-  return `users/${userId}/avatar${slot}.avif`;
+export function avatarObjectKey(
+  userId: string,
+  slot: 1 | 2 | 3,
+  revision: string,
+): string {
+  return `users/${userId}/avatar${slot}-${revision}.avif`;
 }
 
 export { MAX_AVATAR_BYTES };

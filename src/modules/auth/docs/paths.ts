@@ -22,20 +22,16 @@ import { z } from "@/shared/validation/zod";
 
 const AUTH_TAG = "Authentication";
 
-const avatarBinaryField = z
-  .string()
-  .optional()
-  .openapi({
-    type: "string",
-    format: "binary",
-    description: "JPEG, PNG, HEIC, HEIF, WebP, or AVIF image (max 8 MB)",
-  });
+const avatarBinaryField = z.string().openapi({
+  type: "string",
+  format: "binary",
+  description:
+    "Single profile image (JPEG, PNG, HEIC, HEIF, WebP, or AVIF, max 8 MB). Server creates original, 512px, and 128px AVIF variants.",
+});
 
 const UploadAvatarsRequestSchema = z
   .object({
-    avatar1: avatarBinaryField,
-    avatar2: avatarBinaryField,
-    avatar3: avatarBinaryField,
+    avatar: avatarBinaryField,
   })
   .openapi("UploadAvatarsRequest");
 
@@ -198,9 +194,9 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     method: "put",
     path: "/api/auth/avatars",
     tags: [AUTH_TAG],
-    summary: "Upload or update avatars",
+    summary: "Upload or update avatar",
     description:
-      "Upsert one or more avatar slots for the authenticated user. Send multipart fields avatar1, avatar2, and/or avatar3 (JPEG, PNG, HEIC, HEIF, WebP, or AVIF). Omitted slots are left unchanged. Images are converted to AVIF and stored in Scaleway Object Storage. Returns signed GET URLs (1 hour).",
+      "Upload a single profile image for the authenticated user (multipart field `avatar`: JPEG, PNG, HEIC, HEIF, WebP, or AVIF). The API creates three AVIF variants — original (avatar1), medium max 512px (avatar2), and small max 128px (avatar3) — stores them in Scaleway Object Storage, and returns signed GET URLs (1 hour).",
     security: [{ SessionCookie: [] }],
     request: {
       body: {
@@ -225,7 +221,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [AUTH_TAG],
     summary: "Get avatars",
     description:
-      "Returns signed GET URLs (1 hour) for the authenticated user's avatar slots. Unset slots are null.",
+      "Returns signed GET URLs (1 hour) for the authenticated user's avatar variants: avatar1 (original), avatar2 (medium ≤512px), avatar3 (small ≤128px). Unset slots are null.",
     security: [{ SessionCookie: [] }],
     responses: {
       200: {

@@ -8,18 +8,18 @@ vi.mock("../services/avatar-image", async () => {
   );
   return {
     ...actual,
-    convertAvatarToAvif: vi.fn(),
+    buildAvatarVariants: vi.fn(),
   };
 });
 
 import {
-  convertAvatarToAvif,
+  buildAvatarVariants,
   detectAvatarFormat,
 } from "../services/avatar-image";
 import { GetAvatars } from "./get-avatars";
 import { UpdateAvatars } from "./update-avatars";
 
-const convertAvatarToAvifMock = vi.mocked(convertAvatarToAvif);
+const buildAvatarVariantsMock = vi.mocked(buildAvatarVariants);
 
 function jpegMagic(): Buffer {
   return Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
@@ -65,10 +65,12 @@ describe("avatar-image detection", () => {
 describe("UpdateAvatars", () => {
   const db = {} as never;
   const avatarsRepository = {
+    findByUserId: vi.fn(),
     upsertSlots: vi.fn(),
   };
   const storage = {
     putObject: vi.fn(),
+    deleteObject: vi.fn(),
     getSignedGetUrl: vi.fn(),
   };
 
@@ -80,79 +82,104 @@ describe("UpdateAvatars", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    convertAvatarToAvifMock.mockResolvedValue(Buffer.from("avif-bytes"));
+    buildAvatarVariantsMock.mockResolvedValue({
+      original: Buffer.from("original-avif"),
+      medium: Buffer.from("medium-avif"),
+      small: Buffer.from("small-avif"),
+    });
     storage.putObject.mockResolvedValue(undefined);
+    storage.deleteObject.mockResolvedValue(undefined);
     storage.getSignedGetUrl.mockImplementation(async (key: string) => {
       return `https://signed.example/${key}`;
     });
-    avatarsRepository.upsertSlots.mockResolvedValue({
-      avatar1: "users/user-1/avatar1.avif",
-      avatar2: null,
-      avatar3: null,
-    });
+    avatarsRepository.findByUserId.mockResolvedValue(null);
+    avatarsRepository.upsertSlots.mockImplementation(
+      async (_db: unknown, userId: string, slots: Record<string, string>) => slots,
+    );
   });
 
-  it("rejects when no avatar fields are provided", async () => {
-    await expect(useCase.execute("user-1", {})).rejects.toBeInstanceOf(
-      ValidationError,
-    );
+  it("rejects when avatar file is missing", async () => {
+    await expect(
+      useCase.execute("user-1", {
+        avatar: { buffer: Buffer.alloc(0), mimetype: "image/png", size: 0 },
+      }),
+    ).rejects.toBeInstanceOf(ValidationError);
     expect(storage.putObject).not.toHaveBeenCalled();
   });
 
-  it("uploads only provided slots", async () => {
+  it("uploads three size variants from one file", async () => {
     const result = await useCase.execute("user-1", {
-      avatar1: {
-        buffer: Buffer.from("x"),
+      avatar: {
+        buffer: Buffer.from("image-bytes"),
         mimetype: "image/jpeg",
-        size: 1,
+        size: 11,
       },
     });
 
-    expect(convertAvatarToAvifMock).toHaveBeenCalledTimes(1);
-    expect(storage.putObject).toHaveBeenCalledWith(
-      expect.objectContaining({
-        key: "users/user-1/avatar1.avif",
-        contentType: "image/avif",
-      }),
+    expect(buildAvatarVariantsMock).toHaveBeenCalledTimes(1);
+    expect(storage.putObject).toHaveBeenCalledTimes(3);
+    expect(storage.deleteObject).not.toHaveBeenCalled();
+
+    const upsertArgs = avatarsRepository.upsertSlots.mock.calls[0] as [
+      unknown,
+      string,
+      { avatar1: string; avatar2: string; avatar3: string },
+    ];
+    expect(upsertArgs[1]).toBe("user-1");
+    expect(upsertArgs[2].avatar1).toMatch(
+      /^users\/user-1\/avatar1-[a-f0-9]{16}\.avif$/,
     );
-    expect(avatarsRepository.upsertSlots).toHaveBeenCalledWith(db, "user-1", {
-      avatar1: "users/user-1/avatar1.avif",
-    });
+    expect(upsertArgs[2].avatar2).toMatch(
+      /^users\/user-1\/avatar2-[a-f0-9]{16}\.avif$/,
+    );
+    expect(upsertArgs[2].avatar3).toMatch(
+      /^users\/user-1\/avatar3-[a-f0-9]{16}\.avif$/,
+    );
     expect(result.avatar1).toBe(
-      "https://signed.example/users/user-1/avatar1.avif",
+      `https://signed.example/${upsertArgs[2].avatar1}`,
     );
-    expect(result.avatar2).toBeNull();
+    expect(result.avatar2).toBe(
+      `https://signed.example/${upsertArgs[2].avatar2}`,
+    );
+    expect(result.avatar3).toBe(
+      `https://signed.example/${upsertArgs[2].avatar3}`,
+    );
   });
 
-  it("uploads all three slots when provided", async () => {
-    avatarsRepository.upsertSlots.mockResolvedValue({
-      avatar1: "users/user-1/avatar1.avif",
-      avatar2: "users/user-1/avatar2.avif",
-      avatar3: "users/user-1/avatar3.avif",
+  it("deletes previous object-storage keys on re-upload", async () => {
+    avatarsRepository.findByUserId.mockResolvedValue({
+      avatar1: "users/user-1/avatar1-oldrev.avif",
+      avatar2: "users/user-1/avatar2-oldrev.avif",
+      avatar3: "users/user-1/avatar3-oldrev.avif",
     });
 
-    const file = {
-      buffer: Buffer.from("x"),
-      mimetype: "image/png",
-      size: 1,
-    };
-    const result = await useCase.execute("user-1", {
-      avatar1: file,
-      avatar2: file,
-      avatar3: file,
+    await useCase.execute("user-1", {
+      avatar: {
+        buffer: Buffer.from("image-bytes"),
+        mimetype: "image/png",
+        size: 11,
+      },
     });
 
-    expect(storage.putObject).toHaveBeenCalledTimes(3);
-    expect(avatarsRepository.upsertSlots).toHaveBeenCalledWith(db, "user-1", {
-      avatar1: "users/user-1/avatar1.avif",
-      avatar2: "users/user-1/avatar2.avif",
-      avatar3: "users/user-1/avatar3.avif",
-    });
-    expect(result).toEqual({
-      avatar1: "https://signed.example/users/user-1/avatar1.avif",
-      avatar2: "https://signed.example/users/user-1/avatar2.avif",
-      avatar3: "https://signed.example/users/user-1/avatar3.avif",
-    });
+    expect(storage.deleteObject).toHaveBeenCalledTimes(3);
+    expect(storage.deleteObject).toHaveBeenCalledWith(
+      "users/user-1/avatar1-oldrev.avif",
+    );
+    expect(storage.deleteObject).toHaveBeenCalledWith(
+      "users/user-1/avatar2-oldrev.avif",
+    );
+    expect(storage.deleteObject).toHaveBeenCalledWith(
+      "users/user-1/avatar3-oldrev.avif",
+    );
+
+    const upsertArgs = avatarsRepository.upsertSlots.mock.calls[0] as [
+      unknown,
+      string,
+      { avatar1: string },
+    ];
+    expect(upsertArgs[2].avatar1).not.toBe(
+      "users/user-1/avatar1-oldrev.avif",
+    );
   });
 });
 
@@ -199,10 +226,10 @@ describe("GetAvatars", () => {
   });
 });
 
-describe("convertAvatarToAvif integration", () => {
-  it("converts a real tiny PNG to AVIF", async () => {
+describe("buildAvatarVariants integration", () => {
+  it("builds three AVIF variants from a tiny PNG without enlarging", async () => {
     vi.doUnmock("../services/avatar-image");
-    const { convertAvatarToAvif: realConvert } = await vi.importActual<
+    const { buildAvatarVariants: realBuild } = await vi.importActual<
       typeof import("../services/avatar-image")
     >("../services/avatar-image");
 
@@ -210,8 +237,20 @@ describe("convertAvatarToAvif integration", () => {
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
       "base64",
     );
-    const avif = await realConvert(png, "image/png");
-    expect(avif.length).toBeGreaterThan(0);
-    expect(avif.toString("ascii", 4, 8)).toBe("ftyp");
+    const variants = await realBuild(png, "image/png");
+    expect(variants.original.length).toBeGreaterThan(0);
+    expect(variants.medium.length).toBeGreaterThan(0);
+    expect(variants.small.length).toBeGreaterThan(0);
+    expect(variants.original.toString("ascii", 4, 8)).toBe("ftyp");
+
+    const sharp = (await import("sharp")).default;
+    const [origMeta, mediumMeta, smallMeta] = await Promise.all([
+      sharp(variants.original).metadata(),
+      sharp(variants.medium).metadata(),
+      sharp(variants.small).metadata(),
+    ]);
+    expect(origMeta.width).toBe(1);
+    expect(mediumMeta.width).toBe(1);
+    expect(smallMeta.width).toBe(1);
   });
 });
