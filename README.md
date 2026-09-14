@@ -14,6 +14,8 @@ cp .env.example .env
 npm install
 npm run db:migrate
 npm run db:seed:genders
+npm run db:seed:activities
+npm run db:seed:languages
 npm run dev
 ```
 
@@ -27,7 +29,7 @@ Organize by **business module**, not by a global technical layer.
 src/
 ├── main.ts       # NestJS bootstrap
 ├── app.module.ts
-├── modules/      # feature modules (auth, …)
+├── modules/      # feature modules (auth, clubs, …)
 ├── db/           # shared Drizzle client + centralized PostgreSQL schema
 ├── docs/         # OpenAPI composition + Swagger UI
 ├── health/       # liveness / DB ping
@@ -60,16 +62,16 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | Method | Path | Notes |
 |--------|------|-------|
 | POST | `/api/auth/signup` | Email + password; sets 24h session cookie |
-| POST | `/api/auth/complete-profile` | Session required. `gender` is `male` \| `female` \| `others` |
 | POST | `/api/auth/login` | Credentials email + password; optional `rememberMe` |
-| GET | `/api/auth/genders` | Reference rows from `app.genders` |
-| GET | `/api/auth/me` | Current user; includes `profileComplete` |
-| PUT | `/api/auth/avatars` | Session required. Multipart field `avatar` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); server stores original / 512px / 128px AVIF as avatar1–3 on Scaleway |
-| GET | `/api/auth/avatars` | Session required. Signed GET URLs (1h) or null per slot |
 | GET | `/api/auth/active-sessions` | Lists sessions; `isCurrent` marks the cookie |
 | POST | `/api/auth/logout` | Optional `sessionId`; omit to log out current cookie |
 | POST | `/api/auth/forgot-password` | Generic 200; mailer after token commit |
 | POST | `/api/auth/reset-password` | Single-use token consume; revokes all sessions |
+| GET | `/api/users/me` | Current user; includes `profileComplete` |
+| POST | `/api/users/complete-profile` | Session required. `gender` is `male` \| `female` \| `others` |
+| PUT | `/api/users/avatars` | Session required. Multipart field `avatar` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); server stores original / 512px / 128px AVIF as avatar1–3 on Scaleway |
+| GET | `/api/users/avatars` | Session required. Signed GET URLs (1h) or null per slot |
+| GET | `/api/reference/genders` | Reference rows from `app.genders` |
 
 Signup / login / forgot-password / reset-password are rate limited (5 requests / minute / IP).
 
@@ -80,6 +82,23 @@ Production **refuses to boot** unless `SMTP_HOST` and `SMTP_FROM` are set. Devel
 Avatar uploads require Scaleway Object Storage env (`SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_S3_BUCKET`, region/endpoint). See `.env.example`.
 
 CORS and CSRF Origin checks use `APP_BASE_URL` (and optional `CORS_ORIGINS`). Browser mutating requests with an `Origin` header must match that allowlist.
+
+## Clubs
+
+Any authenticated user can create a club and becomes its first admin (`club_admins`). Country is stored as ISO alpha-2 `countryCode` (no countries table). Club avatars mirror user avatars (three AVIF sizes on Scaleway).
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/api/clubs/activities` | Activity catalog |
+| GET | `/api/clubs/languages` | Language catalog |
+| POST | `/api/clubs` | Create club; creator becomes admin |
+| GET | `/api/clubs/:clubId` | Club detail including signed `avatars` |
+| PATCH | `/api/clubs/:clubId` | Update profile / activities / languages (admin) |
+| POST | `/api/clubs/:clubId/addresses` | Add structured address (admin) |
+| PATCH | `/api/clubs/:clubId/addresses/:addressId` | Update address (admin) |
+| POST | `/api/clubs/:clubId/addresses/:addressId/primary` | Make address primary (admin) |
+| PUT | `/api/clubs/:clubId/avatars` | Multipart `avatar`; three size variants (admin) |
+| GET | `/api/clubs/:clubId/avatars` | Signed avatar URLs |
 
 ## API Documentation
 

@@ -1,6 +1,7 @@
 import type { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 
 import { standardErrorResponses } from "@/docs/openapi";
+import { z } from "@/shared/validation/zod";
 
 import {
   ActiveSessionsResponseSchema,
@@ -18,9 +19,10 @@ import {
   SignupSchema,
 } from "../schemas/auth.schema";
 import { registerAuthSchemas } from "./schemas";
-import { z } from "@/shared/validation/zod";
 
 const AUTH_TAG = "Authentication";
+const USERS_TAG = "Users";
+const REFERENCE_TAG = "Reference";
 
 const avatarBinaryField = z.string().openapi({
   type: "string",
@@ -65,33 +67,6 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
 
   registry.registerPath({
     method: "post",
-    path: "/api/auth/complete-profile",
-    tags: [AUTH_TAG],
-    summary: "Complete profile",
-    description:
-      "Update the authenticated user's profile. `gender` is male | female | others (looked up in app.genders). Requires a valid session cookie.",
-    security: [{ SessionCookie: [] }],
-    request: {
-      body: {
-        required: true,
-        content: {
-          "application/json": { schema: CompleteProfileSchema },
-        },
-      },
-    },
-    responses: {
-      200: {
-        description: "Profile updated",
-        content: {
-          "application/json": { schema: CompleteProfileResponseSchema },
-        },
-      },
-      ...standardErrorResponses([400, 401, 429, 500]),
-    },
-  });
-
-  registry.registerPath({
-    method: "post",
     path: "/api/auth/login",
     tags: [AUTH_TAG],
     summary: "Log in",
@@ -111,21 +86,6 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
         content: { "application/json": { schema: LoginResponseSchema } },
       },
       ...standardErrorResponses([400, 401, 429, 500]),
-    },
-  });
-
-  registry.registerPath({
-    method: "get",
-    path: "/api/auth/genders",
-    tags: [AUTH_TAG],
-    summary: "List genders",
-    description: "Reference rows from app.genders. Used by clients that need ids; complete-profile accepts the enum value.",
-    responses: {
-      200: {
-        description: "Gender reference data",
-        content: { "application/json": { schema: GendersResponseSchema } },
-      },
-      ...standardErrorResponses([500]),
     },
   });
 
@@ -174,65 +134,6 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
   });
 
   registry.registerPath({
-    method: "get",
-    path: "/api/auth/me",
-    tags: [AUTH_TAG],
-    summary: "Current user",
-    description:
-      "Returns the authenticated user for a valid session cookie. profileComplete is true when name, dob, gender, and preferred language are set.",
-    security: [{ SessionCookie: [] }],
-    responses: {
-      200: {
-        description: "Authenticated user",
-        content: { "application/json": { schema: LoginResponseSchema } },
-      },
-      ...standardErrorResponses([401, 429, 500]),
-    },
-  });
-
-  registry.registerPath({
-    method: "put",
-    path: "/api/auth/avatars",
-    tags: [AUTH_TAG],
-    summary: "Upload or update avatar",
-    description:
-      "Upload a single profile image for the authenticated user (multipart field `avatar`: JPEG, PNG, HEIC, HEIF, WebP, or AVIF). The API creates three AVIF variants — original (avatar1), medium max 512px (avatar2), and small max 128px (avatar3) — stores them in Scaleway Object Storage, and returns signed GET URLs (1 hour).",
-    security: [{ SessionCookie: [] }],
-    request: {
-      body: {
-        required: true,
-        content: {
-          "multipart/form-data": { schema: UploadAvatarsRequestSchema },
-        },
-      },
-    },
-    responses: {
-      200: {
-        description: "Current avatar signed URLs after update",
-        content: { "application/json": { schema: AvatarsResponseSchema } },
-      },
-      ...standardErrorResponses([400, 401, 429, 500]),
-    },
-  });
-
-  registry.registerPath({
-    method: "get",
-    path: "/api/auth/avatars",
-    tags: [AUTH_TAG],
-    summary: "Get avatars",
-    description:
-      "Returns signed GET URLs (1 hour) for the authenticated user's avatar variants: avatar1 (original), avatar2 (medium ≤512px), avatar3 (small ≤128px). Unset slots are null.",
-    security: [{ SessionCookie: [] }],
-    responses: {
-      200: {
-        description: "Avatar signed URLs",
-        content: { "application/json": { schema: AvatarsResponseSchema } },
-      },
-      ...standardErrorResponses([401, 429, 500]),
-    },
-  });
-
-  registry.registerPath({
     method: "post",
     path: "/api/auth/forgot-password",
     tags: [AUTH_TAG],
@@ -277,6 +178,108 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
         content: { "application/json": { schema: MessageResponseSchema } },
       },
       ...standardErrorResponses([400, 429, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/users/me",
+    tags: [USERS_TAG],
+    summary: "Current user",
+    description:
+      "Returns the authenticated user for a valid session cookie. profileComplete is true when name, dob, gender, and preferred language are set.",
+    security: [{ SessionCookie: [] }],
+    responses: {
+      200: {
+        description: "Authenticated user",
+        content: { "application/json": { schema: LoginResponseSchema } },
+      },
+      ...standardErrorResponses([401, 429, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
+    path: "/api/users/complete-profile",
+    tags: [USERS_TAG],
+    summary: "Complete profile",
+    description:
+      "Update the authenticated user's profile. `gender` is male | female | others (looked up in app.genders). Requires a valid session cookie.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      body: {
+        required: true,
+        content: {
+          "application/json": { schema: CompleteProfileSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Profile updated",
+        content: {
+          "application/json": { schema: CompleteProfileResponseSchema },
+        },
+      },
+      ...standardErrorResponses([400, 401, 429, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "put",
+    path: "/api/users/avatars",
+    tags: [USERS_TAG],
+    summary: "Upload or update avatar",
+    description:
+      "Upload a single profile image for the authenticated user (multipart field `avatar`: JPEG, PNG, HEIC, HEIF, WebP, or AVIF). The API creates three AVIF variants — original (avatar1), medium max 512px (avatar2), and small max 128px (avatar3) — stores them in Scaleway Object Storage, and returns signed GET URLs (1 hour).",
+    security: [{ SessionCookie: [] }],
+    request: {
+      body: {
+        required: true,
+        content: {
+          "multipart/form-data": { schema: UploadAvatarsRequestSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Current avatar signed URLs after update",
+        content: { "application/json": { schema: AvatarsResponseSchema } },
+      },
+      ...standardErrorResponses([400, 401, 429, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/users/avatars",
+    tags: [USERS_TAG],
+    summary: "Get avatars",
+    description:
+      "Returns signed GET URLs (1 hour) for the authenticated user's avatar variants: avatar1 (original), avatar2 (medium ≤512px), avatar3 (small ≤128px). Unset slots are null.",
+    security: [{ SessionCookie: [] }],
+    responses: {
+      200: {
+        description: "Avatar signed URLs",
+        content: { "application/json": { schema: AvatarsResponseSchema } },
+      },
+      ...standardErrorResponses([401, 429, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/reference/genders",
+    tags: [REFERENCE_TAG],
+    summary: "List genders",
+    description:
+      "Reference rows from app.genders. Used by clients that need ids; complete-profile accepts the enum value.",
+    responses: {
+      200: {
+        description: "Gender reference data",
+        content: { "application/json": { schema: GendersResponseSchema } },
+      },
+      ...standardErrorResponses([500]),
     },
   });
 }

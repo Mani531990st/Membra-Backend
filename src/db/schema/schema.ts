@@ -1,4 +1,4 @@
-import { pgSchema, foreignKey, bigint, uuid, varchar, boolean, timestamp, check, smallint, unique, date, integer, index, text } from "drizzle-orm/pg-core"
+import { pgSchema, foreignKey, bigint, uuid, varchar, boolean, timestamp, check, smallint, unique, date, integer, index, text, primaryKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const app = pgSchema("app");
@@ -194,13 +194,112 @@ export const clubsInApp = app.table("clubs", {
 	name: varchar({ length: 255 }).notNull(),
 	sn: varchar({ length: 10 }).notNull(),
 	date: date(),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	avatar1Id: bigint("avatar1_id", { mode: "number" }),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	avatar2Id: bigint("avatar2_id", { mode: "number" }),
+	active: boolean().default(true).notNull(),
+	countryCode: varchar("country_code", { length: 2 }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-});
+}, (table) => [
+	unique("clubs_sn_key").on(table.sn),
+]);
+
+export const activitiesInApp = app.table("activities", {
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.activities_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
+	name: varchar({ length: 80 }).notNull(),
+	sn: varchar({ length: 10 }).notNull(),
+	active: boolean().default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	unique("activities_sn_key").on(table.sn),
+]);
+
+export const languagesInApp = app.table("languages", {
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.languages_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
+	code: varchar({ length: 15 }).notNull(),
+	name: varchar({ length: 80 }).notNull(),
+	active: boolean().default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	unique("languages_code_key").on(table.code),
+]);
+
+export const clubAdminsInApp = app.table("club_admins", {
+	clubId: bigint("club_id", { mode: "number" }).notNull(),
+	userId: uuid("user_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.clubId, table.userId], name: "club_admins_pkey" }),
+	foreignKey({
+			columns: [table.clubId],
+			foreignColumns: [clubsInApp.id],
+			name: "club_admins_club_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [usersInApp.uuid],
+			name: "club_admins_user_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const clubActivitiesInApp = app.table("club_activities", {
+	clubId: bigint("club_id", { mode: "number" }).notNull(),
+	activityId: bigint("activity_id", { mode: "number" }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.clubId, table.activityId], name: "club_activities_pkey" }),
+	foreignKey({
+			columns: [table.clubId],
+			foreignColumns: [clubsInApp.id],
+			name: "club_activities_club_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.activityId],
+			foreignColumns: [activitiesInApp.id],
+			name: "club_activities_activity_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const clubLanguagesInApp = app.table("club_languages", {
+	clubId: bigint("club_id", { mode: "number" }).notNull(),
+	languageId: bigint("language_id", { mode: "number" }).notNull(),
+	rank: smallint().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.clubId, table.languageId], name: "club_languages_pkey" }),
+	unique("club_languages_club_id_rank_key").on(table.clubId, table.rank),
+	foreignKey({
+			columns: [table.clubId],
+			foreignColumns: [clubsInApp.id],
+			name: "club_languages_club_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.languageId],
+			foreignColumns: [languagesInApp.id],
+			name: "club_languages_language_id_fkey"
+		}).onDelete("cascade"),
+	check("club_languages_rank_check", sql`(rank > 0) AND (rank <= 20)`),
+]);
+
+export const clubAvatarsInApp = app.table("club_avatars", {
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_avatar_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
+	clubId: bigint("club_id", { mode: "number" }).notNull(),
+	avatar1: text("avatar1"),
+	avatar2: text("avatar2"),
+	avatar3: text("avatar3"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.clubId],
+			foreignColumns: [clubsInApp.id],
+			name: "club_avatars_club_id_fkey"
+		}).onDelete("cascade"),
+	unique("club_avatars_club_id_key").on(table.clubId),
+]);
 
 export const locationGroupsInApp = app.table("location_groups", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -372,8 +471,8 @@ export const clubAddressesInApp = app.table("club_addresses", {
 	name: varchar({ length: 60 }).notNull(),
 	short: varchar({ length: 20 }).notNull(),
 	directions: varchar({ length: 255 }),
-	primary: boolean(),
-	active: boolean(),
+	primary: boolean().default(false).notNull(),
+	active: boolean().default(true),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),

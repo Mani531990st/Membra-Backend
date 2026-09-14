@@ -17,6 +17,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed:genders": "tsx scripts/seed-genders.ts",
+    "db:seed:activities": "tsx scripts/seed-activities.ts",
+    "db:seed:languages": "tsx scripts/seed-languages.ts",
     "db:seed:dev-user": "tsx scripts/seed-dev-user.ts"
   },
   "dependencies": {

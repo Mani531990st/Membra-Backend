@@ -1,0 +1,279 @@
+import type { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
+
+import { standardErrorResponses } from "@/docs/openapi";
+import { z } from "@/shared/validation/zod";
+
+import {
+  ActivitiesResponseSchema,
+  AvatarsResponseSchema,
+  ClubAddressBodySchema,
+  ClubAddressResponseSchema,
+  ClubDetailResponseSchema,
+  CreateClubSchema,
+  LanguagesResponseSchema,
+  UpdateClubAddressSchema,
+  UpdateClubSchema,
+} from "../schemas/clubs.schema";
+
+const CLUBS_TAG = "Clubs";
+
+const avatarBinaryField = z.string().openapi({
+  type: "string",
+  format: "binary",
+  description:
+    "Single club image (JPEG, PNG, HEIC, HEIF, WebP, or AVIF, max 8 MB). Server creates original, 512px, and 128px AVIF variants.",
+});
+
+const UploadClubAvatarsRequestSchema = z
+  .object({
+    avatar: avatarBinaryField,
+  })
+  .openapi("UploadClubAvatarsRequest");
+
+export function registerClubsDocs(registry: OpenAPIRegistry): void {
+  registry.register("CreateClubRequest", CreateClubSchema);
+  registry.register("UpdateClubRequest", UpdateClubSchema);
+  registry.register("ClubAddressRequest", ClubAddressBodySchema);
+  registry.register("UpdateClubAddressRequest", UpdateClubAddressSchema);
+  registry.register("ClubDetailResponse", ClubDetailResponseSchema);
+  registry.register("ClubAddressResponse", ClubAddressResponseSchema);
+  registry.register("ClubAvatarsResponse", AvatarsResponseSchema);
+  registry.register("ActivitiesResponse", ActivitiesResponseSchema);
+  registry.register("LanguagesResponse", LanguagesResponseSchema);
+  registry.register("UploadClubAvatarsRequest", UploadClubAvatarsRequestSchema);
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/clubs/activities",
+    tags: [CLUBS_TAG],
+    summary: "List activities catalog",
+    security: [{ SessionCookie: [] }],
+    responses: {
+      200: {
+        description: "Active activities",
+        content: {
+          "application/json": { schema: ActivitiesResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/clubs/languages",
+    tags: [CLUBS_TAG],
+    summary: "List languages catalog",
+    security: [{ SessionCookie: [] }],
+    responses: {
+      200: {
+        description: "Active languages",
+        content: {
+          "application/json": { schema: LanguagesResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
+    path: "/api/clubs",
+    tags: [CLUBS_TAG],
+    summary: "Create club",
+    description:
+      "Any authenticated user can create a club and becomes its first admin.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      body: {
+        required: true,
+        content: { "application/json": { schema: CreateClubSchema } },
+      },
+    },
+    responses: {
+      201: {
+        description: "Club created",
+        content: {
+          "application/json": { schema: ClubDetailResponseSchema },
+        },
+      },
+      ...standardErrorResponses([400, 401, 409, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/clubs/{clubId}",
+    tags: [CLUBS_TAG],
+    summary: "Get club",
+    description:
+      "Returns club profile, addresses, activities, languages, admin user ids, and signed avatar URLs.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Club detail",
+        content: {
+          "application/json": { schema: ClubDetailResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "patch",
+    path: "/api/clubs/{clubId}",
+    tags: [CLUBS_TAG],
+    summary: "Update club",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+      }),
+      body: {
+        required: true,
+        content: { "application/json": { schema: UpdateClubSchema } },
+      },
+    },
+    responses: {
+      200: {
+        description: "Club updated",
+        content: {
+          "application/json": { schema: ClubDetailResponseSchema },
+        },
+      },
+      ...standardErrorResponses([400, 401, 403, 404, 409, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
+    path: "/api/clubs/{clubId}/addresses",
+    tags: [CLUBS_TAG],
+    summary: "Add club address",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+      }),
+      body: {
+        required: true,
+        content: { "application/json": { schema: ClubAddressBodySchema } },
+      },
+    },
+    responses: {
+      201: {
+        description: "Address created",
+        content: {
+          "application/json": { schema: ClubAddressResponseSchema },
+        },
+      },
+      ...standardErrorResponses([400, 401, 403, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "patch",
+    path: "/api/clubs/{clubId}/addresses/{addressId}",
+    tags: [CLUBS_TAG],
+    summary: "Update club address",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+        addressId: z.coerce.number().int().positive(),
+      }),
+      body: {
+        required: true,
+        content: { "application/json": { schema: UpdateClubAddressSchema } },
+      },
+    },
+    responses: {
+      200: {
+        description: "Address updated",
+        content: {
+          "application/json": { schema: ClubAddressResponseSchema },
+        },
+      },
+      ...standardErrorResponses([400, 401, 403, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
+    path: "/api/clubs/{clubId}/addresses/{addressId}/primary",
+    tags: [CLUBS_TAG],
+    summary: "Make club address primary",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+        addressId: z.coerce.number().int().positive(),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Address is now primary",
+        content: {
+          "application/json": { schema: ClubAddressResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 403, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "put",
+    path: "/api/clubs/{clubId}/avatars",
+    tags: [CLUBS_TAG],
+    summary: "Upload club avatars",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+      }),
+      body: {
+        required: true,
+        content: {
+          "multipart/form-data": { schema: UploadClubAvatarsRequestSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Signed avatar URLs",
+        content: {
+          "application/json": { schema: AvatarsResponseSchema },
+        },
+      },
+      ...standardErrorResponses([400, 401, 403, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/clubs/{clubId}/avatars",
+    tags: [CLUBS_TAG],
+    summary: "Get club avatars",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Signed avatar URLs",
+        content: {
+          "application/json": { schema: AvatarsResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 404, 500]),
+    },
+  });
+}

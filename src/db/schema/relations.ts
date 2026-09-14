@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInApp, userSecurityNumbersInApp, clubsInApp, clubAgeGroupsInApp, clubEmailsInApp, clubQuestionnairesInApp, clubQuestionnaireDetailsInApp, clubWaitlistsInApp, gendersInApp, userAddressesInApp, clubPhoneNumbersInApp, locationGroupsInApp, locationRelationsInApp, locationsInApp, clubAddressesInApp, userAliasesInApp, userEmailsInApp, userPhoneNumbersInApp, userCredentialsInApp, authSessionsInApp, passwordResetTokensInApp, userAvatarsInApp } from "./schema";
+import { usersInApp, userSecurityNumbersInApp, clubsInApp, clubAgeGroupsInApp, clubEmailsInApp, clubQuestionnairesInApp, clubQuestionnaireDetailsInApp, clubWaitlistsInApp, gendersInApp, userAddressesInApp, clubPhoneNumbersInApp, locationGroupsInApp, locationRelationsInApp, locationsInApp, clubAddressesInApp, userAliasesInApp, userEmailsInApp, userPhoneNumbersInApp, userCredentialsInApp, authSessionsInApp, passwordResetTokensInApp, userAvatarsInApp, clubAdminsInApp, clubActivitiesInApp, clubLanguagesInApp, clubAvatarsInApp, activitiesInApp, languagesInApp } from "./schema";
 
 export const userSecurityNumbersInAppRelations = relations(userSecurityNumbersInApp, ({one}) => ({
 	usersInApp: one(usersInApp, {
@@ -24,6 +24,7 @@ export const usersInAppRelations = relations(usersInApp, ({one, many}) => ({
 		fields: [usersInApp.uuid],
 		references: [userAvatarsInApp.userId]
 	}),
+	clubAdminsInApps: many(clubAdminsInApp),
 	gendersInApp: one(gendersInApp, {
 		fields: [usersInApp.gender],
 		references: [gendersInApp.id]
@@ -37,7 +38,7 @@ export const clubAgeGroupsInAppRelations = relations(clubAgeGroupsInApp, ({one})
 	}),
 }));
 
-export const clubsInAppRelations = relations(clubsInApp, ({many}) => ({
+export const clubsInAppRelations = relations(clubsInApp, ({one, many}) => ({
 	clubAgeGroupsInApps: many(clubAgeGroupsInApp),
 	clubEmailsInApps: many(clubEmailsInApp),
 	clubWaitlistsInApps: many(clubWaitlistsInApp),
@@ -46,6 +47,61 @@ export const clubsInAppRelations = relations(clubsInApp, ({many}) => ({
 	locationGroupsInApps: many(locationGroupsInApp),
 	locationsInApps: many(locationsInApp),
 	clubAddressesInApps: many(clubAddressesInApp),
+	clubAdminsInApps: many(clubAdminsInApp),
+	clubActivitiesInApps: many(clubActivitiesInApp),
+	clubLanguagesInApps: many(clubLanguagesInApp),
+	clubAvatarsInApp: one(clubAvatarsInApp, {
+		fields: [clubsInApp.id],
+		references: [clubAvatarsInApp.clubId]
+	}),
+}));
+
+export const activitiesInAppRelations = relations(activitiesInApp, ({many}) => ({
+	clubActivitiesInApps: many(clubActivitiesInApp),
+}));
+
+export const languagesInAppRelations = relations(languagesInApp, ({many}) => ({
+	clubLanguagesInApps: many(clubLanguagesInApp),
+}));
+
+export const clubAdminsInAppRelations = relations(clubAdminsInApp, ({one}) => ({
+	clubsInApp: one(clubsInApp, {
+		fields: [clubAdminsInApp.clubId],
+		references: [clubsInApp.id]
+	}),
+	usersInApp: one(usersInApp, {
+		fields: [clubAdminsInApp.userId],
+		references: [usersInApp.uuid]
+	}),
+}));
+
+export const clubActivitiesInAppRelations = relations(clubActivitiesInApp, ({one}) => ({
+	clubsInApp: one(clubsInApp, {
+		fields: [clubActivitiesInApp.clubId],
+		references: [clubsInApp.id]
+	}),
+	activitiesInApp: one(activitiesInApp, {
+		fields: [clubActivitiesInApp.activityId],
+		references: [activitiesInApp.id]
+	}),
+}));
+
+export const clubLanguagesInAppRelations = relations(clubLanguagesInApp, ({one}) => ({
+	clubsInApp: one(clubsInApp, {
+		fields: [clubLanguagesInApp.clubId],
+		references: [clubsInApp.id]
+	}),
+	languagesInApp: one(languagesInApp, {
+		fields: [clubLanguagesInApp.languageId],
+		references: [languagesInApp.id]
+	}),
+}));
+
+export const clubAvatarsInAppRelations = relations(clubAvatarsInApp, ({one}) => ({
+	clubsInApp: one(clubsInApp, {
+		fields: [clubAvatarsInApp.clubId],
+		references: [clubsInApp.id]
+	}),
 }));
 
 export const clubEmailsInAppRelations = relations(clubEmailsInApp, ({one}) => ({

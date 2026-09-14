@@ -6,6 +6,8 @@ import {
 } from "@/shared/storage/scaleway-object-storage";
 
 import { AuthController } from "./controllers/auth.controller";
+import { ReferenceController } from "./controllers/reference.controller";
+import { UsersController } from "./controllers/users.controller";
 import { SessionAuthGuard } from "./guards/session-auth.guard";
 import { AuthRepository } from "./repositories/auth.repository";
 import { SessionRepository } from "./repositories/session.repository";
@@ -29,7 +31,7 @@ import { Signup } from "./use-cases/signup";
 import { UpdateAvatars } from "./use-cases/update-avatars";
 
 @Module({
-  controllers: [AuthController],
+  controllers: [AuthController, UsersController, ReferenceController],
   providers: [
     AuthRepository,
     SessionRepository,
@@ -57,5 +59,6 @@ import { UpdateAvatars } from "./use-cases/update-avatars";
     UpdateAvatars,
     GetAvatars,
   ],
+  exports: [SessionAuthGuard, SessionRepository],
 })
 export class AuthModule {}

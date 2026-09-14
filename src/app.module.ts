@@ -6,6 +6,7 @@ import { DatabaseModule } from "./db/database.module";
 import { DocsModule } from "./docs/docs.module";
 import { HealthModule } from "./health/health.module";
 import { AuthModule } from "./modules/auth/auth.module";
+import { ClubsModule } from "./modules/clubs/clubs.module";
 import { OriginGuard } from "./shared/http/origin.guard";
 
 @Module({
@@ -15,6 +16,7 @@ import { OriginGuard } from "./shared/http/origin.guard";
     }),
     DatabaseModule,
     AuthModule,
+    ClubsModule,
     DocsModule,
     HealthModule,
   ],

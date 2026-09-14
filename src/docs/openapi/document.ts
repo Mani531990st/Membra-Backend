@@ -42,5 +42,25 @@ export function generateOpenApiDocument(): OpenApiDocument {
   registerAllModuleDocs(registry);
 
   const generator = new OpenApiGeneratorV31(registry.definitions);
-  return generator.generateDocument(openApiInfo);
+  return generator.generateDocument({
+    ...openApiInfo,
+    tags: [
+      {
+        name: "Authentication",
+        description: "Signup, login, logout, password reset, and sessions",
+      },
+      {
+        name: "Users",
+        description: "Current user profile and avatars",
+      },
+      {
+        name: "Reference",
+        description: "Lookup catalogs (genders, …)",
+      },
+      {
+        name: "Clubs",
+        description: "Club profile, addresses, catalogs, and avatars",
+      },
+    ],
+  });
 }
