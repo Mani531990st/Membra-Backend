@@ -1,0 +1,17 @@
+.git
+.github
+.cursor
+.env
+.env.*
+!.env.example
+node_modules
+dist
+coverage
+drizzle
+scripts
+*.tsbuildinfo
+npm-debug.log*
+.DS_Store
+README.md
+AGENTS.md
+CLAUDE.md

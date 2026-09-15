@@ -72,7 +72,7 @@ export class UpdateClub {
       if (input.active !== undefined) patch.active = input.active;
       if (input.countryCode !== undefined) patch.countryCode = input.countryCode;
 
-      let updated =
+      const updated =
         Object.keys(patch).length > 0
           ? await this.clubs.updateClub(tx, clubId, patch)
           : await this.clubs.findById(tx, clubId);

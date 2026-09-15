@@ -25,7 +25,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AppErrorFilter());
 
   const port = Number.parseInt(process.env.PORT ?? "3000", 10);
-  await app.listen(Number.isFinite(port) ? port : 3000);
+  await app.listen(Number.isFinite(port) ? port : 3000, "0.0.0.0");
 }
 
 void bootstrap();

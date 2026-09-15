@@ -1,4 +1,4 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Injectable } from "@nestjs/common";
 
 import type { DbOrTx } from "@/db";

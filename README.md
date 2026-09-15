@@ -6,7 +6,7 @@ NestJS modular monolith with Drizzle ORM and PostgreSQL (`app` schema).
 
 - NestJS + TypeScript
 - Drizzle ORM + PostgreSQL
-- Local PostgreSQL for development; Neon (via `DATABASE_URL`) for production
+- Local PostgreSQL for development; Scaleway Serverless SQL (via `DATABASE_URL`) for deployed environments
 
 ```bash
 cp .env.example .env
@@ -133,3 +133,62 @@ npm run lint
 npm test
 npm run build
 ```
+
+## Deploy (Scaleway test via GitHub Actions)
+
+You create Scaleway resources in the console. GitHub Actions does not provision them. Pushing to `development` runs [`.github/workflows/deploy-test.yml`](.github/workflows/deploy-test.yml): lint/test/build, push a Docker image, migrate, update the Serverless Container, then `GET /api/health`.
+
+Pull requests run [`.github/workflows/ci.yml`](.github/workflows/ci.yml) only.
+
+Do not put test/production keys in `.env`. That file is local-only and is not copied into the image.
+
+### Three API keys (do not mix)
+
+- **Object Storage** access + secret: Scaleway container secret env vars (`SCW_ACCESS_KEY` / `SCW_SECRET_KEY`). Not in GitHub.
+- **DB** IAM application: Postgres user is the application ID, password is the secret key. Same `DATABASE_URL` on the container and in GitHub (migrations).
+- **Container** access + secret: GitHub Actions secrets only (registry push + container update). Not on the running API container.
+
+`DATABASE_URL` must include `sslmode=require`, for example:
+
+```text
+postgresql://<db-application-id>:<db-secret-key>@<host>:5432/<database>?sslmode=require
+```
+
+If a client fails TLS/SNI, append `&options=databaseid%3D<database-id>`.
+
+### GitHub Environment `test` secrets
+
+These `SCW_ACCESS_KEY` / `SCW_SECRET_KEY` values are the **container** key, not Object Storage.
+
+- `SCW_ACCESS_KEY`
+- `SCW_SECRET_KEY`
+- `SCW_DEFAULT_ORGANIZATION_ID`
+- `SCW_DEFAULT_PROJECT_ID`
+- `SCW_DEFAULT_REGION` (`nl-ams`)
+- `CONTAINER_REGISTRY_ENDPOINT` (e.g. `rg.nl-ams.scw.cloud/membra-test`)
+- `SCW_CONTAINER_ID`
+- `DATABASE_URL`
+- `CONTAINER_HEALTH_URL` (e.g. `https://<host>/api/health`)
+
+Create the Environment under the repo **Settings → Environments → test**.
+
+Optional catalogs seed (genders, activities, languages): **Actions → Deploy test → Run workflow → seed catalogs**. Do not seed `db:seed:dev-user` unless you want a test account.
+
+### Scaleway console (test, region `nl-ams`)
+
+- IAM: Object Storage app → bucket read/write; DB app → `ServerlessSQLDatabaseReadWrite`; Container app → registry **push** + Serverless Containers **update**.
+- Serverless SQL database; copy the connection string for the **db** IAM application.
+- Private Object Storage bucket for test avatars (prefer a bucket separate from production).
+- Private Container Registry namespace.
+- Serverless Containers namespace and public container (port **8080**, HTTP probe `/api/health`, 1024 MB RAM).
+
+Runtime env on the **container** (secret where sensitive):
+
+- `NODE_ENV=production`
+- `PORT` is injected by Scaleway from the container port (8080)
+- `DATABASE_URL`
+- `APP_BASE_URL` / `CORS_ORIGINS`
+- `SMTP_HOST`, `SMTP_FROM` (required to boot in production), plus `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_SECURE` as needed
+- Object Storage: `SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_S3_BUCKET`, `SCW_DEFAULT_REGION=nl-ams`, `SCW_S3_ENDPOINT=https://s3.nl-ams.scw.cloud`
+- `ENABLE_API_DOCS=true` if you want Swagger on test
+

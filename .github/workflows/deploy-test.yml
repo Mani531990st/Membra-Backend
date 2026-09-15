@@ -1,0 +1,115 @@
+name: Deploy test
+
+on:
+  push:
+    branches:
+      - development
+  workflow_dispatch:
+    inputs:
+      seed_catalogs:
+        description: Seed genders, activities, and languages after migrate
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-test
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: test
+    permissions:
+      contents: read
+      actions: write
+    env:
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+      SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+      SCW_DEFAULT_REGION: ${{ secrets.SCW_DEFAULT_REGION }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+      - name: Login to Scaleway Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          provenance: false
+          sbom: false
+          tags: |
+            ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/membra-backend:${{ github.sha }}
+            ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/membra-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run database migrations
+        run: npm run db:migrate
+
+      - name: Seed catalogs
+        if: github.event_name == 'workflow_dispatch' && inputs.seed_catalogs
+        run: |
+          npm run db:seed:genders
+          npm run db:seed:activities
+          npm run db:seed:languages
+
+      - name: Install Scaleway CLI
+        run: |
+          set -euo pipefail
+          version="2.59.0"
+          curl -fsSL "https://github.com/scaleway/scaleway-cli/releases/download/v${version}/scaleway-cli_${version}_linux_amd64" -o /usr/local/bin/scw
+          chmod +x /usr/local/bin/scw
+
+      - name: Update Serverless Container image
+        env:
+          SCW_CONTAINER_ID: ${{ secrets.SCW_CONTAINER_ID }}
+          IMAGE: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/membra-backend:${{ github.sha }}
+        run: |
+          set -euo pipefail
+          region="${SCW_DEFAULT_REGION:-nl-ams}"
+          scw container container update "${SCW_CONTAINER_ID}" registry-image="${IMAGE}" region="${region}"
+
+          for _ in $(seq 1 60); do
+            status="$(scw container container get "${SCW_CONTAINER_ID}" region="${region}" -o json | jq -r '.status')"
+            echo "container status: ${status}"
+            if [ "${status}" = "ready" ]; then
+              exit 0
+            fi
+            if [ "${status}" = "error" ]; then
+              echo "Container entered error status"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          echo "Timed out waiting for container to become ready"
+          exit 1
+
+      - name: Smoke check health endpoint
+        env:
+          CONTAINER_HEALTH_URL: ${{ secrets.CONTAINER_HEALTH_URL }}
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --retry 30 --retry-delay 10 --retry-all-errors \
+            --max-time 20 "${CONTAINER_HEALTH_URL}"
