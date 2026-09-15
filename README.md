@@ -67,7 +67,7 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | POST | `/api/auth/logout` | Optional `sessionId`; omit to log out current cookie |
 | POST | `/api/auth/forgot-password` | Generic 200; mailer after token commit |
 | POST | `/api/auth/reset-password` | Single-use token consume; revokes all sessions |
-| GET | `/api/users/me` | Current user; includes `profileComplete` |
+| GET | `/api/users/me` | Current user; includes `profileComplete`, signed `avatars`, `primaryEmail`, `primaryPhone` |
 | POST | `/api/users/complete-profile` | Session required. `gender` is `male` \| `female` \| `others` |
 | PUT | `/api/users/avatars` | Session required. Multipart field `avatar` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); server stores original / 512px / 128px AVIF as avatar1–3 on Scaleway |
 | GET | `/api/users/avatars` | Session required. Signed GET URLs (1h) or null per slot |

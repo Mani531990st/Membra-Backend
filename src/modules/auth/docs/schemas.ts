@@ -10,6 +10,7 @@ import {
   LoginResponseSchema,
   LoginSchema,
   LogoutSchema,
+  MeResponseSchema,
   MessageResponseSchema,
   ResetPasswordSchema,
   SignupResponseSchema,
@@ -26,6 +27,7 @@ export function registerAuthSchemas(registry: OpenAPIRegistry): void {
   registry.register("SignupResponse", SignupResponseSchema);
   registry.register("CompleteProfileResponse", CompleteProfileResponseSchema);
   registry.register("LoginResponse", LoginResponseSchema);
+  registry.register("MeResponse", MeResponseSchema);
   registry.register("ActiveSessionsResponse", ActiveSessionsResponseSchema);
   registry.register("GendersResponse", GendersResponseSchema);
   registry.register("MessageResponse", MessageResponseSchema);

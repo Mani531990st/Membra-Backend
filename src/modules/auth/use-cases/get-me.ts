@@ -6,21 +6,34 @@ import { UnauthorizedError } from "@/shared/errors";
 
 import { toSafeUser } from "../lib/auth-helpers";
 import { AuthRepository } from "../repositories/auth.repository";
-import type { SafeAuthUser } from "../types/auth.types";
+import type { MeResponse } from "../schemas/auth.schema";
+import { GetAvatars } from "./get-avatars";
 
 @Injectable()
 export class GetMe {
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     @Inject(AuthRepository) private readonly authRepository: AuthRepository,
+    @Inject(GetAvatars) private readonly getAvatars: GetAvatars,
   ) {}
 
-  async execute(userId: string): Promise<{ user: SafeAuthUser }> {
+  async execute(userId: string): Promise<MeResponse> {
     const user = await this.authRepository.findSafeUserById(this.db, userId);
     if (!user) {
       throw new UnauthorizedError();
     }
 
-    return { user: toSafeUser(user) };
+    const [avatars, primaryEmail, primaryPhone] = await Promise.all([
+      this.getAvatars.execute(userId),
+      this.authRepository.findPrimaryEmail(this.db, userId),
+      this.authRepository.findPrimaryPhone(this.db, userId),
+    ]);
+
+    return {
+      user: toSafeUser(user),
+      avatars,
+      primaryEmail,
+      primaryPhone,
+    };
   }
 }

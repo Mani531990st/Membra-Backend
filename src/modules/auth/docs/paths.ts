@@ -13,6 +13,7 @@ import {
   LoginResponseSchema,
   LoginSchema,
   LogoutSchema,
+  MeResponseSchema,
   MessageResponseSchema,
   ResetPasswordSchema,
   SignupResponseSchema,
@@ -187,12 +188,12 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [USERS_TAG],
     summary: "Current user",
     description:
-      "Returns the authenticated user for a valid session cookie. profileComplete is true when name, dob, gender, and preferred language are set.",
+      "Returns the authenticated user for a valid session cookie, plus signed avatar URLs, primary contact email, and primary phone. profileComplete is true when name, dob, gender, and preferred language are set.",
     security: [{ SessionCookie: [] }],
     responses: {
       200: {
-        description: "Authenticated user",
-        content: { "application/json": { schema: LoginResponseSchema } },
+        description: "Authenticated user profile",
+        content: { "application/json": { schema: MeResponseSchema } },
       },
       ...standardErrorResponses([401, 429, 500]),
     },

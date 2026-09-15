@@ -7,6 +7,7 @@ import {
   passwordResetTokensInApp,
   userCredentialsInApp,
   userEmailsInApp,
+  userPhoneNumbersInApp,
   usersInApp,
 } from "@/db/schema";
 
@@ -129,6 +130,49 @@ export class AuthRepository {
     }
 
     return mapAuthUser({ ...row, passwordHash: null });
+  }
+
+  async findPrimaryEmail(
+    dbOrTx: DbOrTx,
+    userId: string,
+  ): Promise<string | null> {
+    const [row] = await dbOrTx
+      .select({ email: userEmailsInApp.email })
+      .from(userEmailsInApp)
+      .where(
+        and(
+          eq(userEmailsInApp.userId, userId),
+          eq(userEmailsInApp.primary, true),
+          eq(userEmailsInApp.active, true),
+        ),
+      )
+      .orderBy(asc(userEmailsInApp.id))
+      .limit(1);
+
+    return row?.email ?? null;
+  }
+
+  async findPrimaryPhone(
+    dbOrTx: DbOrTx,
+    userId: string,
+  ): Promise<{ countryCode: number | null; phoneNumber: string | null } | null> {
+    const [row] = await dbOrTx
+      .select({
+        countryCode: userPhoneNumbersInApp.countryCode,
+        phoneNumber: userPhoneNumbersInApp.phoneNumber,
+      })
+      .from(userPhoneNumbersInApp)
+      .where(
+        and(
+          eq(userPhoneNumbersInApp.userId, userId),
+          eq(userPhoneNumbersInApp.primary, true),
+          eq(userPhoneNumbersInApp.active, true),
+        ),
+      )
+      .orderBy(asc(userPhoneNumbersInApp.id))
+      .limit(1);
+
+    return row ?? null;
   }
 
   async emailExists(dbOrTx: DbOrTx, email: string): Promise<boolean> {

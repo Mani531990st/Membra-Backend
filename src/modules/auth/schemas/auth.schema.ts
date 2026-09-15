@@ -174,6 +174,28 @@ export const AvatarsResponseSchema = z
   })
   .openapi("AvatarsResponse");
 
+export const PrimaryPhoneSchema = z
+  .object({
+    countryCode: z.number().int().nullable(),
+    phoneNumber: z.string().nullable(),
+  })
+  .openapi("PrimaryPhone");
+
+export const MeResponseSchema = z
+  .object({
+    user: SafeUserSchema,
+    avatars: AvatarsResponseSchema,
+    primaryEmail: z.string().email().nullable().openapi({
+      description:
+        "Primary active contact email from user_emails, or null when unset",
+    }),
+    primaryPhone: PrimaryPhoneSchema.nullable().openapi({
+      description:
+        "Primary active phone from user_phone_numbers, or null when unset",
+    }),
+  })
+  .openapi("MeResponse");
+
 export type SignupInput = z.infer<typeof SignupSchema>;
 export type CompleteProfileInput = z.infer<typeof CompleteProfileSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
@@ -183,3 +205,5 @@ export type LogoutInput = z.infer<typeof LogoutSchema>;
 export type SafeUser = z.infer<typeof SafeUserSchema>;
 export type ActiveSession = z.infer<typeof ActiveSessionSchema>;
 export type AvatarsResponse = z.infer<typeof AvatarsResponseSchema>;
+export type MeResponse = z.infer<typeof MeResponseSchema>;
+export type PrimaryPhone = z.infer<typeof PrimaryPhoneSchema>;
