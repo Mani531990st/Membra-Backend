@@ -28,4 +28,7 @@ async function bootstrap() {
   await app.listen(Number.isFinite(port) ? port : 3000, "0.0.0.0");
 }
 
-void bootstrap();
+void bootstrap().catch((error: unknown) => {
+  console.error("Failed to start Membra", error);
+  process.exit(1);
+});

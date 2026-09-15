@@ -13,18 +13,19 @@ export type PasswordResetMailer = {
 export const PASSWORD_RESET_MAILER = Symbol("PASSWORD_RESET_MAILER");
 
 /**
- * Dev/no-provider adapter. Logs that a reset email would be sent.
+ * Fallback when SMTP is unset. Logs that a reset email would be sent.
  * Includes the reset URL only outside production so local testing works
- * without exposing tokens via the HTTP API.
+ * without exposing tokens in production container logs.
  */
 export class ConsolePasswordResetMailer implements PasswordResetMailer {
   private readonly logger = new Logger(ConsolePasswordResetMailer.name);
 
   async sendPasswordResetEmail(input: PasswordResetEmailInput): Promise<void> {
+    const isProduction = process.env.NODE_ENV === "production";
     this.logger.log({
-      msg: "Password reset email (dev console mailer)",
+      msg: "Password reset email (console mailer; SMTP not configured)",
       to: input.to,
-      resetUrl: input.resetUrl,
+      ...(isProduction ? {} : { resetUrl: input.resetUrl }),
     });
   }
 }
@@ -48,7 +49,6 @@ export class SmtpPasswordResetMailer implements PasswordResetMailer {
 export function createPasswordResetMailer(): PasswordResetMailer {
   const host = process.env.SMTP_HOST?.trim();
   const from = process.env.SMTP_FROM?.trim();
-  const isProduction = process.env.NODE_ENV === "production";
 
   if (host && from) {
     const port = Number.parseInt(process.env.SMTP_PORT ?? "587", 10);
@@ -63,9 +63,9 @@ export function createPasswordResetMailer(): PasswordResetMailer {
     return new SmtpPasswordResetMailer(transporter, from);
   }
 
-  if (isProduction) {
-    throw new Error(
-      "SMTP_HOST and SMTP_FROM are required in production. Refusing to boot with the console mailer.",
+  if (process.env.NODE_ENV === "production") {
+    new Logger("PasswordResetMailer").warn(
+      "SMTP_HOST/SMTP_FROM unset; using console mailer. Password-reset emails will not be delivered.",
     );
   }
 

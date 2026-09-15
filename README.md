@@ -77,7 +77,7 @@ Signup / login / forgot-password / reset-password are rate limited (5 requests /
 
 Password hashing: Argon2id (`@node-rs/argon2`, 19 MiB, 2 iterations). Unknown emails still run a dummy verify so login timing does not enumerate accounts.
 
-Production **refuses to boot** unless `SMTP_HOST` and `SMTP_FROM` are set. Development uses a console mailer.
+If `SMTP_HOST` and `SMTP_FROM` are unset, password-reset emails use a console mailer (logged, not delivered).
 
 Avatar uploads require Scaleway Object Storage env (`SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_S3_BUCKET`, region/endpoint). See `.env.example`.
 
@@ -182,13 +182,13 @@ Optional catalogs seed (genders, activities, languages): **Actions → Deploy te
 - Private Container Registry namespace.
 - Serverless Containers namespace and public container (port **8080**, HTTP probe `/api/health`, 1024 MB RAM).
 
-Runtime env on the **container** (secret where sensitive):
+Runtime env on the **container** (use **secret** variables for `DATABASE_URL`, `SCW_SECRET_KEY`, and SMTP passwords — regular env vars are printed by the Scaleway CLI):
 
-- `NODE_ENV=production`
+- `NODE_ENV=production` (the Docker image already sets this)
 - `PORT` is injected by Scaleway from the container port (8080)
 - `DATABASE_URL`
-- `APP_BASE_URL` / `CORS_ORIGINS`
-- `SMTP_HOST`, `SMTP_FROM` (required to boot in production), plus `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_SECURE` as needed
-- Object Storage: `SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_S3_BUCKET`, `SCW_DEFAULT_REGION=nl-ams`, `SCW_S3_ENDPOINT=https://s3.nl-ams.scw.cloud`
+- `APP_BASE_URL` / `CORS_ORIGINS` (the public frontend/API origin, not `http://localhost:3000`)
+- `SMTP_HOST` / `SMTP_FROM` (optional on test; without them password-reset emails are only logged). Add `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_SECURE` as needed
+- Object Storage: `SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_S3_BUCKET`, `SCW_DEFAULT_REGION`, `SCW_S3_ENDPOINT`
 - `ENABLE_API_DOCS=true` if you want Swagger on test
 

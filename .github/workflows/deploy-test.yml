@@ -88,11 +88,17 @@ jobs:
         run: |
           set -euo pipefail
           region="${SCW_DEFAULT_REGION:-nl-ams}"
-          scw container container update "${SCW_CONTAINER_ID}" image="${IMAGE}" region="${region}"
+          scw container container update "${SCW_CONTAINER_ID}" image="${IMAGE}" region="${region}" -o json \
+            | jq '{id, name, status, error_message}'
 
           for _ in $(seq 1 60); do
-            status="$(scw container container get "${SCW_CONTAINER_ID}" region="${region}" -o json | jq -r '.status')"
+            payload="$(scw container container get "${SCW_CONTAINER_ID}" region="${region}" -o json)"
+            status="$(echo "${payload}" | jq -r '.status')"
+            error_message="$(echo "${payload}" | jq -r '.error_message // empty')"
             echo "container status: ${status}"
+            if [ -n "${error_message}" ]; then
+              echo "container error: ${error_message}"
+            fi
             if [ "${status}" = "ready" ]; then
               exit 0
             fi
