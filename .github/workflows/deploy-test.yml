@@ -77,7 +77,7 @@ jobs:
       - name: Install Scaleway CLI
         run: |
           set -euo pipefail
-          version="2.59.0"
+          version="2.62.0"
           curl -fsSL "https://github.com/scaleway/scaleway-cli/releases/download/v${version}/scaleway-cli_${version}_linux_amd64" -o /usr/local/bin/scw
           chmod +x /usr/local/bin/scw
 
@@ -88,7 +88,7 @@ jobs:
         run: |
           set -euo pipefail
           region="${SCW_DEFAULT_REGION:-nl-ams}"
-          scw container container update "${SCW_CONTAINER_ID}" registry-image="${IMAGE}" region="${region}"
+          scw container container update "${SCW_CONTAINER_ID}" image="${IMAGE}" region="${region}"
 
           for _ in $(seq 1 60); do
             status="$(scw container container get "${SCW_CONTAINER_ID}" region="${region}" -o json | jq -r '.status')"
