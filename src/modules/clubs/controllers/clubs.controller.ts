@@ -31,7 +31,6 @@ import {
   UpdateClubSchema,
   type ClubAddressBody,
   type UpdateClubAddressInput,
-  type CreateClubInput,
   type UpdateClubInput,
 } from "../schemas/clubs.schema";
 import {
@@ -44,6 +43,7 @@ import { CreateClub } from "../use-cases/create-club";
 import { GetClub } from "../use-cases/get-club";
 import { ListActivities, ListLanguages } from "../use-cases/list-catalogs";
 import { UpdateClub } from "../use-cases/update-club";
+import { parseCreateClubMultipartBody } from "../lib/parse-create-club-multipart";
 
 type MulterFile = Express.Multer.File;
 
@@ -82,11 +82,29 @@ export class ClubsController {
 
   @Post()
   @HttpCode(201)
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: "avatar", maxCount: 1 }], {
+      limits: { fileSize: MAX_AVATAR_BYTES },
+    }),
+  )
   async create(
     @AuthSession() session: AuthSessionContext,
-    @Body(new ZodValidationPipe(CreateClubSchema)) body: CreateClubInput,
+    @Body() rawBody: Record<string, unknown>,
+    @UploadedFiles() files: AvatarUploadFields,
   ) {
-    return this.createClub.execute(session.userId, body);
+    const parsed = parseCreateClubMultipartBody(rawBody ?? {});
+    const body = new ZodValidationPipe(CreateClubSchema).transform(parsed);
+
+    const file = files?.avatar?.[0];
+    const avatar = file
+      ? {
+          buffer: file.buffer,
+          mimetype: file.mimetype,
+          size: file.size,
+        }
+      : undefined;
+
+    return this.createClub.execute(session.userId, body, avatar);
   }
 
   @Get(":clubId")

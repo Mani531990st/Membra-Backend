@@ -1,11 +1,14 @@
+import { randomUUID } from "node:crypto";
+
 import { Inject, Injectable } from "@nestjs/common";
 
 import { DRIZZLE } from "@/db/drizzle.token";
 import type { Database } from "@/db/types";
+import { ConflictError, ValidationError } from "@/shared/errors";
 import {
-  ConflictError,
-  ValidationError,
-} from "@/shared/errors";
+  buildAvatarVariants,
+  clubAvatarObjectKey,
+} from "@/shared/images/avatar-image";
 import {
   SCALEWAY_OBJECT_STORAGE,
   ScalewayObjectStorage,
@@ -30,7 +33,7 @@ export type ClubDetail = {
   id: number;
   name: string;
   sn: string;
-  date: string | null;
+  establishedDate: string | null;
   active: boolean;
   countryCode: string;
   activities: Array<{ id: number; name: string; sn: string }>;
@@ -62,6 +65,12 @@ export type ClubDetail = {
   updatedAt: string;
 };
 
+export type CreateClubAvatarFile = {
+  buffer: Buffer;
+  mimetype?: string;
+  size: number;
+};
+
 @Injectable()
 export class ClubDetailAssembler {
   constructor(
@@ -89,7 +98,7 @@ export class ClubDetailAssembler {
       id: club.id,
       name: club.name,
       sn: club.sn,
-      date: club.date,
+      establishedDate: club.date,
       active: club.active,
       countryCode: club.countryCode,
       activities,
@@ -141,11 +150,19 @@ export class CreateClub {
     @Inject(DRIZZLE) private readonly db: Database,
     @Inject(ClubsRepository) private readonly clubs: ClubsRepository,
     @Inject(CatalogRepository) private readonly catalog: CatalogRepository,
+    @Inject(ClubAvatarsRepository)
+    private readonly avatarsRepository: ClubAvatarsRepository,
+    @Inject(SCALEWAY_OBJECT_STORAGE)
+    private readonly storage: ScalewayObjectStorage,
     @Inject(ClubDetailAssembler)
     private readonly assembler: ClubDetailAssembler,
   ) {}
 
-  async execute(userId: string, input: CreateClubInput): Promise<ClubDetail> {
+  async execute(
+    userId: string,
+    input: CreateClubInput,
+    avatar?: CreateClubAvatarFile,
+  ): Promise<ClubDetail> {
     const existing = await this.clubs.findBySn(this.db, input.sn);
     if (existing) {
       throw new ConflictError("A club with this short name already exists");
@@ -172,7 +189,7 @@ export class CreateClub {
       const created = await this.clubs.insertClub(tx, {
         name: input.name,
         sn: input.sn,
-        date: input.date ?? null,
+        date: input.establishedDate ?? null,
         active: input.active,
         countryCode: input.countryCode,
       });
@@ -182,6 +199,47 @@ export class CreateClub {
       return created;
     });
 
+    if (avatar?.buffer?.length) {
+      await this.storeAvatar(club.id, avatar);
+    }
+
     return this.assembler.assemble(this.db, club);
+  }
+
+  private async storeAvatar(
+    clubId: number,
+    avatar: CreateClubAvatarFile,
+  ): Promise<void> {
+    const variants = await buildAvatarVariants(avatar.buffer, avatar.mimetype);
+    // Opaque asset id so object keys never embed the club primary key.
+    const assetId = randomUUID();
+    const keys = {
+      avatar1: clubAvatarObjectKey(assetId, 1),
+      avatar2: clubAvatarObjectKey(assetId, 2),
+      avatar3: clubAvatarObjectKey(assetId, 3),
+    };
+
+    await Promise.all([
+      this.storage.putObject({
+        key: keys.avatar1,
+        body: variants.original,
+        contentType: "image/avif",
+        cacheControl: "private, max-age=3600",
+      }),
+      this.storage.putObject({
+        key: keys.avatar2,
+        body: variants.medium,
+        contentType: "image/avif",
+        cacheControl: "private, max-age=3600",
+      }),
+      this.storage.putObject({
+        key: keys.avatar3,
+        body: variants.small,
+        contentType: "image/avif",
+        cacheControl: "private, max-age=3600",
+      }),
+    ]);
+
+    await this.avatarsRepository.upsertSlots(this.db, clubId, keys);
   }
 }

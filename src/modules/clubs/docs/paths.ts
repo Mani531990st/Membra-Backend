@@ -30,6 +30,35 @@ const UploadClubAvatarsRequestSchema = z
   })
   .openapi("UploadClubAvatarsRequest");
 
+const CreateClubMultipartSchema = z
+  .object({
+    name: z.string().openapi({ example: "Example Club" }),
+    sn: z.string().openapi({ example: "ExC" }),
+    establishedDate: z.string().optional().openapi({
+      example: "2020-05-04",
+      description: "Optional club established date YYYY-MM-DD",
+    }),
+    active: z.string().optional().openapi({
+      example: "true",
+      description: "Boolean as string: true/false",
+    }),
+    countryCode: z.string().openapi({ example: "DK" }),
+    activityIds: z.string().optional().openapi({
+      example: "[1,2]",
+      description:
+        "Activity IDs from GET /api/clubs/activities. Enter as JSON `[1,2]` or comma-separated `1,2` (no extra quotes around the whole value).",
+    }),
+    languages: z.string().optional().openapi({
+      example: '[{"languageId":1,"rank":1},{"languageId":2,"rank":2}]',
+      description:
+        'Languages as JSON array, e.g. [{"languageId":1,"rank":1}] — do not wrap the whole value in extra quotes.',
+    }),
+    avatar: avatarBinaryField.optional().openapi({
+      description: "Optional club avatar; omitted leaves avatars null",
+    }),
+  })
+  .openapi("CreateClubMultipartRequest");
+
 export function registerClubsDocs(registry: OpenAPIRegistry): void {
   registry.register("CreateClubRequest", CreateClubSchema);
   registry.register("UpdateClubRequest", UpdateClubSchema);
@@ -41,6 +70,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
   registry.register("ActivitiesResponse", ActivitiesResponseSchema);
   registry.register("LanguagesResponse", LanguagesResponseSchema);
   registry.register("UploadClubAvatarsRequest", UploadClubAvatarsRequestSchema);
+  registry.register("CreateClubMultipartRequest", CreateClubMultipartSchema);
 
   registry.registerPath({
     method: "get",
@@ -82,12 +112,14 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     tags: [CLUBS_TAG],
     summary: "Create club",
     description:
-      "Any authenticated user can create a club and becomes its first admin.",
+      "Any authenticated user can create a club and becomes its first admin. Multipart form: text fields for club data (`activityIds` and `languages` as JSON strings) plus optional `avatar` file (three AVIF size variants stored like PUT /avatars).",
     security: [{ SessionCookie: [] }],
     request: {
       body: {
         required: true,
-        content: { "application/json": { schema: CreateClubSchema } },
+        content: {
+          "multipart/form-data": { schema: CreateClubMultipartSchema },
+        },
       },
     },
     responses: {

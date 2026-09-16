@@ -68,7 +68,7 @@ export class UpdateClub {
       }> = {};
       if (input.name !== undefined) patch.name = input.name;
       if (input.sn !== undefined) patch.sn = input.sn;
-      if (input.date !== undefined) patch.date = input.date;
+      if (input.establishedDate !== undefined) patch.date = input.establishedDate;
       if (input.active !== undefined) patch.active = input.active;
       if (input.countryCode !== undefined) patch.countryCode = input.countryCode;
 

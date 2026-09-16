@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ConflictError, ValidationError } from "@/shared/errors";
 
-import { CreateClub } from "./create-club";
 import { MakeClubAddressPrimary } from "./club-addresses";
 import { UpdateClubAvatars } from "./club-avatars";
+import { CreateClub } from "./create-club";
 
 vi.mock("@/shared/images/avatar-image", async () => {
   const actual = await vi.importActual<
@@ -32,6 +32,12 @@ describe("CreateClub", () => {
     assertActivityIdsExist: vi.fn(),
     assertLanguageIdsExist: vi.fn(),
   };
+  const avatarsRepository = {
+    upsertSlots: vi.fn(),
+  };
+  const storage = {
+    putObject: vi.fn(),
+  };
   const assembler = {
     assemble: vi.fn(),
   };
@@ -47,6 +53,8 @@ describe("CreateClub", () => {
     db as never,
     clubs as never,
     catalog as never,
+    avatarsRepository as never,
+    storage as never,
     assembler as never,
   );
 
@@ -65,14 +73,28 @@ describe("CreateClub", () => {
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",
     });
-    assembler.assemble.mockResolvedValue({ id: 10, avatars: { avatar1: null, avatar2: null, avatar3: null } });
+    assembler.assemble.mockResolvedValue({
+      id: 10,
+      avatars: { avatar1: null, avatar2: null, avatar3: null },
+    });
+    buildAvatarVariantsMock.mockResolvedValue({
+      original: Buffer.from("o"),
+      medium: Buffer.from("m"),
+      small: Buffer.from("s"),
+    });
+    storage.putObject.mockResolvedValue(undefined);
+    avatarsRepository.upsertSlots.mockResolvedValue({
+      avatar1: "a1",
+      avatar2: "a2",
+      avatar3: "a3",
+    });
   });
 
   it("creates club, assigns creator as admin, and sets pivots", async () => {
     await useCase.execute("user-1", {
       name: "Example Club",
       sn: "ExC",
-      date: null,
+      establishedDate: null,
       active: true,
       countryCode: "DK",
       activityIds: [1],
@@ -91,6 +113,39 @@ describe("CreateClub", () => {
     expect(clubs.replaceLanguages).toHaveBeenCalledWith(tx, 10, [
       { languageId: 2, rank: 1 },
     ]);
+    expect(storage.putObject).not.toHaveBeenCalled();
+  });
+
+  it("uploads three avatar variants when avatar is provided", async () => {
+    await useCase.execute(
+      "user-1",
+      {
+        name: "Example Club",
+        sn: "ExC",
+        establishedDate: null,
+        active: true,
+        countryCode: "DK",
+        activityIds: [],
+        languages: [],
+      },
+      {
+        buffer: Buffer.from("image"),
+        mimetype: "image/jpeg",
+        size: 5,
+      },
+    );
+
+    expect(buildAvatarVariantsMock).toHaveBeenCalledTimes(1);
+    expect(storage.putObject).toHaveBeenCalledTimes(3);
+    expect(avatarsRepository.upsertSlots).toHaveBeenCalledWith(
+      db,
+      10,
+      expect.objectContaining({
+        avatar1: expect.stringMatching(/\.avif$/),
+        avatar2: expect.stringMatching(/\.avif$/),
+        avatar3: expect.stringMatching(/\.avif$/),
+      }),
+    );
   });
 
   it("rejects duplicate short names", async () => {
@@ -99,7 +154,7 @@ describe("CreateClub", () => {
       useCase.execute("user-1", {
         name: "Example Club",
         sn: "ExC",
-        date: null,
+        establishedDate: null,
         active: true,
         countryCode: "DK",
         activityIds: [],
@@ -114,7 +169,7 @@ describe("CreateClub", () => {
       useCase.execute("user-1", {
         name: "Example Club",
         sn: "ExC",
-        date: null,
+        establishedDate: null,
         active: true,
         countryCode: "DK",
         activityIds: [999],

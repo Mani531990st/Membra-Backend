@@ -9,7 +9,7 @@ export const countryCodeSchema = z
 
 export const isoDateSchema = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD")
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "establishedDate must be YYYY-MM-DD")
   .openapi({ example: "2020-05-04" });
 
 export const ClubLanguageInputSchema = z
@@ -29,7 +29,7 @@ export const CreateClubSchema = z
   .object({
     name: z.string().trim().min(1).max(255).openapi({ example: "Example Club" }),
     sn: z.string().trim().min(1).max(10).openapi({ example: "ExC" }),
-    date: isoDateSchema.optional().nullable(),
+    establishedDate: isoDateSchema.optional().nullable(),
     active: z.boolean().optional().default(true).openapi({ example: true }),
     countryCode: countryCodeSchema,
     activityIds: z
@@ -75,7 +75,7 @@ export const CreateClubSchema = z
     example: {
       name: "Example Club",
       sn: "ExC",
-      date: "2020-05-04",
+      establishedDate: "2020-05-04",
       active: true,
       countryCode: "DK",
       activityIds: [1, 2],
@@ -90,7 +90,7 @@ export const UpdateClubSchema = z
   .object({
     name: z.string().trim().min(1).max(255).optional(),
     sn: z.string().trim().min(1).max(10).optional(),
-    date: isoDateSchema.nullable().optional(),
+    establishedDate: isoDateSchema.nullable().optional(),
     active: z.boolean().optional(),
     countryCode: countryCodeSchema.optional(),
     activityIds: z
@@ -230,7 +230,7 @@ export const ClubDetailResponseSchema = z
     id: z.number().int(),
     name: z.string(),
     sn: z.string(),
-    date: z.string().nullable(),
+    establishedDate: z.string().nullable(),
     active: z.boolean(),
     countryCode: z.string(),
     activities: z.array(ClubActivityResponseSchema),

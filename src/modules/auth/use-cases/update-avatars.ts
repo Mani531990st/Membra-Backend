@@ -62,12 +62,12 @@ export class UpdateAvatars {
       input.avatar.mimetype,
     );
 
-    // Unique revision so re-uploads create new objects; old keys can be deleted.
-    const revision = randomUUID().replaceAll("-", "").slice(0, 16);
+    // Opaque asset id so object keys never embed the user primary key.
+    const assetId = randomUUID();
     const keys = {
-      avatar1: avatarObjectKey(userId, 1, revision),
-      avatar2: avatarObjectKey(userId, 2, revision),
-      avatar3: avatarObjectKey(userId, 3, revision),
+      avatar1: avatarObjectKey(assetId, 1),
+      avatar2: avatarObjectKey(assetId, 2),
+      avatar3: avatarObjectKey(assetId, 3),
     } as const;
 
     await Promise.all([

@@ -179,20 +179,20 @@ export async function buildAvatarVariants(
   }
 }
 
-export function avatarObjectKey(
-  userId: string,
-  slot: 1 | 2 | 3,
-  revision: string,
-): string {
-  return `users/${userId}/avatar${slot}-${revision}.avif`;
+/**
+ * Opaque object key for a user avatar variant.
+ * `assetId` is a random UUID minted per upload — never the user primary key.
+ */
+export function avatarObjectKey(assetId: string, slot: 1 | 2 | 3): string {
+  return `avatars/users/${assetId}/${slot}.avif`;
 }
 
-export function clubAvatarObjectKey(
-  clubId: number,
-  slot: 1 | 2 | 3,
-  revision: string,
-): string {
-  return `clubs/${clubId}/avatar${slot}-${revision}.avif`;
+/**
+ * Opaque object key for a club avatar variant.
+ * `assetId` is a random UUID minted per upload — never the club primary key.
+ */
+export function clubAvatarObjectKey(assetId: string, slot: 1 | 2 | 3): string {
+  return `avatars/clubs/${assetId}/${slot}.avif`;
 }
 
 export { MAX_AVATAR_BYTES };

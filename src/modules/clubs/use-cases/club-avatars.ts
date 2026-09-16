@@ -58,11 +58,12 @@ export class UpdateClubAvatars {
 
     const existing = await this.avatarsRepository.findByClubId(this.db, clubId);
     const variants = await buildAvatarVariants(avatar.buffer, avatar.mimetype);
-    const revision = randomUUID().replaceAll("-", "").slice(0, 16);
+    // Opaque asset id so object keys never embed the club primary key.
+    const assetId = randomUUID();
     const keys = {
-      avatar1: clubAvatarObjectKey(clubId, 1, revision),
-      avatar2: clubAvatarObjectKey(clubId, 2, revision),
-      avatar3: clubAvatarObjectKey(clubId, 3, revision),
+      avatar1: clubAvatarObjectKey(assetId, 1),
+      avatar2: clubAvatarObjectKey(assetId, 2),
+      avatar3: clubAvatarObjectKey(assetId, 3),
     };
 
     await Promise.all([
