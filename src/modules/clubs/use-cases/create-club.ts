@@ -97,8 +97,8 @@ export class ClubDetailAssembler {
     return {
       id: club.id,
       name: club.name,
-      sn: club.sn,
-      establishedDate: club.date,
+      sn: club.shortName,
+      establishedDate: club.establishedDate,
       active: club.active,
       countryCode: club.countryCode,
       activities,
@@ -112,7 +112,7 @@ export class ClubDetailAssembler {
         region: row.region,
         countryId: row.countryId,
         name: row.name,
-        short: row.short,
+        short: row.shortName,
         directions: row.directions,
         primary: row.primary,
         active: row.active,
@@ -188,8 +188,8 @@ export class CreateClub {
     const club = await this.db.transaction(async (tx) => {
       const created = await this.clubs.insertClub(tx, {
         name: input.name,
-        sn: input.sn,
-        date: input.establishedDate ?? null,
+        shortName: input.sn,
+        establishedDate: input.establishedDate ?? null,
         active: input.active,
         countryCode: input.countryCode,
       });

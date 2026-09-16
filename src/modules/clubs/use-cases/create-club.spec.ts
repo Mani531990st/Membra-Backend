@@ -66,8 +66,8 @@ describe("CreateClub", () => {
     clubs.insertClub.mockResolvedValue({
       id: 10,
       name: "Example Club",
-      sn: "ExC",
-      date: null,
+      shortName: "ExC",
+      establishedDate: null,
       active: true,
       countryCode: "DK",
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -103,8 +103,8 @@ describe("CreateClub", () => {
 
     expect(clubs.insertClub).toHaveBeenCalledWith(tx, {
       name: "Example Club",
-      sn: "ExC",
-      date: null,
+      shortName: "ExC",
+      establishedDate: null,
       active: true,
       countryCode: "DK",
     });

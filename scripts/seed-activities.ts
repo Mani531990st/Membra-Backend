@@ -7,9 +7,9 @@ import * as schema from "../src/db/schema";
 import { activitiesInApp } from "../src/db/schema";
 
 const ACTIVITIES = [
-  { name: "Beach volleyball", sn: "BV" },
-  { name: "Indoor volleyball", sn: "IV" },
-  { name: "Football", sn: "FB" },
+  { name: "beachVolleyball", shortName: "BV" },
+  { name: "indoorVolleyball", shortName: "IV" },
+  { name: "football", shortName: "FB" },
 ] as const;
 
 async function seedActivities(): Promise<void> {
@@ -27,18 +27,18 @@ async function seedActivities(): Promise<void> {
     const inserted = await db
       .insert(activitiesInApp)
       .values(ACTIVITIES.map((row) => ({ ...row, active: true })))
-      .onConflictDoNothing({ target: activitiesInApp.sn })
+      .onConflictDoNothing({ target: activitiesInApp.shortName })
       .returning({
         id: activitiesInApp.id,
         name: activitiesInApp.name,
-        sn: activitiesInApp.sn,
+        shortName: activitiesInApp.shortName,
       });
 
     const all = await db
       .select({
         id: activitiesInApp.id,
         name: activitiesInApp.name,
-        sn: activitiesInApp.sn,
+        shortName: activitiesInApp.shortName,
       })
       .from(activitiesInApp)
       .orderBy(activitiesInApp.id);
@@ -47,7 +47,7 @@ async function seedActivities(): Promise<void> {
       `Seeded activities: inserted ${inserted.length} new row(s); ${all.length} total.`,
     );
     for (const row of all) {
-      console.log(`  id=${row.id} sn=${row.sn} name=${row.name}`);
+      console.log(`  id=${row.id} sn=${row.shortName} name=${row.name}`);
     }
   } finally {
     await client.end({ timeout: 5 });

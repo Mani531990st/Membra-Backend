@@ -26,7 +26,7 @@ export const usersInAppRelations = relations(usersInApp, ({one, many}) => ({
 	}),
 	clubAdminsInApps: many(clubAdminsInApp),
 	gendersInApp: one(gendersInApp, {
-		fields: [usersInApp.gender],
+		fields: [usersInApp.genderId],
 		references: [gendersInApp.id]
 	}),
 }));

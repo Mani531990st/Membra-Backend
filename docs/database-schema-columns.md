@@ -48,7 +48,7 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 |--------|------|-------|
 | id | bigint | PK, identity |
 | name | varchar(80) | NOT NULL |
-| sn | varchar(10) | NOT NULL, UNIQUE |                         #short_name
+| short_name | varchar(10) | NOT NULL, UNIQUE |
 | active | boolean | NOT NULL, default true |
 | created_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
 | updated_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
@@ -92,7 +92,7 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 | region | varchar(100) | NULL |
 | country_id | bigint | NULL |
 | name | varchar(60) | NOT NULL |
-| short | varchar(20) | NOT NULL |
+| short_name | varchar(20) | NOT NULL |
 | directions | varchar(255) | NULL |
 | primary | boolean | NOT NULL, default false |
 | active | boolean | NULL, default true |
@@ -120,7 +120,7 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 | id | bigint | PK, identity |
 | club_id | bigint | NOT NULL, FK → clubs.id |
 | name | varchar(30) | NOT NULL |
-| sn | varchar(8) | NOT NULL |
+| short_name | varchar(8) | NOT NULL |
 | age_min | smallint | NULL |
 | age_max | smallint | NULL |
 | active | boolean | NOT NULL |
@@ -151,7 +151,7 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 | club_id | bigint | NOT NULL, FK → clubs.id |
 | email | varchar(255) | NULL |
 | description | varchar(30) | NULL |
-| sorting_order | smallint | NULL |
+| sort | smallint | NULL |
 | primary | boolean | NULL |
 | active | boolean | NULL |
 | created_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
@@ -211,7 +211,7 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 | questionnaire_name | varchar(60) | NOT NULL |
 | multi_linguistic | boolean | NOT NULL |
 | language_id | bigint | NULL |
-| save | smallint | NOT NULL, default 90 |
+| retention_days | smallint | NOT NULL, default 90 |
 | active | boolean | NOT NULL |
 | created_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
 | updated_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
@@ -239,8 +239,8 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 |--------|------|-------|
 | id | bigint | PK, identity |
 | name | varchar(255) | NOT NULL |
-| sn | varchar(10) | NOT NULL, UNIQUE |
-| date | date | NULL |
+| short_name | varchar(10) | NOT NULL, UNIQUE |
+| established_date | date | NULL |
 | active | boolean | NOT NULL, default true |
 | country_code | varchar(2) | NOT NULL |
 | created_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
@@ -277,7 +277,8 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 | id | bigint | PK, identity |
 | club_id | bigint | NOT NULL, FK → clubs.id |
 | name | varchar(80) | NOT NULL |
-| sn | varchar(10) | NOT NULL |
+| short_name | varchar(10) | NOT NULL |
+| active | boolean | NOT NULL, default true |
 | created_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
 | updated_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
 
@@ -304,13 +305,13 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 | club_id | bigint | NOT NULL, FK → clubs.id |
 | name | varchar(60) | NOT NULL |
 | directions | varchar(255) | NULL |
-| sn | varchar(8) | NOT NULL |
+| short_name | varchar(8) | NOT NULL |
 | club_address_id | bigint | NULL, FK → club_addresses.id |
-| mbr_book | boolean | NULL |
-| t_book | boolean | NOT NULL |
-| no_mbr | smallint | NULL |
-| pub | boolean | NOT NULL |
-| fc | boolean | NOT NULL |
+| can_member_book | boolean | NULL |
+| can_team_book | boolean | NOT NULL |
+| member_req_to_book | smallint | NULL |
+| public | boolean | NOT NULL |
+| can_friendship_club_book | boolean | NOT NULL |
 | active | boolean | NOT NULL |
 | parent_location_id | bigint | NULL, FK → locations.id |
 | created_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
@@ -441,7 +442,8 @@ Nullable is marked with `NULL`; otherwise `NOT NULL`.
 | surname | text | NULL |
 | nickname | text | NULL |
 | dob | date | NULL |
-| gender | bigint | NULL, FK → genders.id |
+| gender_id | bigint | NULL, FK → genders.id |
 | preferred_lang | varchar(15) | NULL |
+| active | boolean | NOT NULL, default true |
 | created_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |
 | updated_at | timestamptz | NOT NULL, default CURRENT_TIMESTAMP |

@@ -13,7 +13,7 @@ const user: AuthUserRow = {
   surname: null,
   nickname: null,
   dob: null,
-  gender: null,
+  genderId: null,
   genderEnum: null,
   preferredLang: null,
   passwordHash: "hash",

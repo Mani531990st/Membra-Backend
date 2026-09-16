@@ -127,13 +127,13 @@ describe("UpdateAvatars", () => {
     ];
     expect(upsertArgs[1]).toBe("user-1");
     expect(upsertArgs[2].avatar1).toMatch(
-      /^users\/user-1\/avatar1-[a-f0-9]{16}\.avif$/,
+      /^avatars\/users\/[0-9a-f-]{36}\/1\.avif$/,
     );
     expect(upsertArgs[2].avatar2).toMatch(
-      /^users\/user-1\/avatar2-[a-f0-9]{16}\.avif$/,
+      /^avatars\/users\/[0-9a-f-]{36}\/2\.avif$/,
     );
     expect(upsertArgs[2].avatar3).toMatch(
-      /^users\/user-1\/avatar3-[a-f0-9]{16}\.avif$/,
+      /^avatars\/users\/[0-9a-f-]{36}\/3\.avif$/,
     );
     expect(result.avatar1).toBe(
       `https://signed.example/${upsertArgs[2].avatar1}`,

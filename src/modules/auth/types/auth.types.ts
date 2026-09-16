@@ -28,7 +28,7 @@ export type AuthUserRow = {
   surname: string | null;
   nickname: string | null;
   dob: string | null;
-  gender: number | null;
+  genderId: number | null;
   preferredLang: string | null;
   email: string;
   genderEnum: GenderEnum | null;

@@ -14,7 +14,7 @@ export type ClubAddressInsert = {
   city: string;
   region: string | null;
   name: string;
-  short: string;
+  shortName: string;
   directions: string | null;
   primary: boolean;
   active: boolean | null;

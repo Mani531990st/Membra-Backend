@@ -61,14 +61,15 @@ export class UpdateClub {
     const club = await this.db.transaction(async (tx) => {
       const patch: Partial<{
         name: string;
-        sn: string;
-        date: string | null;
+        shortName: string;
+        establishedDate: string | null;
         active: boolean;
         countryCode: string;
       }> = {};
       if (input.name !== undefined) patch.name = input.name;
-      if (input.sn !== undefined) patch.sn = input.sn;
-      if (input.establishedDate !== undefined) patch.date = input.establishedDate;
+      if (input.sn !== undefined) patch.shortName = input.sn;
+      if (input.establishedDate !== undefined)
+        patch.establishedDate = input.establishedDate;
       if (input.active !== undefined) patch.active = input.active;
       if (input.countryCode !== undefined) patch.countryCode = input.countryCode;
 

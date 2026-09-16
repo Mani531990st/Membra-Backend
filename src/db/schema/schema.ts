@@ -27,7 +27,7 @@ export const clubAgeGroupsInApp = app.table("club_age_groups", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	name: varchar({ length: 30 }).notNull(),
-	sn: varchar({ length: 8 }).notNull(),
+	shortName: varchar("short_name", { length: 8 }).notNull(),
 	ageMin: smallint("age_min"),
 	ageMax: smallint("age_max"),
 	active: boolean().notNull(),
@@ -50,7 +50,7 @@ export const clubEmailsInApp = app.table("club_emails", {
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	email: varchar({ length: 255 }),
 	description: varchar({ length: 30 }),
-	sortingOrder: smallint("sorting_order"),
+	sort: smallint("sort"),
 	primary: boolean(),
 	active: boolean(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -174,7 +174,7 @@ export const clubQuestionnairesInApp = app.table("club_questionnaires", {
 	multiLinguistic: boolean("multi_linguistic").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	languageId: bigint("language_id", { mode: "number" }),
-	save: smallint().default(90).notNull(),
+	retentionDays: smallint("retention_days").default(90).notNull(),
 	active: boolean().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -185,32 +185,32 @@ export const clubQuestionnairesInApp = app.table("club_questionnaires", {
 			name: "club_questionnaire_club_id_fkey"
 		}).onDelete("cascade"),
 	check("club_questionnaire_language_check", sql`(multi_linguistic = true) OR (language_id IS NOT NULL)`),
-	check("club_questionnaire_save_check", sql`(save > 0) AND (save <= 999)`),
+	check("club_questionnaire_retention_days_check", sql`(retention_days > 0) AND (retention_days <= 999)`),
 ]);
 
 export const clubsInApp = app.table("clubs", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.clubs_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	name: varchar({ length: 255 }).notNull(),
-	sn: varchar({ length: 10 }).notNull(),
-	date: date(),
+	shortName: varchar("short_name", { length: 10 }).notNull(),
+	establishedDate: date("established_date"),
 	active: boolean().default(true).notNull(),
 	countryCode: varchar("country_code", { length: 2 }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
-	unique("clubs_sn_key").on(table.sn),
+	unique("clubs_short_name_key").on(table.shortName),
 ]);
 
 export const activitiesInApp = app.table("activities", {
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.activities_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	name: varchar({ length: 80 }).notNull(),
-	sn: varchar({ length: 10 }).notNull(),
+	shortName: varchar("short_name", { length: 10 }).notNull(),
 	active: boolean().default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
-	unique("activities_sn_key").on(table.sn),
+	unique("activities_short_name_key").on(table.shortName),
 ]);
 
 export const languagesInApp = app.table("languages", {
@@ -307,7 +307,8 @@ export const locationGroupsInApp = app.table("location_groups", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	name: varchar({ length: 80 }).notNull(),
-	sn: varchar({ length: 10 }).notNull(),
+	shortName: varchar("short_name", { length: 10 }).notNull(),
+	active: boolean().default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
@@ -348,14 +349,14 @@ export const locationsInApp = app.table("locations", {
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
 	name: varchar({ length: 60 }).notNull(),
 	directions: varchar({ length: 255 }),
-	sn: varchar({ length: 8 }).notNull(),
+	shortName: varchar("short_name", { length: 8 }).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubAddressId: bigint("club_address_id", { mode: "number" }),
-	mbrBook: boolean("mbr_book"),
-	tBook: boolean("t_book").notNull(),
-	noMbr: smallint("no_mbr"),
-	pub: boolean().notNull(),
-	fc: boolean().notNull(),
+	canMemberBook: boolean("can_member_book"),
+	canTeamBook: boolean("can_team_book").notNull(),
+	memberReqToBook: smallint("member_req_to_book"),
+	public: boolean("public").notNull(),
+	canFriendshipClubBook: boolean("can_friendship_club_book").notNull(),
 	active: boolean().notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	parentLocationId: bigint("parent_location_id", { mode: "number" }),
@@ -377,8 +378,8 @@ export const locationsInApp = app.table("locations", {
 			foreignColumns: [table.id],
 			name: "locations_parent_location_id_fkey"
 		}),
-	check("locations_mbr_book_no_mbr_check", sql`(mbr_book IS NOT TRUE) OR (no_mbr IS NOT NULL)`),
-	check("locations_no_mbr_check", sql`(no_mbr > 0) AND (no_mbr <= 30)`),
+	check("locations_can_member_book_member_req_to_book_check", sql`(can_member_book IS NOT TRUE) OR (member_req_to_book IS NOT NULL)`),
+	check("locations_member_req_to_book_check", sql`(member_req_to_book > 0) AND (member_req_to_book <= 30)`),
 ]);
 
 export const userAliasesInApp = app.table("user_aliases", {
@@ -445,16 +446,17 @@ export const usersInApp = app.table("users", {
 	nickname: text(),
 	dob: date(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	gender: bigint({ mode: "number" }),
+	genderId: bigint("gender_id", { mode: "number" }),
 	preferredLang: varchar("preferred_lang", { length: 15 }),
+	active: boolean().default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
-	index("users_gender_idx").using("btree", table.gender.asc().nullsLast().op("int8_ops")),
+	index("users_gender_id_idx").using("btree", table.genderId.asc().nullsLast().op("int8_ops")),
 	foreignKey({
-			columns: [table.gender],
+			columns: [table.genderId],
 			foreignColumns: [gendersInApp.id],
-			name: "users_gender_fkey"
+			name: "users_gender_id_fkey"
 		}).onUpdate("cascade").onDelete("restrict"),
 ]);
 
@@ -469,7 +471,7 @@ export const clubAddressesInApp = app.table("club_addresses", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	countryId: bigint("country_id", { mode: "number" }),
 	name: varchar({ length: 60 }).notNull(),
-	short: varchar({ length: 20 }).notNull(),
+	shortName: varchar("short_name", { length: 20 }).notNull(),
 	directions: varchar({ length: 255 }),
 	primary: boolean().default(false).notNull(),
 	active: boolean().default(true),

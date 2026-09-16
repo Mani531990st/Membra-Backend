@@ -17,8 +17,8 @@ export class ClubsRepository {
     dbOrTx: DbOrTx,
     values: {
       name: string;
-      sn: string;
-      date: string | null;
+      shortName: string;
+      establishedDate: string | null;
       active: boolean;
       countryCode: string;
     },
@@ -27,8 +27,8 @@ export class ClubsRepository {
       .insert(clubsInApp)
       .values({
         name: values.name,
-        sn: values.sn,
-        date: values.date,
+        shortName: values.shortName,
+        establishedDate: values.establishedDate,
         active: values.active,
         countryCode: values.countryCode,
       })
@@ -53,7 +53,7 @@ export class ClubsRepository {
     const [row] = await dbOrTx
       .select()
       .from(clubsInApp)
-      .where(eq(clubsInApp.sn, sn))
+      .where(eq(clubsInApp.shortName, sn))
       .limit(1);
     return row ?? null;
   }
@@ -63,8 +63,8 @@ export class ClubsRepository {
     clubId: number,
     values: Partial<{
       name: string;
-      sn: string;
-      date: string | null;
+      shortName: string;
+      establishedDate: string | null;
       active: boolean;
       countryCode: string;
     }>,

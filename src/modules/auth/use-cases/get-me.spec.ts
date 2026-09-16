@@ -14,7 +14,7 @@ const userRow: AuthUserRow = {
   surname: "Lovelace",
   nickname: "Ada",
   dob: "1815-12-10",
-  gender: 1,
+  genderId: 1,
   genderEnum: "female",
   preferredLang: "en",
   passwordHash: null,

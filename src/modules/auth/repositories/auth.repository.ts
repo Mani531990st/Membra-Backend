@@ -19,7 +19,7 @@ function mapAuthUser(row: {
   surname: string | null;
   nickname: string | null;
   dob: string | null;
-  gender: number | null;
+  genderId: number | null;
   preferredLang: string | null;
   email: string | null;
   genderEnum: GenderEnum | null;
@@ -35,7 +35,7 @@ function mapAuthUser(row: {
     surname: row.surname,
     nickname: row.nickname,
     dob: row.dob,
-    gender: row.gender,
+    genderId: row.genderId,
     preferredLang: row.preferredLang,
     email: row.email,
     genderEnum: row.genderEnum,
@@ -81,7 +81,7 @@ export class AuthRepository {
         surname: usersInApp.surname,
         nickname: usersInApp.nickname,
         dob: usersInApp.dob,
-        gender: usersInApp.gender,
+        genderId: usersInApp.genderId,
         preferredLang: usersInApp.preferredLang,
         email: userCredentialsInApp.email,
         genderEnum: gendersInApp.gender,
@@ -89,7 +89,7 @@ export class AuthRepository {
       })
       .from(userCredentialsInApp)
       .innerJoin(usersInApp, eq(userCredentialsInApp.userId, usersInApp.uuid))
-      .leftJoin(gendersInApp, eq(usersInApp.gender, gendersInApp.id))
+      .leftJoin(gendersInApp, eq(usersInApp.genderId, gendersInApp.id))
       .where(eq(userCredentialsInApp.email, email))
       .limit(1);
 
@@ -111,7 +111,7 @@ export class AuthRepository {
         surname: usersInApp.surname,
         nickname: usersInApp.nickname,
         dob: usersInApp.dob,
-        gender: usersInApp.gender,
+        genderId: usersInApp.genderId,
         preferredLang: usersInApp.preferredLang,
         email: userCredentialsInApp.email,
         genderEnum: gendersInApp.gender,
@@ -121,7 +121,7 @@ export class AuthRepository {
         userCredentialsInApp,
         eq(userCredentialsInApp.userId, usersInApp.uuid),
       )
-      .leftJoin(gendersInApp, eq(usersInApp.gender, gendersInApp.id))
+      .leftJoin(gendersInApp, eq(usersInApp.genderId, gendersInApp.id))
       .where(eq(usersInApp.uuid, userId))
       .limit(1);
 
@@ -188,7 +188,7 @@ export class AuthRepository {
   async insertUser(dbOrTx: DbOrTx): Promise<{ uuid: string }> {
     const [row] = await dbOrTx
       .insert(usersInApp)
-      .values({})
+      .values({ active: true })
       .returning({ uuid: usersInApp.uuid });
 
     if (!row) {
@@ -240,7 +240,7 @@ export class AuthRepository {
         surname: input.surname,
         nickname: input.nickname,
         dob: input.dob,
-        gender: input.genderId,
+        genderId: input.genderId,
         preferredLang: input.preferredLang,
         updatedAt: sql`CURRENT_TIMESTAMP`,
       })

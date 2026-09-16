@@ -16,7 +16,7 @@ export class CatalogRepository {
       .select({
         id: activitiesInApp.id,
         name: activitiesInApp.name,
-        sn: activitiesInApp.sn,
+        sn: activitiesInApp.shortName,
         active: activitiesInApp.active,
       })
       .from(activitiesInApp)
@@ -42,7 +42,7 @@ export class CatalogRepository {
       .select({
         id: activitiesInApp.id,
         name: activitiesInApp.name,
-        sn: activitiesInApp.sn,
+        sn: activitiesInApp.shortName,
       })
       .from(clubActivitiesInApp)
       .innerJoin(
