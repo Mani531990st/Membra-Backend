@@ -145,7 +145,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     tags: [CLUBS_TAG],
     summary: "Get club",
     description:
-      "Returns club profile, addresses, activities, languages, admin user ids, and signed avatar URLs.",
+      "Returns club profile, addresses, activities, languages, admin count, and signed avatar URLs.",
     security: [{ SessionCookie: [] }],
     request: {
       params: z.object({

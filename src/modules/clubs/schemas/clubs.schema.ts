@@ -286,7 +286,7 @@ export const ClubDetailResponseSchema = z
     activities: z.array(ClubActivityResponseSchema),
     languages: z.array(ClubLanguageResponseSchema),
     addresses: z.array(ClubAddressResponseSchema),
-    adminUserIds: z.array(z.string().uuid()),
+    adminCount: z.number().int().nonnegative(),
     avatars: AvatarsResponseSchema,
     createdAt: z.string(),
     updatedAt: z.string(),

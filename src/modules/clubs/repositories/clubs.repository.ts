@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { Injectable } from "@nestjs/common";
 
 import type { DbOrTx } from "@/db";
@@ -106,12 +106,12 @@ export class ClubsRepository {
     return Boolean(row);
   }
 
-  async listAdminUserIds(dbOrTx: DbOrTx, clubId: number): Promise<string[]> {
-    const rows = await dbOrTx
-      .select({ userId: clubAdminsInApp.userId })
+  async countAdmins(dbOrTx: DbOrTx, clubId: number): Promise<number> {
+    const [row] = await dbOrTx
+      .select({ value: count() })
       .from(clubAdminsInApp)
       .where(eq(clubAdminsInApp.clubId, clubId));
-    return rows.map((row) => row.userId);
+    return Number(row?.value ?? 0);
   }
 
   async replaceActivities(

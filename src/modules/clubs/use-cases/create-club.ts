@@ -59,7 +59,7 @@ export type ClubDetail = {
     createdAt: string;
     updatedAt: string;
   }>;
-  adminUserIds: string[];
+  adminCount: number;
   avatars: ClubAvatarsSigned;
   createdAt: string;
   updatedAt: string;
@@ -85,12 +85,12 @@ export class ClubDetailAssembler {
   ) {}
 
   async assemble(db: Database, club: ClubRow): Promise<ClubDetail> {
-    const [activities, languages, addresses, adminUserIds, avatarSlots] =
+    const [activities, languages, addresses, adminCount, avatarSlots] =
       await Promise.all([
         this.catalog.listClubActivities(db, club.id),
         this.catalog.listClubLanguages(db, club.id),
         this.addresses.listByClubId(db, club.id),
-        this.clubs.listAdminUserIds(db, club.id),
+        this.clubs.countAdmins(db, club.id),
         this.avatars.findByClubId(db, club.id),
       ]);
 
@@ -119,7 +119,7 @@ export class ClubDetailAssembler {
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       })),
-      adminUserIds,
+      adminCount,
       avatars: await this.signAvatars(avatarSlots),
       createdAt: club.createdAt,
       updatedAt: club.updatedAt,
