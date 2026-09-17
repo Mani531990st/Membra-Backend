@@ -93,12 +93,12 @@ describe("CreateClub", () => {
   it("creates club, assigns creator as admin, and sets pivots", async () => {
     await useCase.execute("user-1", {
       name: "Example Club",
-      sn: "ExC",
-      establishedDate: null,
+      short_name: "ExC",
+      established_date: null,
       active: true,
-      countryCode: "DK",
+      country_code: "DK",
       activityIds: [1],
-      languages: [{ languageId: 2, rank: 1 }],
+      languages: [{ language_id: 2, rank: 1 }],
     });
 
     expect(clubs.insertClub).toHaveBeenCalledWith(tx, {
@@ -121,10 +121,10 @@ describe("CreateClub", () => {
       "user-1",
       {
         name: "Example Club",
-        sn: "ExC",
-        establishedDate: null,
+        short_name: "ExC",
+        established_date: null,
         active: true,
-        countryCode: "DK",
+        country_code: "DK",
         activityIds: [],
         languages: [],
       },
@@ -153,10 +153,10 @@ describe("CreateClub", () => {
     await expect(
       useCase.execute("user-1", {
         name: "Example Club",
-        sn: "ExC",
-        establishedDate: null,
+        short_name: "ExC",
+        established_date: null,
         active: true,
-        countryCode: "DK",
+        country_code: "DK",
         activityIds: [],
         languages: [],
       }),
@@ -168,10 +168,10 @@ describe("CreateClub", () => {
     await expect(
       useCase.execute("user-1", {
         name: "Example Club",
-        sn: "ExC",
-        establishedDate: null,
+        short_name: "ExC",
+        established_date: null,
         active: true,
-        countryCode: "DK",
+        country_code: "DK",
         activityIds: [999],
         languages: [],
       }),
@@ -217,7 +217,7 @@ describe("MakeClubAddressPrimary", () => {
       region: null,
       countryId: null,
       name: "Main",
-      short: "RP",
+      shortName: "RP",
       directions: null,
       primary: true,
       active: true,
@@ -231,6 +231,8 @@ describe("MakeClubAddressPrimary", () => {
     expect(access.requireAdmin).toHaveBeenCalledWith(1, "user-1");
     expect(addresses.setPrimary).toHaveBeenCalled();
     expect(result.primary).toBe(true);
+    expect(result.short_name).toBe("RP");
+    expect(result.street_name).toBe("Lyngbyvej");
   });
 });
 

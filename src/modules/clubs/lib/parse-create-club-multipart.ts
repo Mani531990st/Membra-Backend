@@ -20,14 +20,14 @@ export function parseCreateClubMultipartBody(
   const name = get("name");
   if (name !== undefined) result.name = name;
 
-  const sn = get("sn");
-  if (sn !== undefined) result.sn = sn;
+  const shortName = get("short_name");
+  if (shortName !== undefined) result.short_name = shortName;
 
-  const establishedDate = get("establishedDate");
+  const establishedDate = get("established_date");
   if (establishedDate !== undefined && establishedDate !== "") {
-    result.establishedDate = establishedDate;
+    result.established_date = establishedDate;
   } else if (establishedDate === "" || establishedDate === null) {
-    result.establishedDate = null;
+    result.established_date = null;
   }
 
   const active = get("active");
@@ -35,8 +35,8 @@ export function parseCreateClubMultipartBody(
     result.active = coerceBoolean(active, "active");
   }
 
-  const countryCode = get("countryCode");
-  if (countryCode !== undefined) result.countryCode = countryCode;
+  const countryCode = get("country_code");
+  if (countryCode !== undefined) result.country_code = countryCode;
 
   const activityIds = get("activityIds");
   if (activityIds !== undefined) {
@@ -81,7 +81,7 @@ function parseActivityIds(value: unknown): number[] {
 
   if (typeof value !== "string") {
     throw new ValidationError(
-      'activityIds must be a JSON array like [1,2] or comma-separated like 1,2',
+      "activityIds must be a JSON array like [1,2] or comma-separated like 1,2",
     );
   }
 
@@ -124,12 +124,12 @@ function parseActivityIds(value: unknown): number[] {
   }
 
   throw new ValidationError(
-    'activityIds must be valid JSON like [1,2] or comma-separated like 1,2',
+    "activityIds must be valid JSON like [1,2] or comma-separated like 1,2",
   );
 }
 
 /**
- * Accepts JSON array of { languageId, rank }, or already-parsed array.
+ * Accepts JSON array of { language_id, rank }, or already-parsed array.
  */
 function parseLanguages(value: unknown): unknown {
   if (typeof value !== "string") {
@@ -152,7 +152,7 @@ function parseLanguages(value: unknown): unknown {
     return JSON.parse(trimmed) as unknown;
   } catch {
     throw new ValidationError(
-      'languages must be valid JSON like [{"languageId":1,"rank":1}]',
+      'languages must be valid JSON like [{"language_id":1,"rank":1}]',
     );
   }
 }

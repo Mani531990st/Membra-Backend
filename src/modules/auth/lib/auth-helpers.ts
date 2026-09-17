@@ -13,7 +13,7 @@ export function isProfileComplete(row: AuthUserRow): boolean {
       row.surname &&
       row.nickname &&
       row.dob &&
-      row.genderEnum &&
+      row.genderId &&
       row.preferredLang,
   );
 }
@@ -26,7 +26,7 @@ export function toSafeUser(row: AuthUserRow): SafeAuthUser {
     surname: row.surname,
     nickname: row.nickname,
     dob: row.dob,
-    gender: row.genderEnum,
+    gender_id: row.genderId,
     preferred_lang: row.preferredLang,
     profileComplete: isProfileComplete(row),
   };

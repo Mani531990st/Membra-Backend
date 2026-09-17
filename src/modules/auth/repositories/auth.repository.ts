@@ -67,6 +67,16 @@ export class AuthRepository {
     return row?.id ?? null;
   }
 
+  async genderIdExists(dbOrTx: DbOrTx, genderId: number): Promise<boolean> {
+    const [row] = await dbOrTx
+      .select({ id: gendersInApp.id })
+      .from(gendersInApp)
+      .where(eq(gendersInApp.id, genderId))
+      .limit(1);
+
+    return Boolean(row);
+  }
+
   /**
    * Resolve login / forgot-password by credentials email (auth source of truth).
    */

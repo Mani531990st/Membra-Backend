@@ -4,17 +4,17 @@ export const countryCodeSchema = z
   .string()
   .trim()
   .toUpperCase()
-  .regex(/^[A-Z]{2}$/, "countryCode must be a 2-letter ISO code")
+  .regex(/^[A-Z]{2}$/, "country_code must be a 2-letter ISO code")
   .openapi({ example: "DK" });
 
 export const isoDateSchema = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "establishedDate must be YYYY-MM-DD")
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "established_date must be YYYY-MM-DD")
   .openapi({ example: "2020-05-04" });
 
 export const ClubLanguageInputSchema = z
   .object({
-    languageId: z.number().int().positive().openapi({
+    language_id: z.number().int().positive().openapi({
       example: 1,
       description: "ID from GET /api/clubs/languages",
     }),
@@ -28,10 +28,10 @@ export const ClubLanguageInputSchema = z
 export const CreateClubSchema = z
   .object({
     name: z.string().trim().min(1).max(255).openapi({ example: "Example Club" }),
-    sn: z.string().trim().min(1).max(10).openapi({ example: "ExC" }),
-    establishedDate: isoDateSchema.optional().nullable(),
+    short_name: z.string().trim().min(1).max(10).openapi({ example: "ExC" }),
+    established_date: isoDateSchema.optional().nullable(),
     active: z.boolean().optional().default(true).openapi({ example: true }),
-    countryCode: countryCodeSchema,
+    country_code: countryCodeSchema,
     activityIds: z
       .array(z.number().int().positive())
       .default([])
@@ -44,8 +44,8 @@ export const CreateClubSchema = z
       .default([])
       .openapi({
         example: [
-          { languageId: 1, rank: 1 },
-          { languageId: 2, rank: 2 },
+          { language_id: 1, rank: 1 },
+          { language_id: 2, rank: 2 },
         ],
         description:
           "Club languages with rank; if non-empty, exactly one entry must have rank 1 (primary)",
@@ -74,14 +74,14 @@ export const CreateClubSchema = z
   .openapi("CreateClubRequest", {
     example: {
       name: "Example Club",
-      sn: "ExC",
-      establishedDate: "2020-05-04",
+      short_name: "ExC",
+      established_date: "2020-05-04",
       active: true,
-      countryCode: "DK",
+      country_code: "DK",
       activityIds: [1, 2],
       languages: [
-        { languageId: 1, rank: 1 },
-        { languageId: 2, rank: 2 },
+        { language_id: 1, rank: 1 },
+        { language_id: 2, rank: 2 },
       ],
     },
   });
@@ -89,10 +89,10 @@ export const CreateClubSchema = z
 export const UpdateClubSchema = z
   .object({
     name: z.string().trim().min(1).max(255).optional(),
-    sn: z.string().trim().min(1).max(10).optional(),
-    establishedDate: isoDateSchema.nullable().optional(),
+    short_name: z.string().trim().min(1).max(10).optional(),
+    established_date: isoDateSchema.nullable().optional(),
     active: z.boolean().optional(),
-    countryCode: countryCodeSchema.optional(),
+    country_code: countryCodeSchema.optional(),
     activityIds: z
       .array(z.number().int().positive())
       .optional()
@@ -105,8 +105,8 @@ export const UpdateClubSchema = z
       .optional()
       .openapi({
         example: [
-          { languageId: 1, rank: 1 },
-          { languageId: 2, rank: 2 },
+          { language_id: 1, rank: 1 },
+          { language_id: 2, rank: 2 },
         ],
         description:
           "Replaces the club's languages when provided; if non-empty, one entry must have rank 1",
@@ -135,13 +135,13 @@ export const UpdateClubSchema = z
   .openapi("UpdateClubRequest");
 
 export const ClubAddressFieldsSchema = z.object({
-  streetName: z.string().trim().min(1).max(60),
-  streetNumber: z.string().trim().min(1).max(20),
+  street_name: z.string().trim().min(1).max(60),
+  street_number: z.string().trim().min(1).max(20),
   zip: z.string().trim().min(1).max(14),
   city: z.string().trim().min(1).max(100),
   region: z.string().trim().max(100).optional().nullable(),
   name: z.string().trim().min(1).max(60),
-  short: z.string().trim().min(1).max(20),
+  short_name: z.string().trim().min(1).max(20),
   directions: z.string().trim().max(255).optional().nullable(),
   primary: z.boolean(),
   active: z.boolean().optional().default(true),
@@ -192,25 +192,25 @@ export const AvatarsResponseSchema = z
 export const ClubAddressResponseSchema = z
   .object({
     id: z.number().int(),
-    streetName: z.string(),
-    streetNumber: z.string(),
+    street_name: z.string(),
+    street_number: z.string(),
     zip: z.string(),
     city: z.string(),
     region: z.string().nullable(),
-    countryId: z.number().int().nullable(),
+    country_id: z.number().int().nullable(),
     name: z.string(),
-    short: z.string(),
+    short_name: z.string(),
     directions: z.string().nullable(),
     primary: z.boolean(),
     active: z.boolean().nullable(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
+    created_at: z.string(),
+    updated_at: z.string(),
   })
   .openapi("ClubAddressResponse");
 
 export const ClubLanguageResponseSchema = z
   .object({
-    languageId: z.number().int(),
+    language_id: z.number().int(),
     code: z.string(),
     name: z.string(),
     rank: z.number().int(),
@@ -221,7 +221,7 @@ export const ClubActivityResponseSchema = z
   .object({
     id: z.number().int(),
     name: z.string(),
-    sn: z.string(),
+    short_name: z.string(),
   })
   .openapi("ClubActivityResponse");
 
@@ -229,17 +229,17 @@ export const ClubDetailResponseSchema = z
   .object({
     id: z.number().int(),
     name: z.string(),
-    sn: z.string(),
-    establishedDate: z.string().nullable(),
+    short_name: z.string(),
+    established_date: z.string().nullable(),
     active: z.boolean(),
-    countryCode: z.string(),
+    country_code: z.string(),
     activities: z.array(ClubActivityResponseSchema),
     languages: z.array(ClubLanguageResponseSchema),
     addresses: z.array(ClubAddressResponseSchema),
     adminUserIds: z.array(z.string().uuid()),
     avatars: AvatarsResponseSchema,
-    createdAt: z.string(),
-    updatedAt: z.string(),
+    created_at: z.string(),
+    updated_at: z.string(),
   })
   .openapi("ClubDetailResponse");
 
@@ -247,7 +247,7 @@ export const ActivityCatalogItemSchema = z
   .object({
     id: z.number().int(),
     name: z.string(),
-    sn: z.string(),
+    short_name: z.string(),
     active: z.boolean(),
   })
   .openapi("ActivityCatalogItem");

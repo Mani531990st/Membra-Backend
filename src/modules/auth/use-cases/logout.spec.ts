@@ -5,7 +5,7 @@ import { Logout } from "./logout";
 describe("Logout", () => {
   const current = { id: "current-id", userId: "user-1" };
 
-  it("defaults to the current session when sessionId is omitted", async () => {
+  it("defaults to the current session when session_id is omitted", async () => {
     const sessionRepository = {
       findActiveSessionForUser: vi.fn().mockResolvedValue({ id: "current-id" }),
       revokeSession: vi.fn(),
@@ -28,7 +28,7 @@ describe("Logout", () => {
     };
     const logout = new Logout({} as never, sessionRepository as never);
 
-    const result = await logout.execute(current, { sessionId: "other-id" });
+    const result = await logout.execute(current, { session_id: "other-id" });
 
     expect(result.clearCookie).toBe(false);
   });

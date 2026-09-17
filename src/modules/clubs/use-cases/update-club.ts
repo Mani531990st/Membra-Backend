@@ -31,8 +31,8 @@ export class UpdateClub {
   ): Promise<ClubDetail> {
     await this.access.requireAdmin(clubId, userId);
 
-    if (input.sn !== undefined) {
-      const existing = await this.clubs.findBySn(this.db, input.sn);
+    if (input.short_name !== undefined) {
+      const existing = await this.clubs.findBySn(this.db, input.short_name);
       if (existing && existing.id !== clubId) {
         throw new ConflictError("A club with this short name already exists");
       }
@@ -51,10 +51,10 @@ export class UpdateClub {
     if (input.languages !== undefined) {
       const ok = await this.catalog.assertLanguageIdsExist(
         this.db,
-        input.languages.map((entry) => entry.languageId),
+        input.languages.map((entry) => entry.language_id),
       );
       if (!ok) {
-        throw new ValidationError("One or more languageIds are invalid");
+        throw new ValidationError("One or more language_id values are invalid");
       }
     }
 
@@ -67,11 +67,12 @@ export class UpdateClub {
         countryCode: string;
       }> = {};
       if (input.name !== undefined) patch.name = input.name;
-      if (input.sn !== undefined) patch.shortName = input.sn;
-      if (input.establishedDate !== undefined)
-        patch.establishedDate = input.establishedDate;
+      if (input.short_name !== undefined) patch.shortName = input.short_name;
+      if (input.established_date !== undefined)
+        patch.establishedDate = input.established_date;
       if (input.active !== undefined) patch.active = input.active;
-      if (input.countryCode !== undefined) patch.countryCode = input.countryCode;
+      if (input.country_code !== undefined)
+        patch.countryCode = input.country_code;
 
       const updated =
         Object.keys(patch).length > 0
@@ -86,7 +87,14 @@ export class UpdateClub {
         await this.clubs.replaceActivities(tx, clubId, input.activityIds);
       }
       if (input.languages !== undefined) {
-        await this.clubs.replaceLanguages(tx, clubId, input.languages);
+        await this.clubs.replaceLanguages(
+          tx,
+          clubId,
+          input.languages.map((entry) => ({
+            languageId: entry.language_id,
+            rank: entry.rank,
+          })),
+        );
       }
 
       return updated;

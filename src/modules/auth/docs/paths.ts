@@ -115,7 +115,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [AUTH_TAG],
     summary: "Log out a session",
     description:
-      "Revokes a session belonging to the authenticated user. Omit sessionId to log out the current cookie session (and clear the cookie). Logging out another session leaves the cookie unchanged.",
+      "Revokes a session belonging to the authenticated user. `session_id` is optional — omit it (or send `{}`) to log out the current cookie session and clear the cookie. Passing another session's id revokes that session only and leaves the cookie unchanged.",
     security: [{ SessionCookie: [] }],
     request: {
       body: {
@@ -188,7 +188,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [USERS_TAG],
     summary: "Current user",
     description:
-      "Returns the authenticated user for a valid session cookie, plus signed avatar URLs, primary contact email, and primary phone. profileComplete is true when name, dob, gender, and preferred language are set.",
+      "Returns the authenticated user for a valid session cookie, plus signed avatar URLs, primary contact email, and primary phone. profileComplete is true when name, dob, gender_id, and preferred language are set.",
     security: [{ SessionCookie: [] }],
     responses: {
       200: {
@@ -205,7 +205,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [USERS_TAG],
     summary: "Complete profile",
     description:
-      "Update the authenticated user's profile. `gender` is male | female | others (looked up in app.genders). Requires a valid session cookie.",
+      "Update the authenticated user's profile. `gender_id` is the numeric id from GET /api/genders. Requires a valid session cookie.",
     security: [{ SessionCookie: [] }],
     request: {
       body: {

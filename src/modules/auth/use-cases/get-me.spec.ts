@@ -69,7 +69,7 @@ describe("GetMe", () => {
         surname: "Lovelace",
         nickname: "Ada",
         dob: "1815-12-10",
-        gender: "female",
+        gender_id: 1,
         preferred_lang: "en",
         profileComplete: true,
       },

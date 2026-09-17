@@ -16,7 +16,7 @@ export class CatalogRepository {
       .select({
         id: activitiesInApp.id,
         name: activitiesInApp.name,
-        sn: activitiesInApp.shortName,
+        short_name: activitiesInApp.shortName,
         active: activitiesInApp.active,
       })
       .from(activitiesInApp)
@@ -42,7 +42,7 @@ export class CatalogRepository {
       .select({
         id: activitiesInApp.id,
         name: activitiesInApp.name,
-        sn: activitiesInApp.shortName,
+        short_name: activitiesInApp.shortName,
       })
       .from(clubActivitiesInApp)
       .innerJoin(
@@ -56,7 +56,7 @@ export class CatalogRepository {
   async listClubLanguages(dbOrTx: DbOrTx, clubId: number) {
     return dbOrTx
       .select({
-        languageId: languagesInApp.id,
+        language_id: languagesInApp.id,
         code: languagesInApp.code,
         name: languagesInApp.name,
         rank: clubLanguagesInApp.rank,

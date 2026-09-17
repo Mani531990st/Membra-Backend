@@ -17,7 +17,7 @@ export type SafeAuthUser = {
   surname: string | null;
   nickname: string | null;
   dob: string | null;
-  gender: GenderEnum | null;
+  gender_id: number | null;
   preferred_lang: string | null;
   profileComplete: boolean;
 };
