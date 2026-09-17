@@ -13,6 +13,8 @@ describe("parseCreateClubMultipartBody", () => {
       countryCode: "dk",
       activityIds: "[1,2]",
       languages: '[{"languageId":1,"rank":1}]',
+      addresses:
+        '[{"streetName":"Lyngbyvej","streetNumber":"1","zip":"2100","city":"Copenhagen","name":"Main hall","shortName":"MH"}]',
     });
 
     expect(result).toEqual({
@@ -22,6 +24,16 @@ describe("parseCreateClubMultipartBody", () => {
       countryCode: "dk",
       activityIds: [1, 2],
       languages: [{ languageId: 1, rank: 1 }],
+      addresses: [
+        {
+          streetName: "Lyngbyvej",
+          streetNumber: "1",
+          zip: "2100",
+          city: "Copenhagen",
+          name: "Main hall",
+          shortName: "MH",
+        },
+      ],
     });
   });
 
@@ -43,6 +55,14 @@ describe("parseCreateClubMultipartBody", () => {
     expect(() =>
       parseCreateClubMultipartBody({
         activityIds: "not-json",
+      }),
+    ).toThrow(ValidationError);
+  });
+
+  it("rejects nonsense addresses JSON", () => {
+    expect(() =>
+      parseCreateClubMultipartBody({
+        addresses: "not-json",
       }),
     ).toThrow(ValidationError);
   });

@@ -25,6 +25,48 @@ export const ClubLanguageInputSchema = z
   })
   .openapi("ClubLanguageInput");
 
+export const ClubAddressFieldsSchema = z.object({
+  streetName: z.string().trim().min(1).max(60),
+  streetNumber: z.string().trim().min(1).max(20),
+  zip: z.string().trim().min(1).max(14),
+  city: z.string().trim().min(1).max(100),
+  region: z.string().trim().max(100).optional().nullable(),
+  name: z.string().trim().min(1).max(60),
+  shortName: z.string().trim().min(1).max(20),
+  directions: z.string().trim().max(255).optional().nullable(),
+  primary: z.boolean(),
+  active: z.boolean().optional().default(true),
+});
+
+function refinePrimaryActive(
+  value: { primary?: boolean; active?: boolean },
+  ctx: z.RefinementCtx,
+): void {
+  if (value.primary === true && value.active === false) {
+    ctx.addIssue({
+      code: "custom",
+      message: "primary address cannot be inactive",
+      path: ["primary"],
+    });
+  }
+}
+
+export const ClubAddressBodySchema = ClubAddressFieldsSchema.superRefine(
+  refinePrimaryActive,
+).openapi("ClubAddressRequest");
+
+/** Address fields on create-club; `primary` is ignored — first entry becomes primary. */
+export const CreateClubAddressInputSchema = ClubAddressFieldsSchema.omit({
+  primary: true,
+})
+  .extend({
+    primary: z.boolean().optional().openapi({
+      description:
+        "Optional and ignored on create-club; the first address is always primary",
+    }),
+  })
+  .openapi("CreateClubAddressInput");
+
 export const CreateClubSchema = z
   .object({
     name: z.string().trim().min(1).max(255).openapi({ example: "Example Club" }),
@@ -50,24 +92,51 @@ export const CreateClubSchema = z
         description:
           "Club languages with rank; if non-empty, exactly one entry must have rank 1 (primary)",
       }),
+    addresses: z
+      .array(CreateClubAddressInputSchema)
+      .default([])
+      .openapi({
+        example: [
+          {
+            streetName: "Lyngbyvej",
+            streetNumber: "1",
+            zip: "2100",
+            city: "Copenhagen",
+            region: null,
+            name: "Main hall",
+            shortName: "MH",
+            directions: null,
+            active: true,
+          },
+        ],
+        description:
+          "Optional club addresses. `primary` is optional/ignored; the first address becomes primary and the rest are non-primary.",
+      }),
   })
   .superRefine((value, ctx) => {
-    if (value.languages.length === 0) {
-      return;
+    if (value.languages.length > 0) {
+      if (!value.languages.some((entry) => entry.rank === 1)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "languages must include a primary language with rank 1",
+          path: ["languages"],
+        });
+      }
+      const ranks = value.languages.map((entry) => entry.rank);
+      if (new Set(ranks).size !== ranks.length) {
+        ctx.addIssue({
+          code: "custom",
+          message: "language ranks must be unique",
+          path: ["languages"],
+        });
+      }
     }
-    if (!value.languages.some((entry) => entry.rank === 1)) {
+
+    if (value.addresses.length > 0 && value.addresses[0]?.active === false) {
       ctx.addIssue({
         code: "custom",
-        message: "languages must include a primary language with rank 1",
-        path: ["languages"],
-      });
-    }
-    const ranks = value.languages.map((entry) => entry.rank);
-    if (new Set(ranks).size !== ranks.length) {
-      ctx.addIssue({
-        code: "custom",
-        message: "language ranks must be unique",
-        path: ["languages"],
+        message: "first address becomes primary and cannot be inactive",
+        path: ["addresses", 0, "active"],
       });
     }
   })
@@ -82,6 +151,17 @@ export const CreateClubSchema = z
       languages: [
         { languageId: 1, rank: 1 },
         { languageId: 2, rank: 2 },
+      ],
+      addresses: [
+        {
+          streetName: "Lyngbyvej",
+          streetNumber: "1",
+          zip: "2100",
+          city: "Copenhagen",
+          name: "Main hall",
+          shortName: "MH",
+          active: true,
+        },
       ],
     },
   });
@@ -133,36 +213,6 @@ export const UpdateClubSchema = z
     }
   })
   .openapi("UpdateClubRequest");
-
-export const ClubAddressFieldsSchema = z.object({
-  streetName: z.string().trim().min(1).max(60),
-  streetNumber: z.string().trim().min(1).max(20),
-  zip: z.string().trim().min(1).max(14),
-  city: z.string().trim().min(1).max(100),
-  region: z.string().trim().max(100).optional().nullable(),
-  name: z.string().trim().min(1).max(60),
-  shortName: z.string().trim().min(1).max(20),
-  directions: z.string().trim().max(255).optional().nullable(),
-  primary: z.boolean(),
-  active: z.boolean().optional().default(true),
-});
-
-function refinePrimaryActive(
-  value: { primary?: boolean; active?: boolean },
-  ctx: z.RefinementCtx,
-): void {
-  if (value.primary === true && value.active === false) {
-    ctx.addIssue({
-      code: "custom",
-      message: "primary address cannot be inactive",
-      path: ["primary"],
-    });
-  }
-}
-
-export const ClubAddressBodySchema = ClubAddressFieldsSchema.superRefine(
-  refinePrimaryActive,
-).openapi("ClubAddressRequest");
 
 export const UpdateClubAddressSchema = ClubAddressFieldsSchema.partial()
   .superRefine(refinePrimaryActive)

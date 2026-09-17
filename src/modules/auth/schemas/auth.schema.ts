@@ -164,15 +164,15 @@ export const AvatarsResponseSchema = z
   .object({
     avatar1: z.string().url().nullable().openapi({
       description:
-        "Signed GET URL for the original-size AVIF (expires in 1 hour), or null when unset",
+        "Signed GET URL for the 384×384 AVIF (expires in 1 hour), or null when unset",
     }),
     avatar2: z.string().url().nullable().openapi({
       description:
-        "Signed GET URL for the medium AVIF (max 512px longest edge, expires in 1 hour), or null when unset",
+        "Signed GET URL for the 96×96 AVIF (expires in 1 hour), or null when unset",
     }),
     avatar3: z.string().url().nullable().openapi({
       description:
-        "Signed GET URL for the small AVIF (max 128px longest edge, expires in 1 hour), or null when unset",
+        "Signed GET URL for the 32×32 AVIF (expires in 1 hour), or null when unset",
     }),
   })
   .openapi("AvatarsResponse");

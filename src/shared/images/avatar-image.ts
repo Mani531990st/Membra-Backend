@@ -130,33 +130,39 @@ export async function decodeAvatarInput(
 }
 
 export type AvatarVariants = {
+  /** avatar1 — 384×384 */
   original: Buffer;
+  /** avatar2 — 96×96 */
   medium: Buffer;
+  /** avatar3 — 32×32 */
   small: Buffer;
 };
 
-export const AVATAR_MEDIUM_MAX_PX = 512;
-export const AVATAR_SMALL_MAX_PX = 128;
+export const AVATAR1_SIZE_PX = 384;
+export const AVATAR2_SIZE_PX = 96;
+export const AVATAR3_SIZE_PX = 32;
 
-async function encodeAvif(
-  input: Buffer,
-  maxEdgePx?: number,
-): Promise<Buffer> {
-  let pipeline = sharp(input).rotate();
-  if (maxEdgePx !== undefined) {
-    pipeline = pipeline.resize({
-      width: maxEdgePx,
-      height: maxEdgePx,
-      fit: "inside",
-      withoutEnlargement: true,
-    });
-  }
-  return pipeline.avif({ quality: 50 }).toBuffer();
+/** @deprecated Use AVATAR2_SIZE_PX */
+export const AVATAR_MEDIUM_MAX_PX = AVATAR2_SIZE_PX;
+/** @deprecated Use AVATAR3_SIZE_PX */
+export const AVATAR_SMALL_MAX_PX = AVATAR3_SIZE_PX;
+
+async function encodeAvifSquare(input: Buffer, sizePx: number): Promise<Buffer> {
+  return sharp(input)
+    .rotate()
+    .resize({
+      width: sizePx,
+      height: sizePx,
+      fit: "cover",
+      position: "centre",
+    })
+    .avif({ quality: 50 })
+    .toBuffer();
 }
 
 /**
- * Decode once, then produce original / medium (512) / small (128) AVIF variants.
- * Medium and small fit inside the box and are not upscaled.
+ * Decode once, then produce three square AVIF variants:
+ * avatar1 384×384, avatar2 96×96, avatar3 32×32 (cover-cropped).
  */
 export async function buildAvatarVariants(
   buffer: Buffer,
@@ -166,9 +172,9 @@ export async function buildAvatarVariants(
 
   try {
     const [original, medium, small] = await Promise.all([
-      encodeAvif(input),
-      encodeAvif(input, AVATAR_MEDIUM_MAX_PX),
-      encodeAvif(input, AVATAR_SMALL_MAX_PX),
+      encodeAvifSquare(input, AVATAR1_SIZE_PX),
+      encodeAvifSquare(input, AVATAR2_SIZE_PX),
+      encodeAvifSquare(input, AVATAR3_SIZE_PX),
     ]);
     return { original, medium, small };
   } catch (error) {

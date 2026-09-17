@@ -103,9 +103,39 @@ Still the same:
 - `activityIds` (array of numbers; multipart may send JSON string or `1,2`)
 - optional `avatar` file on create
 
-Multipart form field names must use camelCase (`shortName`, `establishedDate`, `countryCode`, etc.).
+**Create only:** optional `addresses` array (same fields as address endpoints except `primary`). Multipart sends it as a JSON string. `primary` is optional and ignored — the **first** address becomes primary; the rest are non-primary. Omit or `[]` to create with no addresses (add later via `POST /api/clubs/:clubId/addresses`).
 
-Example JSON body (`PATCH`):
+Multipart form field names must use camelCase (`shortName`, `establishedDate`, `countryCode`, `addresses`, etc.).
+
+Example create body fields (conceptual JSON; create is multipart):
+
+```json
+{
+  "name": "Example Club",
+  "shortName": "ExC",
+  "establishedDate": "2020-05-04",
+  "active": true,
+  "countryCode": "DK",
+  "activityIds": [1, 2],
+  "languages": [
+    { "languageId": 1, "rank": 1 },
+    { "languageId": 2, "rank": 2 }
+  ],
+  "addresses": [
+    {
+      "streetName": "Lyngbyvej",
+      "streetNumber": "1",
+      "zip": "2100",
+      "city": "Copenhagen",
+      "name": "Main hall",
+      "shortName": "MH",
+      "active": true
+    }
+  ]
+}
+```
+
+Example JSON body (`PATCH` — no `addresses`; use address endpoints):
 
 ```json
 {
@@ -185,10 +215,18 @@ Example request:
 
 ---
 
-## Avatars (no client contract break)
+## Avatars
 
 User and club avatar upload/get still return signed URLs in `avatar1` / `avatar2` / `avatar3`.  
-Object-storage key layout changed server-side only; clients should keep treating these as opaque URLs.
+Sizes are now fixed square AVIF variants (cover-cropped):
+
+| Slot | Size |
+|------|------|
+| `avatar1` | 384×384 |
+| `avatar2` | 96×96 |
+| `avatar3` | 32×32 |
+
+Object-storage key layout is opaque; clients should keep treating URLs as opaque.
 
 ---
 

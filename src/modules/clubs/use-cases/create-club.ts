@@ -150,6 +150,8 @@ export class CreateClub {
     @Inject(DRIZZLE) private readonly db: Database,
     @Inject(ClubsRepository) private readonly clubs: ClubsRepository,
     @Inject(CatalogRepository) private readonly catalog: CatalogRepository,
+    @Inject(ClubAddressesRepository)
+    private readonly addresses: ClubAddressesRepository,
     @Inject(ClubAvatarsRepository)
     private readonly avatarsRepository: ClubAvatarsRepository,
     @Inject(SCALEWAY_OBJECT_STORAGE)
@@ -203,6 +205,21 @@ export class CreateClub {
           rank: entry.rank,
         })),
       );
+      for (const [index, address] of input.addresses.entries()) {
+        await this.addresses.insert(tx, {
+          clubId: created.id,
+          streetName: address.streetName,
+          streetNumber: address.streetNumber,
+          zip: address.zip,
+          city: address.city,
+          region: address.region ?? null,
+          name: address.name,
+          shortName: address.shortName,
+          directions: address.directions ?? null,
+          primary: index === 0,
+          active: address.active ?? true,
+        });
+      }
       return created;
     });
 

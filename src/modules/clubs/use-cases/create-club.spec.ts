@@ -32,6 +32,9 @@ describe("CreateClub", () => {
     assertActivityIdsExist: vi.fn(),
     assertLanguageIdsExist: vi.fn(),
   };
+  const addresses = {
+    insert: vi.fn(),
+  };
   const avatarsRepository = {
     upsertSlots: vi.fn(),
   };
@@ -53,6 +56,7 @@ describe("CreateClub", () => {
     db as never,
     clubs as never,
     catalog as never,
+    addresses as never,
     avatarsRepository as never,
     storage as never,
     assembler as never,
@@ -99,6 +103,7 @@ describe("CreateClub", () => {
       countryCode: "DK",
       activityIds: [1],
       languages: [{ languageId: 2, rank: 1 }],
+      addresses: [],
     });
 
     expect(clubs.insertClub).toHaveBeenCalledWith(tx, {
@@ -113,7 +118,67 @@ describe("CreateClub", () => {
     expect(clubs.replaceLanguages).toHaveBeenCalledWith(tx, 10, [
       { languageId: 2, rank: 1 },
     ]);
+    expect(addresses.insert).not.toHaveBeenCalled();
     expect(storage.putObject).not.toHaveBeenCalled();
+  });
+
+  it("inserts addresses when provided", async () => {
+    await useCase.execute("user-1", {
+      name: "Example Club",
+      shortName: "ExC",
+      establishedDate: null,
+      active: true,
+      countryCode: "DK",
+      activityIds: [],
+      languages: [],
+      addresses: [
+        {
+          streetName: "Lyngbyvej",
+          streetNumber: "1",
+          zip: "2100",
+          city: "Copenhagen",
+          region: null,
+          name: "Main hall",
+          shortName: "MH",
+          directions: null,
+          active: true,
+        },
+        {
+          streetName: "Sidevej",
+          streetNumber: "2",
+          zip: "2100",
+          city: "Copenhagen",
+          name: "Annex",
+          shortName: "AX",
+          primary: true,
+          active: true,
+        },
+      ],
+    });
+
+    expect(addresses.insert).toHaveBeenCalledTimes(2);
+    expect(addresses.insert).toHaveBeenNthCalledWith(1, tx, {
+      clubId: 10,
+      streetName: "Lyngbyvej",
+      streetNumber: "1",
+      zip: "2100",
+      city: "Copenhagen",
+      region: null,
+      name: "Main hall",
+      shortName: "MH",
+      directions: null,
+      primary: true,
+      active: true,
+    });
+    expect(addresses.insert).toHaveBeenNthCalledWith(
+      2,
+      tx,
+      expect.objectContaining({
+        clubId: 10,
+        streetName: "Sidevej",
+        primary: false,
+      }),
+    );
   });
 
   it("uploads three avatar variants when avatar is provided", async () => {
@@ -127,6 +192,7 @@ describe("CreateClub", () => {
         countryCode: "DK",
         activityIds: [],
         languages: [],
+        addresses: [],
       },
       {
         buffer: Buffer.from("image"),
@@ -159,6 +225,7 @@ describe("CreateClub", () => {
         countryCode: "DK",
         activityIds: [],
         languages: [],
+        addresses: [],
       }),
     ).rejects.toBeInstanceOf(ConflictError);
   });
@@ -174,6 +241,7 @@ describe("CreateClub", () => {
         countryCode: "DK",
         activityIds: [999],
         languages: [],
+        addresses: [],
       }),
     ).rejects.toBeInstanceOf(ValidationError);
   });

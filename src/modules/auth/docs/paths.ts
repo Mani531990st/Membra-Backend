@@ -29,7 +29,7 @@ const avatarBinaryField = z.string().openapi({
   type: "string",
   format: "binary",
   description:
-    "Single profile image (JPEG, PNG, HEIC, HEIF, WebP, or AVIF, max 8 MB). Server creates original, 512px, and 128px AVIF variants.",
+    "Single profile image (JPEG, PNG, HEIC, HEIF, WebP, or AVIF, max 8 MB). Server creates 384×384, 96×96, and 32×32 AVIF variants.",
 });
 
 const UploadAvatarsRequestSchema = z
@@ -232,7 +232,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [USERS_TAG],
     summary: "Upload or update avatar",
     description:
-      "Upload a single profile image for the authenticated user (multipart field `avatar`: JPEG, PNG, HEIC, HEIF, WebP, or AVIF). The API creates three AVIF variants — original (avatar1), medium max 512px (avatar2), and small max 128px (avatar3) — stores them in Scaleway Object Storage, and returns signed GET URLs (1 hour).",
+      "Upload a single profile image for the authenticated user (multipart field `avatar`: JPEG, PNG, HEIC, HEIF, WebP, or AVIF). The API creates three square AVIF variants — avatar1 384×384, avatar2 96×96, avatar3 32×32 — stores them in Scaleway Object Storage, and returns signed GET URLs (1 hour).",
     security: [{ SessionCookie: [] }],
     request: {
       body: {
@@ -257,7 +257,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [USERS_TAG],
     summary: "Get avatars",
     description:
-      "Returns signed GET URLs (1 hour) for the authenticated user's avatar variants: avatar1 (original), avatar2 (medium ≤512px), avatar3 (small ≤128px). Unset slots are null.",
+      "Returns signed GET URLs (1 hour) for the authenticated user's avatar variants: avatar1 (384×384), avatar2 (96×96), avatar3 (32×32). Unset slots are null.",
     security: [{ SessionCookie: [] }],
     responses: {
       200: {

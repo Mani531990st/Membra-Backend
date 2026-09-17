@@ -227,7 +227,7 @@ describe("GetAvatars", () => {
 });
 
 describe("buildAvatarVariants integration", () => {
-  it("builds three AVIF variants from a tiny PNG without enlarging", async () => {
+  it("builds three square AVIF variants at 384, 96, and 32", async () => {
     vi.doUnmock("../services/avatar-image");
     const { buildAvatarVariants: realBuild } = await vi.importActual<
       typeof import("../services/avatar-image")
@@ -249,8 +249,11 @@ describe("buildAvatarVariants integration", () => {
       sharp(variants.medium).metadata(),
       sharp(variants.small).metadata(),
     ]);
-    expect(origMeta.width).toBe(1);
-    expect(mediumMeta.width).toBe(1);
-    expect(smallMeta.width).toBe(1);
+    expect(origMeta.width).toBe(384);
+    expect(origMeta.height).toBe(384);
+    expect(mediumMeta.width).toBe(96);
+    expect(mediumMeta.height).toBe(96);
+    expect(smallMeta.width).toBe(32);
+    expect(smallMeta.height).toBe(32);
   });
 });

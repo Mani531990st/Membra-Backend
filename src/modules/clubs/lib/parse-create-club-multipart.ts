@@ -48,6 +48,11 @@ export function parseCreateClubMultipartBody(
     result.languages = parseLanguages(languages);
   }
 
+  const addresses = get("addresses");
+  if (addresses !== undefined) {
+    result.addresses = parseAddresses(addresses);
+  }
+
   return result;
 }
 
@@ -152,6 +157,35 @@ function parseLanguages(value: unknown): unknown {
   } catch {
     throw new ValidationError(
       'languages must be valid JSON like [{"languageId":1,"rank":1}]',
+    );
+  }
+}
+
+/**
+ * Accepts JSON array of address objects, or already-parsed array.
+ */
+function parseAddresses(value: unknown): unknown {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  let trimmed = value.trim();
+  if (trimmed === "") {
+    return [];
+  }
+
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    trimmed = trimmed.slice(1, -1).trim();
+  }
+
+  try {
+    return JSON.parse(trimmed) as unknown;
+  } catch {
+    throw new ValidationError(
+      'addresses must be valid JSON like [{"streetName":"Lyngbyvej","streetNumber":"1","zip":"2100","city":"Copenhagen","name":"Main hall","shortName":"MH"}]',
     );
   }
 }
