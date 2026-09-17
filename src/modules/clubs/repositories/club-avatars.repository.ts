@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { Injectable } from "@nestjs/common";
 
 import type { DbOrTx } from "@/db";
@@ -26,6 +26,36 @@ export class ClubAvatarsRepository {
       .where(eq(clubAvatarsInApp.clubId, clubId))
       .limit(1);
     return row ?? null;
+  }
+
+  /** Avatar slots keyed by club id (missing clubs omitted). */
+  async findByClubIds(
+    dbOrTx: DbOrTx,
+    clubIds: number[],
+  ): Promise<Map<number, ClubAvatarSlots>> {
+    const map = new Map<number, ClubAvatarSlots>();
+    if (clubIds.length === 0) {
+      return map;
+    }
+
+    const rows = await dbOrTx
+      .select({
+        clubId: clubAvatarsInApp.clubId,
+        avatar1: clubAvatarsInApp.avatar1,
+        avatar2: clubAvatarsInApp.avatar2,
+        avatar3: clubAvatarsInApp.avatar3,
+      })
+      .from(clubAvatarsInApp)
+      .where(inArray(clubAvatarsInApp.clubId, clubIds));
+
+    for (const row of rows) {
+      map.set(row.clubId, {
+        avatar1: row.avatar1,
+        avatar2: row.avatar2,
+        avatar3: row.avatar3,
+      });
+    }
+    return map;
   }
 
   async upsertSlots(

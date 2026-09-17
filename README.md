@@ -91,6 +91,7 @@ Any authenticated user can create a club and becomes its first admin (`club_admi
 |--------|------|-------|
 | GET | `/api/clubs/activities` | Activity catalog |
 | GET | `/api/clubs/languages` | Language catalog |
+| GET | `/api/clubs` | Clubs the current user admins (summary cards + signed avatars) |
 | POST | `/api/clubs` | Multipart create; creator becomes admin; optional `avatar` file |
 | GET | `/api/clubs/:clubId` | Club detail including signed `avatars` (**member/admin only**) |
 | PATCH | `/api/clubs/:clubId` | Update profile / activities / languages (admin) |

@@ -327,6 +327,27 @@ export const ClubDetailResponseSchema = z
   })
   .openapi("ClubDetailResponse");
 
+export const ClubSummaryResponseSchema = z
+  .object({
+    id: z.number().int(),
+    name: z.string(),
+    shortName: z.string(),
+    establishedDate: z.string().nullable(),
+    active: z.boolean(),
+    countryCode: z.string(),
+    adminCount: z.number().int().nonnegative(),
+    avatars: AvatarsResponseSchema,
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .openapi("ClubSummaryResponse");
+
+export const AdminClubsResponseSchema = z
+  .object({
+    clubs: z.array(ClubSummaryResponseSchema),
+  })
+  .openapi("AdminClubsResponse");
+
 export const ActivityCatalogItemSchema = z
   .object({
     id: z.number().int(),

@@ -1,4 +1,4 @@
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, asc, count, eq, sql } from "drizzle-orm";
 import { Injectable } from "@nestjs/common";
 
 import type { DbOrTx } from "@/db";
@@ -56,6 +56,25 @@ export class ClubsRepository {
       .where(eq(clubsInApp.shortName, sn))
       .limit(1);
     return row ?? null;
+  }
+
+  /** Clubs the user administers (includes inactive), ordered by name. */
+  async listByAdminUserId(dbOrTx: DbOrTx, userId: string): Promise<ClubRow[]> {
+    return dbOrTx
+      .select({
+        id: clubsInApp.id,
+        name: clubsInApp.name,
+        shortName: clubsInApp.shortName,
+        establishedDate: clubsInApp.establishedDate,
+        active: clubsInApp.active,
+        countryCode: clubsInApp.countryCode,
+        createdAt: clubsInApp.createdAt,
+        updatedAt: clubsInApp.updatedAt,
+      })
+      .from(clubAdminsInApp)
+      .innerJoin(clubsInApp, eq(clubAdminsInApp.clubId, clubsInApp.id))
+      .where(eq(clubAdminsInApp.userId, userId))
+      .orderBy(asc(clubsInApp.name));
   }
 
   async updateClub(

@@ -5,10 +5,12 @@ import { z } from "@/shared/validation/zod";
 
 import {
   ActivitiesResponseSchema,
+  AdminClubsResponseSchema,
   AvatarsResponseSchema,
   ClubAddressBodySchema,
   ClubAddressResponseSchema,
   ClubDetailResponseSchema,
+  ClubSummaryResponseSchema,
   CreateClubSchema,
   LanguagesResponseSchema,
   UpdateClubAddressSchema,
@@ -71,12 +73,33 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
   registry.register("ClubAddressRequest", ClubAddressBodySchema);
   registry.register("UpdateClubAddressRequest", UpdateClubAddressSchema);
   registry.register("ClubDetailResponse", ClubDetailResponseSchema);
+  registry.register("ClubSummaryResponse", ClubSummaryResponseSchema);
+  registry.register("AdminClubsResponse", AdminClubsResponseSchema);
   registry.register("ClubAddressResponse", ClubAddressResponseSchema);
   registry.register("ClubAvatarsResponse", AvatarsResponseSchema);
   registry.register("ActivitiesResponse", ActivitiesResponseSchema);
   registry.register("LanguagesResponse", LanguagesResponseSchema);
   registry.register("UploadClubAvatarsRequest", UploadClubAvatarsRequestSchema);
   registry.register("CreateClubMultipartRequest", CreateClubMultipartSchema);
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/clubs",
+    tags: [CLUBS_TAG],
+    summary: "List clubs the current user admins",
+    description:
+      "Returns summary cards for every club where the authenticated user is in `club_admins` (includes inactive clubs). Ordered by name. Use GET /api/clubs/{clubId} for full detail.",
+    security: [{ SessionCookie: [] }],
+    responses: {
+      200: {
+        description: "Admin clubs",
+        content: {
+          "application/json": { schema: AdminClubsResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 500]),
+    },
+  });
 
   registry.registerPath({
     method: "get",

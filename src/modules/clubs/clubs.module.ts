@@ -16,6 +16,7 @@ import {
 import { GetClubAvatars, UpdateClubAvatars } from "./use-cases/club-avatars";
 import { ClubDetailAssembler, CreateClub } from "./use-cases/create-club";
 import { GetClub } from "./use-cases/get-club";
+import { ListAdminClubs } from "./use-cases/list-admin-clubs";
 import { ListActivities, ListLanguages } from "./use-cases/list-catalogs";
 import { UpdateClub } from "./use-cases/update-club";
 
@@ -30,6 +31,7 @@ import { UpdateClub } from "./use-cases/update-club";
     ClubAccess,
     ClubDetailAssembler,
     CreateClub,
+    ListAdminClubs,
     GetClub,
     UpdateClub,
     AddClubAddress,

@@ -40,6 +40,7 @@ import {
 import { GetClubAvatars, UpdateClubAvatars } from "../use-cases/club-avatars";
 import { CreateClub } from "../use-cases/create-club";
 import { GetClub } from "../use-cases/get-club";
+import { ListAdminClubs } from "../use-cases/list-admin-clubs";
 import { ListActivities, ListLanguages } from "../use-cases/list-catalogs";
 import { UpdateClub } from "../use-cases/update-club";
 import { parseCreateClubMultipartBody } from "../lib/parse-create-club-multipart";
@@ -55,6 +56,7 @@ type AvatarUploadFields = {
 export class ClubsController {
   constructor(
     @Inject(CreateClub) private readonly createClub: CreateClub,
+    @Inject(ListAdminClubs) private readonly listAdminClubs: ListAdminClubs,
     @Inject(GetClub) private readonly getClub: GetClub,
     @Inject(UpdateClub) private readonly updateClub: UpdateClub,
     @Inject(AddClubAddress) private readonly addAddress: AddClubAddress,
@@ -77,6 +79,11 @@ export class ClubsController {
   @Get("languages")
   async languages() {
     return this.listLanguages.execute();
+  }
+
+  @Get()
+  async listMine(@AuthSession() session: AuthSessionContext) {
+    return this.listAdminClubs.execute(session.userId);
   }
 
   @Post()
