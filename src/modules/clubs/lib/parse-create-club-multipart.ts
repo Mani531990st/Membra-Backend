@@ -20,14 +20,14 @@ export function parseCreateClubMultipartBody(
   const name = get("name");
   if (name !== undefined) result.name = name;
 
-  const shortName = get("short_name");
-  if (shortName !== undefined) result.short_name = shortName;
+  const shortName = get("shortName");
+  if (shortName !== undefined) result.shortName = shortName;
 
-  const establishedDate = get("established_date");
+  const establishedDate = get("establishedDate");
   if (establishedDate !== undefined && establishedDate !== "") {
-    result.established_date = establishedDate;
+    result.establishedDate = establishedDate;
   } else if (establishedDate === "" || establishedDate === null) {
-    result.established_date = null;
+    result.establishedDate = null;
   }
 
   const active = get("active");
@@ -35,8 +35,8 @@ export function parseCreateClubMultipartBody(
     result.active = coerceBoolean(active, "active");
   }
 
-  const countryCode = get("country_code");
-  if (countryCode !== undefined) result.country_code = countryCode;
+  const countryCode = get("countryCode");
+  if (countryCode !== undefined) result.countryCode = countryCode;
 
   const activityIds = get("activityIds");
   if (activityIds !== undefined) {
@@ -90,7 +90,6 @@ function parseActivityIds(value: unknown): number[] {
     return [];
   }
 
-  // Strip a single layer of wrapping quotes from Swagger/copy-paste: "[1,2]"
   if (
     (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
     (trimmed.startsWith("'") && trimmed.endsWith("'"))
@@ -129,7 +128,7 @@ function parseActivityIds(value: unknown): number[] {
 }
 
 /**
- * Accepts JSON array of { language_id, rank }, or already-parsed array.
+ * Accepts JSON array of { languageId, rank }, or already-parsed array.
  */
 function parseLanguages(value: unknown): unknown {
   if (typeof value !== "string") {
@@ -152,7 +151,7 @@ function parseLanguages(value: unknown): unknown {
     return JSON.parse(trimmed) as unknown;
   } catch {
     throw new ValidationError(
-      'languages must be valid JSON like [{"language_id":1,"rank":1}]',
+      'languages must be valid JSON like [{"languageId":1,"rank":1}]',
     );
   }
 }

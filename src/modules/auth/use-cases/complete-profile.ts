@@ -22,10 +22,10 @@ export class CompleteProfile {
   ): Promise<{ user: SafeAuthUser }> {
     const exists = await this.authRepository.genderIdExists(
       this.db,
-      input.gender_id,
+      input.genderId,
     );
     if (!exists) {
-      throw new ValidationError("Invalid gender_id value");
+      throw new ValidationError("Invalid genderId value");
     }
 
     await this.authRepository.updateUserProfile(this.db, userId, {
@@ -33,8 +33,8 @@ export class CompleteProfile {
       surname: input.surname,
       nickname: input.nickname,
       dob: input.dob,
-      genderId: input.gender_id,
-      preferredLang: input.preferred_lang,
+      genderId: input.genderId,
+      preferredLang: input.preferredLang,
     });
 
     const user = await this.authRepository.findSafeUserById(this.db, userId);

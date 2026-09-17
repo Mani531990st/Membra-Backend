@@ -20,7 +20,7 @@ describe("toSafeUser", () => {
   it("marks profileComplete when all profile fields are set", () => {
     const user = toSafeUser(base);
     expect(user.profileComplete).toBe(true);
-    expect(user.gender_id).toBe(1);
+    expect(user.genderId).toBe(1);
   });
 
   it("marks profileComplete false when profile is incomplete", () => {

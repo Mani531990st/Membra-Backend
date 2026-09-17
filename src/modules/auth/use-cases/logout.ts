@@ -21,7 +21,7 @@ export class Logout {
     current: AuthSessionContext,
     input: LogoutInput,
   ): Promise<{ message: string; clearCookie: boolean }> {
-    const sessionId = input.session_id ?? current.id;
+    const sessionId = input.sessionId ?? current.id;
     const nowIso = toIsoTimestamp(new Date());
 
     const target = await this.sessionRepository.findActiveSessionForUser(

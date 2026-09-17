@@ -31,8 +31,8 @@ export class UpdateClub {
   ): Promise<ClubDetail> {
     await this.access.requireAdmin(clubId, userId);
 
-    if (input.short_name !== undefined) {
-      const existing = await this.clubs.findBySn(this.db, input.short_name);
+    if (input.shortName !== undefined) {
+      const existing = await this.clubs.findBySn(this.db, input.shortName);
       if (existing && existing.id !== clubId) {
         throw new ConflictError("A club with this short name already exists");
       }
@@ -51,10 +51,10 @@ export class UpdateClub {
     if (input.languages !== undefined) {
       const ok = await this.catalog.assertLanguageIdsExist(
         this.db,
-        input.languages.map((entry) => entry.language_id),
+        input.languages.map((entry) => entry.languageId),
       );
       if (!ok) {
-        throw new ValidationError("One or more language_id values are invalid");
+        throw new ValidationError("One or more languageId values are invalid");
       }
     }
 
@@ -67,12 +67,11 @@ export class UpdateClub {
         countryCode: string;
       }> = {};
       if (input.name !== undefined) patch.name = input.name;
-      if (input.short_name !== undefined) patch.shortName = input.short_name;
-      if (input.established_date !== undefined)
-        patch.establishedDate = input.established_date;
+      if (input.shortName !== undefined) patch.shortName = input.shortName;
+      if (input.establishedDate !== undefined)
+        patch.establishedDate = input.establishedDate;
       if (input.active !== undefined) patch.active = input.active;
-      if (input.country_code !== undefined)
-        patch.countryCode = input.country_code;
+      if (input.countryCode !== undefined) patch.countryCode = input.countryCode;
 
       const updated =
         Object.keys(patch).length > 0
@@ -91,7 +90,7 @@ export class UpdateClub {
           tx,
           clubId,
           input.languages.map((entry) => ({
-            languageId: entry.language_id,
+            languageId: entry.languageId,
             rank: entry.rank,
           })),
         );

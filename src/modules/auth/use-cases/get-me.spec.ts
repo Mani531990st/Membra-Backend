@@ -69,8 +69,8 @@ describe("GetMe", () => {
         surname: "Lovelace",
         nickname: "Ada",
         dob: "1815-12-10",
-        gender_id: 1,
-        preferred_lang: "en",
+        genderId: 1,
+        preferredLang: "en",
         profileComplete: true,
       },
       avatars: {

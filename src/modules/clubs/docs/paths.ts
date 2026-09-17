@@ -33,8 +33,8 @@ const UploadClubAvatarsRequestSchema = z
 const CreateClubMultipartSchema = z
   .object({
     name: z.string().openapi({ example: "Example Club" }),
-    short_name: z.string().openapi({ example: "ExC" }),
-    established_date: z.string().optional().openapi({
+    shortName: z.string().openapi({ example: "ExC" }),
+    establishedDate: z.string().optional().openapi({
       example: "2020-05-04",
       description: "Optional club established date YYYY-MM-DD",
     }),
@@ -42,16 +42,16 @@ const CreateClubMultipartSchema = z
       example: "true",
       description: "Boolean as string: true/false",
     }),
-    country_code: z.string().openapi({ example: "DK" }),
+    countryCode: z.string().openapi({ example: "DK" }),
     activityIds: z.string().optional().openapi({
       example: "[1,2]",
       description:
         "Activity IDs from GET /api/clubs/activities. Enter as JSON `[1,2]` or comma-separated `1,2` (no extra quotes around the whole value).",
     }),
     languages: z.string().optional().openapi({
-      example: '[{"language_id":1,"rank":1},{"language_id":2,"rank":2}]',
+      example: '[{"languageId":1,"rank":1},{"languageId":2,"rank":2}]',
       description:
-        'Languages as JSON array, e.g. [{"language_id":1,"rank":1}] — do not wrap the whole value in extra quotes.',
+        'Languages as JSON array, e.g. [{"languageId":1,"rank":1}] — do not wrap the whole value in extra quotes.',
     }),
     avatar: avatarBinaryField.optional().openapi({
       description: "Optional club avatar; omitted leaves avatars null",

@@ -26,8 +26,8 @@ export function toSafeUser(row: AuthUserRow): SafeAuthUser {
     surname: row.surname,
     nickname: row.nickname,
     dob: row.dob,
-    gender_id: row.genderId,
-    preferred_lang: row.preferredLang,
+    genderId: row.genderId,
+    preferredLang: row.preferredLang,
     profileComplete: isProfileComplete(row),
   };
 }

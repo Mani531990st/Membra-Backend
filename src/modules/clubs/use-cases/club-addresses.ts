@@ -17,19 +17,19 @@ import type {
 function mapAddress(row: ClubAddressRow) {
   return {
     id: row.id,
-    street_name: row.streetName,
-    street_number: row.streetNumber,
+    streetName: row.streetName,
+    streetNumber: row.streetNumber,
     zip: row.zip,
     city: row.city,
     region: row.region,
-    country_id: row.countryId,
+    countryId: row.countryId,
     name: row.name,
-    short_name: row.shortName,
+    shortName: row.shortName,
     directions: row.directions,
     primary: row.primary,
     active: row.active,
-    created_at: row.createdAt,
-    updated_at: row.updatedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
@@ -51,13 +51,13 @@ export class AddClubAddress {
       }
       return this.addresses.insert(tx, {
         clubId,
-        streetName: input.street_name,
-        streetNumber: input.street_number,
+        streetName: input.streetName,
+        streetNumber: input.streetNumber,
         zip: input.zip,
         city: input.city,
         region: input.region ?? null,
         name: input.name,
-        shortName: input.short_name,
+        shortName: input.shortName,
         directions: input.directions ?? null,
         primary: input.primary,
         active: input.active ?? true,
@@ -119,14 +119,14 @@ export class UpdateClubAddress {
         active: boolean | null;
       }> = {};
 
-      if (input.street_name !== undefined) patch.streetName = input.street_name;
-      if (input.street_number !== undefined)
-        patch.streetNumber = input.street_number;
+      if (input.streetName !== undefined) patch.streetName = input.streetName;
+      if (input.streetNumber !== undefined)
+        patch.streetNumber = input.streetNumber;
       if (input.zip !== undefined) patch.zip = input.zip;
       if (input.city !== undefined) patch.city = input.city;
       if (input.region !== undefined) patch.region = input.region;
       if (input.name !== undefined) patch.name = input.name;
-      if (input.short_name !== undefined) patch.shortName = input.short_name;
+      if (input.shortName !== undefined) patch.shortName = input.shortName;
       if (input.directions !== undefined) patch.directions = input.directions;
       if (input.primary !== undefined) patch.primary = input.primary;
       if (input.active !== undefined) patch.active = input.active;

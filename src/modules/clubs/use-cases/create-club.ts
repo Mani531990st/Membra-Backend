@@ -32,37 +32,37 @@ export type ClubAvatarsSigned = {
 export type ClubDetail = {
   id: number;
   name: string;
-  short_name: string;
-  established_date: string | null;
+  shortName: string;
+  establishedDate: string | null;
   active: boolean;
-  country_code: string;
-  activities: Array<{ id: number; name: string; short_name: string }>;
+  countryCode: string;
+  activities: Array<{ id: number; name: string; shortName: string }>;
   languages: Array<{
-    language_id: number;
+    languageId: number;
     code: string;
     name: string;
     rank: number;
   }>;
   addresses: Array<{
     id: number;
-    street_name: string;
-    street_number: string;
+    streetName: string;
+    streetNumber: string;
     zip: string;
     city: string;
     region: string | null;
-    country_id: number | null;
+    countryId: number | null;
     name: string;
-    short_name: string;
+    shortName: string;
     directions: string | null;
     primary: boolean;
     active: boolean | null;
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
   }>;
   adminUserIds: string[];
   avatars: ClubAvatarsSigned;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type CreateClubAvatarFile = {
@@ -97,32 +97,32 @@ export class ClubDetailAssembler {
     return {
       id: club.id,
       name: club.name,
-      short_name: club.shortName,
-      established_date: club.establishedDate,
+      shortName: club.shortName,
+      establishedDate: club.establishedDate,
       active: club.active,
-      country_code: club.countryCode,
+      countryCode: club.countryCode,
       activities,
       languages,
       addresses: addresses.map((row) => ({
         id: row.id,
-        street_name: row.streetName,
-        street_number: row.streetNumber,
+        streetName: row.streetName,
+        streetNumber: row.streetNumber,
         zip: row.zip,
         city: row.city,
         region: row.region,
-        country_id: row.countryId,
+        countryId: row.countryId,
         name: row.name,
-        short_name: row.shortName,
+        shortName: row.shortName,
         directions: row.directions,
         primary: row.primary,
         active: row.active,
-        created_at: row.createdAt,
-        updated_at: row.updatedAt,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
       })),
       adminUserIds,
       avatars: await this.signAvatars(avatarSlots),
-      created_at: club.createdAt,
-      updated_at: club.updatedAt,
+      createdAt: club.createdAt,
+      updatedAt: club.updatedAt,
     };
   }
 
@@ -163,7 +163,7 @@ export class CreateClub {
     input: CreateClubInput,
     avatar?: CreateClubAvatarFile,
   ): Promise<ClubDetail> {
-    const existing = await this.clubs.findBySn(this.db, input.short_name);
+    const existing = await this.clubs.findBySn(this.db, input.shortName);
     if (existing) {
       throw new ConflictError("A club with this short name already exists");
     }
@@ -176,22 +176,22 @@ export class CreateClub {
       throw new ValidationError("One or more activityIds are invalid");
     }
 
-    const languageIds = input.languages.map((entry) => entry.language_id);
+    const languageIds = input.languages.map((entry) => entry.languageId);
     const languageOk = await this.catalog.assertLanguageIdsExist(
       this.db,
       languageIds,
     );
     if (!languageOk) {
-      throw new ValidationError("One or more language_id values are invalid");
+      throw new ValidationError("One or more languageId values are invalid");
     }
 
     const club = await this.db.transaction(async (tx) => {
       const created = await this.clubs.insertClub(tx, {
         name: input.name,
-        shortName: input.short_name,
-        establishedDate: input.established_date ?? null,
+        shortName: input.shortName,
+        establishedDate: input.establishedDate ?? null,
         active: input.active,
-        countryCode: input.country_code,
+        countryCode: input.countryCode,
       });
       await this.clubs.insertAdmin(tx, created.id, userId);
       await this.clubs.replaceActivities(tx, created.id, input.activityIds);
@@ -199,7 +199,7 @@ export class CreateClub {
         tx,
         created.id,
         input.languages.map((entry) => ({
-          languageId: entry.language_id,
+          languageId: entry.languageId,
           rank: entry.rank,
         })),
       );

@@ -8,20 +8,20 @@ describe("parseCreateClubMultipartBody", () => {
   it("parses JSON string arrays and boolean strings", () => {
     const result = parseCreateClubMultipartBody({
       name: "Example Club",
-      short_name: "ExC",
+      shortName: "ExC",
       active: "true",
-      country_code: "dk",
+      countryCode: "dk",
       activityIds: "[1,2]",
-      languages: '[{"language_id":1,"rank":1}]',
+      languages: '[{"languageId":1,"rank":1}]',
     });
 
     expect(result).toEqual({
       name: "Example Club",
-      short_name: "ExC",
+      shortName: "ExC",
       active: true,
-      country_code: "dk",
+      countryCode: "dk",
       activityIds: [1, 2],
-      languages: [{ language_id: 1, rank: 1 }],
+      languages: [{ languageId: 1, rank: 1 }],
     });
   });
 
