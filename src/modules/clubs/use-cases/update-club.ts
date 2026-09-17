@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 
 import { DRIZZLE } from "@/db/drizzle.token";
 import type { Database } from "@/db/types";
+import { isUniqueViolation } from "@/shared/db/pg-errors";
 import { ConflictError, ValidationError } from "@/shared/errors";
 
 import { ClubAccess } from "../lib/club-access";
@@ -58,46 +59,55 @@ export class UpdateClub {
       }
     }
 
-    const club = await this.db.transaction(async (tx) => {
-      const patch: Partial<{
-        name: string;
-        shortName: string;
-        establishedDate: string | null;
-        active: boolean;
-        countryCode: string;
-      }> = {};
-      if (input.name !== undefined) patch.name = input.name;
-      if (input.shortName !== undefined) patch.shortName = input.shortName;
-      if (input.establishedDate !== undefined)
-        patch.establishedDate = input.establishedDate;
-      if (input.active !== undefined) patch.active = input.active;
-      if (input.countryCode !== undefined) patch.countryCode = input.countryCode;
+    let club;
+    try {
+      club = await this.db.transaction(async (tx) => {
+        const patch: Partial<{
+          name: string;
+          shortName: string;
+          establishedDate: string | null;
+          active: boolean;
+          countryCode: string;
+        }> = {};
+        if (input.name !== undefined) patch.name = input.name;
+        if (input.shortName !== undefined) patch.shortName = input.shortName;
+        if (input.establishedDate !== undefined)
+          patch.establishedDate = input.establishedDate;
+        if (input.active !== undefined) patch.active = input.active;
+        if (input.countryCode !== undefined)
+          patch.countryCode = input.countryCode;
 
-      const updated =
-        Object.keys(patch).length > 0
-          ? await this.clubs.updateClub(tx, clubId, patch)
-          : await this.clubs.findById(tx, clubId);
+        const updated =
+          Object.keys(patch).length > 0
+            ? await this.clubs.updateClub(tx, clubId, patch)
+            : await this.clubs.findById(tx, clubId);
 
-      if (!updated) {
-        throw new Error("Club disappeared during update");
+        if (!updated) {
+          throw new Error("Club disappeared during update");
+        }
+
+        if (input.activityIds !== undefined) {
+          await this.clubs.replaceActivities(tx, clubId, input.activityIds);
+        }
+        if (input.languages !== undefined) {
+          await this.clubs.replaceLanguages(
+            tx,
+            clubId,
+            input.languages.map((entry) => ({
+              languageId: entry.languageId,
+              rank: entry.rank,
+            })),
+          );
+        }
+
+        return updated;
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ConflictError("A club with this short name already exists");
       }
-
-      if (input.activityIds !== undefined) {
-        await this.clubs.replaceActivities(tx, clubId, input.activityIds);
-      }
-      if (input.languages !== undefined) {
-        await this.clubs.replaceLanguages(
-          tx,
-          clubId,
-          input.languages.map((entry) => ({
-            languageId: entry.languageId,
-            rank: entry.rank,
-          })),
-        );
-      }
-
-      return updated;
-    });
+      throw error;
+    }
 
     return this.assembler.assemble(this.db, club);
   }

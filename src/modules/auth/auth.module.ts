@@ -1,10 +1,5 @@
 import { Module } from "@nestjs/common";
 
-import {
-  createScalewayObjectStorage,
-  SCALEWAY_OBJECT_STORAGE,
-} from "@/shared/storage/scaleway-object-storage";
-
 import { AuthController } from "./controllers/auth.controller";
 import { ReferenceController } from "./controllers/reference.controller";
 import { UsersController } from "./controllers/users.controller";
@@ -42,10 +37,6 @@ import { UpdateAvatars } from "./use-cases/update-avatars";
     {
       provide: PASSWORD_RESET_MAILER,
       useFactory: createPasswordResetMailer,
-    },
-    {
-      provide: SCALEWAY_OBJECT_STORAGE,
-      useFactory: createScalewayObjectStorage,
     },
     Signup,
     CompleteProfile,

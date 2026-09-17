@@ -114,6 +114,14 @@ export const CreateClubSchema = z
       }),
   })
   .superRefine((value, ctx) => {
+    if (new Set(value.activityIds).size !== value.activityIds.length) {
+      ctx.addIssue({
+        code: "custom",
+        message: "activityIds must be unique",
+        path: ["activityIds"],
+      });
+    }
+
     if (value.languages.length > 0) {
       if (!value.languages.some((entry) => entry.rank === 1)) {
         ctx.addIssue({
@@ -127,6 +135,14 @@ export const CreateClubSchema = z
         ctx.addIssue({
           code: "custom",
           message: "language ranks must be unique",
+          path: ["languages"],
+        });
+      }
+      const languageIds = value.languages.map((entry) => entry.languageId);
+      if (new Set(languageIds).size !== languageIds.length) {
+        ctx.addIssue({
+          code: "custom",
+          message: "languageId values must be unique",
           path: ["languages"],
         });
       }
@@ -193,6 +209,17 @@ export const UpdateClubSchema = z
       }),
   })
   .superRefine((value, ctx) => {
+    if (
+      value.activityIds !== undefined &&
+      new Set(value.activityIds).size !== value.activityIds.length
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "activityIds must be unique",
+        path: ["activityIds"],
+      });
+    }
+
     if (value.languages === undefined) {
       return;
     }
@@ -208,6 +235,14 @@ export const UpdateClubSchema = z
       ctx.addIssue({
         code: "custom",
         message: "language ranks must be unique",
+        path: ["languages"],
+      });
+    }
+    const languageIds = value.languages.map((entry) => entry.languageId);
+    if (new Set(languageIds).size !== languageIds.length) {
+      ctx.addIssue({
+        code: "custom",
+        message: "languageId values must be unique",
         path: ["languages"],
       });
     }
@@ -247,7 +282,6 @@ export const ClubAddressResponseSchema = z
     zip: z.string(),
     city: z.string(),
     region: z.string().nullable(),
-    countryId: z.number().int().nullable(),
     name: z.string(),
     shortName: z.string(),
     directions: z.string().nullable(),

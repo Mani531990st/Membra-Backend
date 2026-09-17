@@ -57,7 +57,7 @@ Application errors live in `src/shared/errors` (`AppError`, `toHttpError`). Do n
 
 Cookie name: `membra_session` (HttpOnly, SameSite=Lax, Secure in production). Login identity is `user_credentials.email` (normalized lowercase). `user_emails` is a contact copy written on signup only.
 
-Session TTL is 24 hours by default (signup and login). `rememberMe: true` on login extends to 7 days. Each user may have at most 5 active sessions; a sixth login revokes the oldest. Session capping uses `SELECT … FOR UPDATE` and needs a **session-mode** Postgres connection (not transaction-mode PgBouncer / Neon pooled URL).
+Session TTL is 24 hours by default (signup and login). `rememberMe: true` on login extends to 7 days. Each user may have at most 5 active sessions; a sixth login revokes the oldest. Session capping uses `SELECT … FOR UPDATE` and needs a **direct or session-mode** Postgres connection (not transaction-mode PgBouncer / Neon pooled `-pooler.` URL).
 
 | Method | Path | Notes |
 |--------|------|-------|
@@ -68,16 +68,16 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | POST | `/api/auth/forgot-password` | Generic 200; mailer after token commit |
 | POST | `/api/auth/reset-password` | Single-use token consume; revokes all sessions |
 | GET | `/api/users/me` | Current user; includes `profileComplete`, signed `avatars`, `primaryEmail`, `primaryPhone` |
-| POST | `/api/users/complete-profile` | Session required. `gender` is `male` \| `female` \| `others` |
-| PUT | `/api/users/avatars` | Session required. Multipart field `avatar` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); server stores original / 512px / 128px AVIF as avatar1–3 on Scaleway |
+| POST | `/api/users/complete-profile` | Session required. `genderId` from `GET /api/reference/genders` |
+| PUT | `/api/users/avatars` | Session required. Multipart field `avatar` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); server stores 384×384 / 96×96 / 32×32 AVIF as avatar1–3 on Scaleway |
 | GET | `/api/users/avatars` | Session required. Signed GET URLs (1h) or null per slot |
-| GET | `/api/reference/genders` | Reference rows from `app.genders` |
+| GET | `/api/reference/genders` | Reference rows from `app.genders` (`{ id, gender }`) |
 
 Signup / login / forgot-password / reset-password are rate limited (5 requests / minute / IP).
 
 Password hashing: Argon2id (`@node-rs/argon2`, 19 MiB, 2 iterations). Unknown emails still run a dummy verify so login timing does not enumerate accounts.
 
-If `SMTP_HOST` and `SMTP_FROM` are unset, password-reset emails use a console mailer (logged, not delivered).
+If `SMTP_HOST` and `SMTP_FROM` are unset, password-reset emails use a console mailer (logged, not delivered). The API still returns success; forgot-password never fails boot or the request because SMTP is missing.
 
 Avatar uploads require Scaleway Object Storage env (`SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_S3_BUCKET`, region/endpoint). See `.env.example`.
 
@@ -85,20 +85,20 @@ CORS and CSRF Origin checks use `APP_BASE_URL` (and optional `CORS_ORIGINS`). Br
 
 ## Clubs
 
-Any authenticated user can create a club and becomes its first admin (`club_admins`). Country is stored as ISO alpha-2 `countryCode` (no countries table). Club avatars mirror user avatars (three AVIF sizes on Scaleway).
+Any authenticated user can create a club and becomes its first admin (`club_admins`). Until a members table exists, **admins are the only members** — GET club detail and avatars require membership (404 for strangers). Country is stored as ISO alpha-2 `countryCode` (no countries table). Club avatars mirror user avatars (three AVIF sizes on Scaleway).
 
 | Method | Path | Notes |
 |--------|------|-------|
 | GET | `/api/clubs/activities` | Activity catalog |
 | GET | `/api/clubs/languages` | Language catalog |
 | POST | `/api/clubs` | Multipart create; creator becomes admin; optional `avatar` file |
-| GET | `/api/clubs/:clubId` | Club detail including signed `avatars` |
+| GET | `/api/clubs/:clubId` | Club detail including signed `avatars` (**member/admin only**) |
 | PATCH | `/api/clubs/:clubId` | Update profile / activities / languages (admin) |
 | POST | `/api/clubs/:clubId/addresses` | Add structured address (admin) |
 | PATCH | `/api/clubs/:clubId/addresses/:addressId` | Update address (admin) |
 | POST | `/api/clubs/:clubId/addresses/:addressId/primary` | Make address primary (admin) |
 | PUT | `/api/clubs/:clubId/avatars` | Multipart `avatar`; three size variants (admin) |
-| GET | `/api/clubs/:clubId/avatars` | Signed avatar URLs |
+| GET | `/api/clubs/:clubId/avatars` | Signed avatar URLs (**member/admin only**) |
 
 ## API Documentation
 
@@ -116,6 +116,8 @@ When a feature module exposes HTTP APIs, add OpenAPI docs under that module and 
 ## Database
 
 Central schema: `src/db/schema/` (PostgreSQL schema `app`).
+
+`DATABASE_URL` must be a **direct or session-mode** Postgres URL. Transaction-mode poolers break session capping (`SELECT … FOR UPDATE`).
 
 ```bash
 npm run db:generate
@@ -188,7 +190,7 @@ Runtime env on the **container** (use **secret** variables for `DATABASE_URL`, `
 - `PORT` is injected by Scaleway from the container port (8080)
 - `DATABASE_URL`
 - `APP_BASE_URL` / `CORS_ORIGINS` (the public frontend/API origin, not `http://localhost:3000`)
-- `SMTP_HOST` / `SMTP_FROM` (optional on test; without them password-reset emails are only logged). Add `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_SECURE` as needed
+- `SMTP_HOST` / `SMTP_FROM` (optional; without them password-reset emails are only logged). Add `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_SECURE` as needed
 - Object Storage: `SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_S3_BUCKET`, `SCW_DEFAULT_REGION`, `SCW_S3_ENDPOINT`
 - `ENABLE_API_DOCS=true` if you want Swagger on test
 

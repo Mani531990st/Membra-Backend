@@ -131,8 +131,8 @@ export class GetClubAvatars {
     private readonly assembler: ClubDetailAssembler,
   ) {}
 
-  async execute(clubId: number): Promise<ClubAvatarsSigned> {
-    await this.access.requireClub(clubId);
+  async execute(clubId: number, userId: string): Promise<ClubAvatarsSigned> {
+    await this.access.requireMember(clubId, userId);
     const row = await this.avatarsRepository.findByClubId(this.db, clubId);
     return this.assembler.signAvatars(row);
   }

@@ -8,6 +8,7 @@ import { HealthModule } from "./health/health.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { ClubsModule } from "./modules/clubs/clubs.module";
 import { OriginGuard } from "./shared/http/origin.guard";
+import { StorageModule } from "./shared/storage/storage.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { OriginGuard } from "./shared/http/origin.guard";
       throttlers: [{ name: "default", ttl: 60_000, limit: 60 }],
     }),
     DatabaseModule,
+    StorageModule,
     AuthModule,
     ClubsModule,
     DocsModule,

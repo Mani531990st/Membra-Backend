@@ -1,10 +1,6 @@
 import { Module } from "@nestjs/common";
 
 import { AuthModule } from "@/modules/auth/auth.module";
-import {
-  createScalewayObjectStorage,
-  SCALEWAY_OBJECT_STORAGE,
-} from "@/shared/storage/scaleway-object-storage";
 
 import { ClubsController } from "./controllers/clubs.controller";
 import { ClubAccess } from "./lib/club-access";
@@ -27,10 +23,6 @@ import { UpdateClub } from "./use-cases/update-club";
   imports: [AuthModule],
   controllers: [ClubsController],
   providers: [
-    {
-      provide: SCALEWAY_OBJECT_STORAGE,
-      useFactory: createScalewayObjectStorage,
-    },
     ClubsRepository,
     ClubAddressesRepository,
     ClubAvatarsRepository,

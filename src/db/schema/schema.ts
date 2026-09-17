@@ -1,4 +1,4 @@
-import { pgSchema, foreignKey, bigint, uuid, varchar, boolean, timestamp, check, smallint, unique, date, integer, index, text, primaryKey } from "drizzle-orm/pg-core"
+import { pgSchema, foreignKey, bigint, uuid, varchar, boolean, timestamp, check, smallint, unique, uniqueIndex, date, integer, index, text, primaryKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const app = pgSchema("app");
@@ -480,6 +480,10 @@ export const clubAddressesInApp = app.table("club_addresses", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
+	index("club_addresses_club_id_idx").using("btree", table.clubId.asc().nullsLast().op("int8_ops")),
+	uniqueIndex("club_addresses_one_primary_per_club")
+		.on(table.clubId)
+		.where(sql`"primary" IS TRUE`),
 	foreignKey({
 			columns: [table.clubId],
 			foreignColumns: [clubsInApp.id],

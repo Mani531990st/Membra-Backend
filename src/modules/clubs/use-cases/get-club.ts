@@ -18,8 +18,8 @@ export class GetClub {
     private readonly assembler: ClubDetailAssembler,
   ) {}
 
-  async execute(clubId: number): Promise<ClubDetail> {
-    const club = await this.access.requireClub(clubId);
+  async execute(clubId: number, userId: string): Promise<ClubDetail> {
+    const club = await this.access.requireMember(clubId, userId);
     return this.assembler.assemble(this.db, club);
   }
 }

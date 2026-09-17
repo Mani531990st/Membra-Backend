@@ -4,6 +4,7 @@ import { Inject, Injectable } from "@nestjs/common";
 
 import { DRIZZLE } from "@/db/drizzle.token";
 import type { Database } from "@/db/types";
+import { isUniqueViolation } from "@/shared/db/pg-errors";
 import { ConflictError, ValidationError } from "@/shared/errors";
 import {
   buildAvatarVariants,
@@ -50,7 +51,6 @@ export type ClubDetail = {
     zip: string;
     city: string;
     region: string | null;
-    countryId: number | null;
     name: string;
     shortName: string;
     directions: string | null;
@@ -110,7 +110,6 @@ export class ClubDetailAssembler {
         zip: row.zip,
         city: row.city,
         region: row.region,
-        countryId: row.countryId,
         name: row.name,
         shortName: row.shortName,
         directions: row.directions,
@@ -187,53 +186,65 @@ export class CreateClub {
       throw new ValidationError("One or more languageId values are invalid");
     }
 
-    const club = await this.db.transaction(async (tx) => {
-      const created = await this.clubs.insertClub(tx, {
-        name: input.name,
-        shortName: input.shortName,
-        establishedDate: input.establishedDate ?? null,
-        active: input.active,
-        countryCode: input.countryCode,
-      });
-      await this.clubs.insertAdmin(tx, created.id, userId);
-      await this.clubs.replaceActivities(tx, created.id, input.activityIds);
-      await this.clubs.replaceLanguages(
-        tx,
-        created.id,
-        input.languages.map((entry) => ({
-          languageId: entry.languageId,
-          rank: entry.rank,
-        })),
-      );
-      for (const [index, address] of input.addresses.entries()) {
-        await this.addresses.insert(tx, {
-          clubId: created.id,
-          streetName: address.streetName,
-          streetNumber: address.streetNumber,
-          zip: address.zip,
-          city: address.city,
-          region: address.region ?? null,
-          name: address.name,
-          shortName: address.shortName,
-          directions: address.directions ?? null,
-          primary: index === 0,
-          active: address.active ?? true,
-        });
-      }
-      return created;
-    });
+    // Upload to object storage before the DB transaction so a failed create
+    // never leaves a committed club without avatar rows (orphan S3 is OK).
+    const avatarKeys = avatar?.buffer?.length
+      ? await this.uploadAvatarObjects(avatar)
+      : null;
 
-    if (avatar?.buffer?.length) {
-      await this.storeAvatar(club.id, avatar);
+    let club: ClubRow;
+    try {
+      club = await this.db.transaction(async (tx) => {
+        const created = await this.clubs.insertClub(tx, {
+          name: input.name,
+          shortName: input.shortName,
+          establishedDate: input.establishedDate ?? null,
+          active: input.active,
+          countryCode: input.countryCode,
+        });
+        await this.clubs.insertAdmin(tx, created.id, userId);
+        await this.clubs.replaceActivities(tx, created.id, input.activityIds);
+        await this.clubs.replaceLanguages(
+          tx,
+          created.id,
+          input.languages.map((entry) => ({
+            languageId: entry.languageId,
+            rank: entry.rank,
+          })),
+        );
+        for (const [index, address] of input.addresses.entries()) {
+          await this.addresses.insert(tx, {
+            clubId: created.id,
+            streetName: address.streetName,
+            streetNumber: address.streetNumber,
+            zip: address.zip,
+            city: address.city,
+            region: address.region ?? null,
+            name: address.name,
+            shortName: address.shortName,
+            directions: address.directions ?? null,
+            primary: index === 0,
+            active: address.active ?? true,
+          });
+        }
+        if (avatarKeys) {
+          await this.avatarsRepository.upsertSlots(tx, created.id, avatarKeys);
+        }
+        return created;
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ConflictError("A club with this short name already exists");
+      }
+      throw error;
     }
 
     return this.assembler.assemble(this.db, club);
   }
 
-  private async storeAvatar(
-    clubId: number,
+  private async uploadAvatarObjects(
     avatar: CreateClubAvatarFile,
-  ): Promise<void> {
+  ): Promise<ClubAvatarSlots> {
     const variants = await buildAvatarVariants(avatar.buffer, avatar.mimetype);
     // Opaque asset id so object keys never embed the club primary key.
     const assetId = randomUUID();
@@ -264,6 +275,6 @@ export class CreateClub {
       }),
     ]);
 
-    await this.avatarsRepository.upsertSlots(this.db, clubId, keys);
+    return keys;
   }
 }

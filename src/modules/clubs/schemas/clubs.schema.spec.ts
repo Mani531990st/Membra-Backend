@@ -58,4 +58,23 @@ describe("CreateClubSchema addresses", () => {
     const parsed = CreateClubSchema.parse(base);
     expect(parsed.addresses).toEqual([]);
   });
+
+  it("rejects duplicate activityIds", () => {
+    const result = CreateClubSchema.safeParse({
+      ...base,
+      activityIds: [1, 1],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects duplicate languageId values", () => {
+    const result = CreateClubSchema.safeParse({
+      ...base,
+      languages: [
+        { languageId: 1, rank: 1 },
+        { languageId: 1, rank: 2 },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
 });

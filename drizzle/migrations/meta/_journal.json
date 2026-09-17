@@ -57,6 +57,13 @@
       "when": 1789550000000,
       "tag": "0007_column_renames",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789600000000,
+      "tag": "0008_club_addresses_primary_unique",
+      "breakpoints": true
     }
   ]
 }

@@ -204,13 +204,70 @@ describe("CreateClub", () => {
     expect(buildAvatarVariantsMock).toHaveBeenCalledTimes(1);
     expect(storage.putObject).toHaveBeenCalledTimes(3);
     expect(avatarsRepository.upsertSlots).toHaveBeenCalledWith(
-      db,
+      tx,
       10,
       expect.objectContaining({
         avatar1: expect.stringMatching(/\.avif$/),
         avatar2: expect.stringMatching(/\.avif$/),
         avatar3: expect.stringMatching(/\.avif$/),
       }),
+    );
+  });
+
+  it("maps unique shortName violation during insert to ConflictError", async () => {
+    clubs.insertClub.mockRejectedValue({ code: "23505" });
+    await expect(
+      useCase.execute("user-1", {
+        name: "Example Club",
+        shortName: "ExC",
+        establishedDate: null,
+        active: true,
+        countryCode: "DK",
+        activityIds: [],
+        languages: [],
+        addresses: [],
+      }),
+    ).rejects.toBeInstanceOf(ConflictError);
+  });
+
+  it("uploads avatar objects before the DB transaction commits keys", async () => {
+    const callOrder: string[] = [];
+    storage.putObject.mockImplementation(async () => {
+      callOrder.push("putObject");
+    });
+    db.transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+      callOrder.push("transaction");
+      return fn(tx);
+    });
+    avatarsRepository.upsertSlots.mockImplementation(async () => {
+      callOrder.push("upsertSlots");
+      return { avatar1: "a1", avatar2: "a2", avatar3: "a3" };
+    });
+
+    await useCase.execute(
+      "user-1",
+      {
+        name: "Example Club",
+        shortName: "ExC",
+        establishedDate: null,
+        active: true,
+        countryCode: "DK",
+        activityIds: [],
+        languages: [],
+        addresses: [],
+      },
+      {
+        buffer: Buffer.from("image"),
+        mimetype: "image/jpeg",
+        size: 5,
+      },
+    );
+
+    expect(callOrder.indexOf("putObject")).toBeLessThan(
+      callOrder.indexOf("transaction"),
+    );
+    expect(callOrder.indexOf("upsertSlots")).toBeGreaterThan(
+      callOrder.indexOf("transaction"),
     );
   });
 
@@ -301,6 +358,7 @@ describe("MakeClubAddressPrimary", () => {
     expect(result.primary).toBe(true);
     expect(result.shortName).toBe("RP");
     expect(result.streetName).toBe("Lyngbyvej");
+    expect(result).not.toHaveProperty("countryId");
   });
 });
 

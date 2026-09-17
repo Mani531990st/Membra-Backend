@@ -1,4 +1,4 @@
-import { asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { Injectable } from "@nestjs/common";
 
 import type { DbOrTx } from "@/db";
@@ -81,7 +81,12 @@ export class CatalogRepository {
     const rows = await dbOrTx
       .select({ id: activitiesInApp.id })
       .from(activitiesInApp)
-      .where(inArray(activitiesInApp.id, unique));
+      .where(
+        and(
+          inArray(activitiesInApp.id, unique),
+          eq(activitiesInApp.active, true),
+        ),
+      );
     return rows.length === unique.length;
   }
 
@@ -96,7 +101,12 @@ export class CatalogRepository {
     const rows = await dbOrTx
       .select({ id: languagesInApp.id })
       .from(languagesInApp)
-      .where(inArray(languagesInApp.id, unique));
+      .where(
+        and(
+          inArray(languagesInApp.id, unique),
+          eq(languagesInApp.active, true),
+        ),
+      );
     return rows.length === unique.length;
   }
 }

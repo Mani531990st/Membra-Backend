@@ -16,6 +16,13 @@ function createPostgresClient() {
     );
   }
 
+  const lower = databaseUrl.toLowerCase();
+  if (lower.includes("-pooler.") || lower.includes("pgbouncer")) {
+    console.warn(
+      "[db] DATABASE_URL looks like a transaction-mode pooler. Session capping uses SELECT … FOR UPDATE and needs a direct or session-mode connection.",
+    );
+  }
+
   return postgres(databaseUrl, {
     // NestJS is a long-running process; allow a small pool.
     max: 10,

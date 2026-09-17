@@ -18,9 +18,8 @@ import { ValidationError } from "@/shared/errors";
 import { MAX_AVATAR_BYTES } from "@/shared/images/avatar-image";
 import { ZodValidationPipe } from "@/shared/validation/zod-pipe";
 
-import { AuthSession } from "@/modules/auth/decorators/auth-session.decorator";
-import { SessionAuthGuard } from "@/modules/auth/guards/session-auth.guard";
-import type { AuthSessionContext } from "@/modules/auth/types/auth.types";
+import { AuthSession, SessionAuthGuard } from "@/modules/auth";
+import type { AuthSessionContext } from "@/modules/auth";
 
 import {
   ClubAddressBodySchema,
@@ -109,10 +108,11 @@ export class ClubsController {
 
   @Get(":clubId")
   async get(
+    @AuthSession() session: AuthSessionContext,
     @Param(new ZodValidationPipe(ClubIdParamSchema))
     params: { clubId: number },
   ) {
-    return this.getClub.execute(params.clubId);
+    return this.getClub.execute(params.clubId, session.userId);
   }
 
   @Patch(":clubId")
@@ -191,9 +191,10 @@ export class ClubsController {
 
   @Get(":clubId/avatars")
   async getClubAvatars(
+    @AuthSession() session: AuthSessionContext,
     @Param(new ZodValidationPipe(ClubIdParamSchema))
     params: { clubId: number },
   ) {
-    return this.getAvatars.execute(params.clubId);
+    return this.getAvatars.execute(params.clubId, session.userId);
   }
 }

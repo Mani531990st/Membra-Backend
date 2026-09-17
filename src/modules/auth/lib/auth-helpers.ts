@@ -44,14 +44,7 @@ export function getAppBaseUrl(): string {
   );
 }
 
-export function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: string }).code === "23505"
-  );
-}
+export { isUniqueViolation } from "@/shared/db/pg-errors";
 
 export function toIsoTimestamp(date: Date): string {
   return date.toISOString();

@@ -100,7 +100,12 @@ export class AuthRepository {
       .from(userCredentialsInApp)
       .innerJoin(usersInApp, eq(userCredentialsInApp.userId, usersInApp.uuid))
       .leftJoin(gendersInApp, eq(usersInApp.genderId, gendersInApp.id))
-      .where(eq(userCredentialsInApp.email, email))
+      .where(
+        and(
+          eq(userCredentialsInApp.email, email),
+          eq(usersInApp.active, true),
+        ),
+      )
       .limit(1);
 
     return row ? mapAuthUser(row) : null;

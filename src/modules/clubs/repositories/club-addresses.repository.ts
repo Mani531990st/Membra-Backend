@@ -109,6 +109,19 @@ export class ClubAddressesRepository {
       .where(where);
   }
 
+  async countPrimaries(dbOrTx: DbOrTx, clubId: number): Promise<number> {
+    const [row] = await dbOrTx
+      .select({ value: sql<number>`count(*)::int` })
+      .from(clubAddressesInApp)
+      .where(
+        and(
+          eq(clubAddressesInApp.clubId, clubId),
+          eq(clubAddressesInApp.primary, true),
+        ),
+      );
+    return Number(row?.value ?? 0);
+  }
+
   async setPrimary(
     dbOrTx: DbOrTx,
     clubId: number,

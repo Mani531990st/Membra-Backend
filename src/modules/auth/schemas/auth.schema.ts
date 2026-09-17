@@ -49,7 +49,7 @@ export const CompleteProfileSchema = z
       .openapi({ example: "1990-01-15" }),
     genderId: z.number().int().positive().openapi({
       example: 1,
-      description: "ID from GET /api/genders",
+      description: "ID from GET /api/reference/genders",
     }),
     preferredLang: preferredLangSchema,
   })

@@ -145,7 +145,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     tags: [CLUBS_TAG],
     summary: "Get club",
     description:
-      "Returns club profile, addresses, activities, languages, admin count, and signed avatar URLs.",
+      "Returns club profile, addresses, activities, languages, admin count, and signed avatar URLs. Only club members (currently club admins) may read; strangers get 404.",
     security: [{ SessionCookie: [] }],
     request: {
       params: z.object({
@@ -211,7 +211,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
           "application/json": { schema: ClubAddressResponseSchema },
         },
       },
-      ...standardErrorResponses([400, 401, 403, 404, 500]),
+      ...standardErrorResponses([400, 401, 403, 404, 409, 500]),
     },
   });
 
@@ -238,7 +238,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
           "application/json": { schema: ClubAddressResponseSchema },
         },
       },
-      ...standardErrorResponses([400, 401, 403, 404, 500]),
+      ...standardErrorResponses([400, 401, 403, 404, 409, 500]),
     },
   });
 
@@ -261,7 +261,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
           "application/json": { schema: ClubAddressResponseSchema },
         },
       },
-      ...standardErrorResponses([401, 403, 404, 500]),
+      ...standardErrorResponses([401, 403, 404, 409, 500]),
     },
   });
 
@@ -298,6 +298,8 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     path: "/api/clubs/{clubId}/avatars",
     tags: [CLUBS_TAG],
     summary: "Get club avatars",
+    description:
+      "Signed GET URLs for club avatar variants. Only club members (currently club admins) may read; strangers get 404.",
     security: [{ SessionCookie: [] }],
     request: {
       params: z.object({

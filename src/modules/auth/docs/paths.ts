@@ -205,7 +205,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [USERS_TAG],
     summary: "Complete profile",
     description:
-      "Update the authenticated user's profile. `genderId` is the numeric id from GET /api/genders. Requires a valid session cookie.",
+      "Update the authenticated user's profile. `genderId` is the numeric id from GET /api/reference/genders. Requires a valid session cookie.",
     security: [{ SessionCookie: [] }],
     request: {
       body: {
@@ -274,7 +274,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [REFERENCE_TAG],
     summary: "List genders",
     description:
-      "Reference rows from app.genders. Used by clients that need ids; complete-profile accepts the enum value.",
+      "Reference rows from app.genders. Use `id` as `genderId` on complete-profile.",
     responses: {
       200: {
         description: "Gender reference data",

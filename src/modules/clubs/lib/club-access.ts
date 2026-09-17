@@ -28,4 +28,21 @@ export class ClubAccess {
       throw new ForbiddenError("You are not an admin of this club");
     }
   }
+
+  /**
+   * Club detail/avatar reads: only members may see the club.
+   * Until a club_members table exists, membership is club_admins only.
+   * Returns 404 for both missing clubs and non-members (no existence leak).
+   */
+  async requireMember(clubId: number, userId: string) {
+    const club = await this.clubs.findById(this.db, clubId);
+    if (!club) {
+      throw new NotFoundError("Club not found");
+    }
+    const isMember = await this.clubs.isAdmin(this.db, clubId, userId);
+    if (!isMember) {
+      throw new NotFoundError("Club not found");
+    }
+    return club;
+  }
 }

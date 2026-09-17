@@ -76,19 +76,15 @@ describe("Login", () => {
     expect(result.session.rawToken).toBe("token");
   });
 
-  it("issues a 7d session when rememberMe is true", async () => {
-    authRepository.findActiveUserByNormalizedEmail.mockResolvedValue(user);
-    passwordHasher.verifyLogin.mockResolvedValue(true);
+  it("treats missing active users the same as unknown emails", async () => {
+    // findActiveUserByNormalizedEmail filters users.active = true in the repository.
+    authRepository.findActiveUserByNormalizedEmail.mockResolvedValue(null);
+    passwordHasher.verifyLogin.mockResolvedValue(false);
 
-    await login.execute({
-      email: "ada@example.com",
-      password: "password1",
-      rememberMe: true,
-    });
+    await expect(
+      login.execute({ email: "inactive@example.com", password: "password1" }),
+    ).rejects.toBeInstanceOf(UnauthorizedError);
 
-    expect(sessionIssuer.issue).toHaveBeenCalledWith(
-      "user-1",
-      LOGIN_SESSION_TTL_MS.rememberMe,
-    );
+    expect(sessionIssuer.issue).not.toHaveBeenCalled();
   });
 });
