@@ -23,5 +23,8 @@ migrate-output.txt
 .env.*
 !.env.example
 
+# local / internal markdown docs (not shipped)
+/docs
+
 # typescript
 *.tsbuildinfo
