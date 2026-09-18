@@ -25,12 +25,17 @@ import {
   ClubAddressBodySchema,
   ClubAddressIdParamSchema,
   ClubIdParamSchema,
+  ClubLocationIdParamSchema,
   CreateClubSchema,
+  CreateLocationSchema,
   UpdateClubAddressSchema,
   UpdateClubSchema,
+  UpdateLocationSchema,
   type ClubAddressBody,
+  type CreateLocationInput,
   type UpdateClubAddressInput,
   type UpdateClubInput,
+  type UpdateLocationInput,
 } from "../schemas/clubs.schema";
 import {
   AddClubAddress,
@@ -42,6 +47,12 @@ import { CreateClub } from "../use-cases/create-club";
 import { GetClub } from "../use-cases/get-club";
 import { ListAdminClubs } from "../use-cases/list-admin-clubs";
 import { ListActivities, ListLanguages } from "../use-cases/list-catalogs";
+import {
+  CreateLocation,
+  GetLocation,
+  ListLocations,
+  UpdateLocation,
+} from "../use-cases/locations";
 import { UpdateClub } from "../use-cases/update-club";
 import { parseCreateClubMultipartBody } from "../lib/parse-create-club-multipart";
 
@@ -69,6 +80,10 @@ export class ClubsController {
     @Inject(GetClubAvatars) private readonly getAvatars: GetClubAvatars,
     @Inject(ListActivities) private readonly listActivities: ListActivities,
     @Inject(ListLanguages) private readonly listLanguages: ListLanguages,
+    @Inject(CreateLocation) private readonly createLocation: CreateLocation,
+    @Inject(UpdateLocation) private readonly updateLocation: UpdateLocation,
+    @Inject(GetLocation) private readonly getLocation: GetLocation,
+    @Inject(ListLocations) private readonly listLocations: ListLocations,
   ) {}
 
   @Get("activities")
@@ -170,6 +185,56 @@ export class ClubsController {
       params.clubId,
       params.addressId,
       session.userId,
+    );
+  }
+
+  @Get(":clubId/locations")
+  async listClubLocations(
+    @AuthSession() session: AuthSessionContext,
+    @Param(new ZodValidationPipe(ClubIdParamSchema))
+    params: { clubId: number },
+  ) {
+    return this.listLocations.execute(params.clubId, session.userId);
+  }
+
+  @Post(":clubId/locations")
+  @HttpCode(201)
+  async addClubLocation(
+    @AuthSession() session: AuthSessionContext,
+    @Param(new ZodValidationPipe(ClubIdParamSchema))
+    params: { clubId: number },
+    @Body(new ZodValidationPipe(CreateLocationSchema))
+    body: CreateLocationInput,
+  ) {
+    return this.createLocation.execute(params.clubId, session.userId, body);
+  }
+
+  @Get(":clubId/locations/:locationId")
+  async getClubLocation(
+    @AuthSession() session: AuthSessionContext,
+    @Param(new ZodValidationPipe(ClubLocationIdParamSchema))
+    params: { clubId: number; locationId: number },
+  ) {
+    return this.getLocation.execute(
+      params.clubId,
+      params.locationId,
+      session.userId,
+    );
+  }
+
+  @Patch(":clubId/locations/:locationId")
+  async patchClubLocation(
+    @AuthSession() session: AuthSessionContext,
+    @Param(new ZodValidationPipe(ClubLocationIdParamSchema))
+    params: { clubId: number; locationId: number },
+    @Body(new ZodValidationPipe(UpdateLocationSchema))
+    body: UpdateLocationInput,
+  ) {
+    return this.updateLocation.execute(
+      params.clubId,
+      params.locationId,
+      session.userId,
+      body,
     );
   }
 

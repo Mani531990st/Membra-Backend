@@ -12,9 +12,13 @@ import {
   ClubDetailResponseSchema,
   ClubSummaryResponseSchema,
   CreateClubSchema,
+  CreateLocationSchema,
   LanguagesResponseSchema,
+  LocationResponseSchema,
+  LocationsListResponseSchema,
   UpdateClubAddressSchema,
   UpdateClubSchema,
+  UpdateLocationSchema,
 } from "../schemas/clubs.schema";
 
 const CLUBS_TAG = "Clubs";
@@ -81,6 +85,10 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
   registry.register("LanguagesResponse", LanguagesResponseSchema);
   registry.register("UploadClubAvatarsRequest", UploadClubAvatarsRequestSchema);
   registry.register("CreateClubMultipartRequest", CreateClubMultipartSchema);
+  registry.register("CreateLocationRequest", CreateLocationSchema);
+  registry.register("UpdateLocationRequest", UpdateLocationSchema);
+  registry.register("LocationResponse", LocationResponseSchema);
+  registry.register("LocationsListResponse", LocationsListResponseSchema);
 
   registry.registerPath({
     method: "get",
@@ -337,6 +345,110 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
         },
       },
       ...standardErrorResponses([401, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/clubs/{clubId}/locations",
+    tags: [CLUBS_TAG],
+    summary: "List club locations",
+    description:
+      "Returns all locations for the club in depth-first hierarchy order. shownName is the short-name path (e.g. HH.i.JJ). Member/admin only.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Locations in hierarchy order",
+        content: {
+          "application/json": { schema: LocationsListResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
+    path: "/api/clubs/{clubId}/locations",
+    tags: [CLUBS_TAG],
+    summary: "Create club location",
+    description:
+      "Creates a location. shownName is computed from parent.shownName + shortName (or shortName alone for roots). Admin only.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+      }),
+      body: {
+        required: true,
+        content: { "application/json": { schema: CreateLocationSchema } },
+      },
+    },
+    responses: {
+      201: {
+        description: "Location created",
+        content: {
+          "application/json": { schema: LocationResponseSchema },
+        },
+      },
+      ...standardErrorResponses([400, 401, 403, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/clubs/{clubId}/locations/{locationId}",
+    tags: [CLUBS_TAG],
+    summary: "Get club location",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+        locationId: z.coerce.number().int().positive(),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Location detail",
+        content: {
+          "application/json": { schema: LocationResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "patch",
+    path: "/api/clubs/{clubId}/locations/{locationId}",
+    tags: [CLUBS_TAG],
+    summary: "Update club location",
+    description:
+      "Updates a location. Changing shortName or parentLocationId recomputes shownName for this node and all descendants. Admin only.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+        locationId: z.coerce.number().int().positive(),
+      }),
+      body: {
+        required: true,
+        content: { "application/json": { schema: UpdateLocationSchema } },
+      },
+    },
+    responses: {
+      200: {
+        description: "Location updated",
+        content: {
+          "application/json": { schema: LocationResponseSchema },
+        },
+      },
+      ...standardErrorResponses([400, 401, 403, 404, 500]),
     },
   });
 }

@@ -350,6 +350,7 @@ export const locationsInApp = app.table("locations", {
 	name: varchar({ length: 60 }).notNull(),
 	directions: varchar({ length: 255 }),
 	shortName: varchar("short_name", { length: 8 }).notNull(),
+	shownName: varchar("shown_name", { length: 120 }).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubAddressId: bigint("club_address_id", { mode: "number" }),
 	canMemberBook: boolean("can_member_book"),

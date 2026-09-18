@@ -378,7 +378,91 @@ export const LanguagesResponseSchema = z
   })
   .openapi("LanguagesResponse");
 
+function refineMemberBooking(
+  value: {
+    canMemberBook?: boolean | null;
+    memberReqToBook?: number | null;
+  },
+  ctx: z.RefinementCtx,
+): void {
+  if (value.canMemberBook === true && value.memberReqToBook == null) {
+    ctx.addIssue({
+      code: "custom",
+      message: "memberReqToBook is required when canMemberBook is true",
+      path: ["memberReqToBook"],
+    });
+  }
+}
+
+export const CreateLocationFieldsSchema = z.object({
+  name: z.string().trim().min(1).max(60).openapi({ example: "HH inde" }),
+  shortName: z.string().trim().min(1).max(8).openapi({ example: "HH" }),
+  parentLocationId: z.number().int().positive().nullable().optional().openapi({
+    example: null,
+    description: "Parent location in the same club; null for root",
+  }),
+  directions: z.string().trim().max(255).nullable().optional(),
+  clubAddressId: z.number().int().positive().nullable().optional(),
+  canMemberBook: z.boolean().nullable().optional().openapi({ example: true }),
+  canTeamBook: z.boolean().openapi({ example: true }),
+  memberReqToBook: z
+    .number()
+    .int()
+    .min(1)
+    .max(30)
+    .nullable()
+    .optional()
+    .openapi({ example: 4 }),
+  public: z.boolean().openapi({ example: false }),
+  canFriendshipClubBook: z.boolean().openapi({ example: true }),
+  active: z.boolean().optional().default(true),
+});
+
+export const CreateLocationSchema = CreateLocationFieldsSchema.superRefine(
+  refineMemberBooking,
+).openapi("CreateLocationRequest");
+
+export const UpdateLocationSchema = CreateLocationFieldsSchema.partial()
+  .superRefine(refineMemberBooking)
+  .openapi("UpdateLocationRequest");
+
+export const ClubLocationIdParamSchema = z
+  .object({
+    clubId: z.coerce.number().int().positive(),
+    locationId: z.coerce.number().int().positive(),
+  })
+  .openapi("ClubLocationIdParam");
+
+export const LocationResponseSchema = z
+  .object({
+    id: z.number().int(),
+    clubId: z.number().int(),
+    name: z.string(),
+    shortName: z.string(),
+    shownName: z.string(),
+    parentLocationId: z.number().int().nullable(),
+    directions: z.string().nullable(),
+    clubAddressId: z.number().int().nullable(),
+    canMemberBook: z.boolean().nullable(),
+    canTeamBook: z.boolean(),
+    memberReqToBook: z.number().int().nullable(),
+    public: z.boolean(),
+    canFriendshipClubBook: z.boolean(),
+    active: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .openapi("LocationResponse");
+
+export const LocationsListResponseSchema = z
+  .object({
+    locations: z.array(LocationResponseSchema),
+  })
+  .openapi("LocationsListResponse");
+
 export type CreateClubInput = z.infer<typeof CreateClubSchema>;
 export type UpdateClubInput = z.infer<typeof UpdateClubSchema>;
 export type ClubAddressBody = z.infer<typeof ClubAddressBodySchema>;
 export type UpdateClubAddressInput = z.infer<typeof UpdateClubAddressSchema>;
+export type CreateLocationInput = z.infer<typeof CreateLocationSchema>;
+export type UpdateLocationInput = z.infer<typeof UpdateLocationSchema>;

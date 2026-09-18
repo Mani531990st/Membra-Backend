@@ -98,6 +98,10 @@ Any authenticated user can create a club and becomes its first admin (`club_admi
 | POST | `/api/clubs/:clubId/addresses` | Add structured address (admin) |
 | PATCH | `/api/clubs/:clubId/addresses/:addressId` | Update address (admin) |
 | POST | `/api/clubs/:clubId/addresses/:addressId/primary` | Make address primary (admin) |
+| GET | `/api/clubs/:clubId/locations` | List locations (hierarchy order; member/admin) |
+| POST | `/api/clubs/:clubId/locations` | Create location; server sets `shownName` (admin) |
+| GET | `/api/clubs/:clubId/locations/:locationId` | Location detail (member/admin) |
+| PATCH | `/api/clubs/:clubId/locations/:locationId` | Update location; cascades `shownName` (admin) |
 | PUT | `/api/clubs/:clubId/avatars` | Multipart `avatar`; three size variants (admin) |
 | GET | `/api/clubs/:clubId/avatars` | Signed avatar URLs (**member/admin only**) |
 
