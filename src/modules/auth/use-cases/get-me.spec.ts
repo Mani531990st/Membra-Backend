@@ -55,7 +55,7 @@ describe("GetMe", () => {
     });
     authRepository.findPrimaryEmail.mockResolvedValue("ada@example.com");
     authRepository.findPrimaryPhone.mockResolvedValue({
-      countryCode: 45,
+      phoneCountryCode: 45,
       phoneNumber: "12345678",
     });
 
@@ -80,7 +80,7 @@ describe("GetMe", () => {
       },
       primaryEmail: "ada@example.com",
       primaryPhone: {
-        countryCode: 45,
+        phoneCountryCode: 45,
         phoneNumber: "12345678",
       },
     });

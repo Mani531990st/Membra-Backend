@@ -179,7 +179,7 @@ export const AvatarsResponseSchema = z
 
 export const PrimaryPhoneSchema = z
   .object({
-    countryCode: z.number().int().nullable(),
+    phoneCountryCode: z.number().int().nullable(),
     phoneNumber: z.string().nullable(),
   })
   .openapi("PrimaryPhone");

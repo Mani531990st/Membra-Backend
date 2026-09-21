@@ -149,7 +149,7 @@ export const clubPhoneNumbersInApp = app.table("club_phone_numbers", {
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_telephone_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
-	countryCode: smallint("country_code"),
+	phoneCountryCode: smallint("phone_country_code"),
 	phoneNumber: varchar("phone_number", { length: 14 }),
 	description: varchar({ length: 20 }),
 	primary: boolean(),
@@ -162,7 +162,7 @@ export const clubPhoneNumbersInApp = app.table("club_phone_numbers", {
 			foreignColumns: [clubsInApp.id],
 			name: "club_telephone_club_id_fkey"
 		}).onDelete("cascade"),
-	check("club_telephone_country_code_check", sql`(country_code > 0) AND (country_code <= 999)`),
+	check("club_telephone_phone_country_code_check", sql`(phone_country_code > 0) AND (phone_country_code <= 999)`),
 ]);
 
 export const clubQuestionnairesInApp = app.table("club_questionnaires", {
@@ -423,7 +423,7 @@ export const userPhoneNumbersInApp = app.table("user_phone_numbers", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.phone_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
-	countryCode: integer("country_code"),
+	phoneCountryCode: integer("phone_country_code"),
 	phoneNumber: varchar("phone_number", { length: 14 }),
 	primary: boolean().default(false),
 	active: boolean().default(false),
@@ -435,9 +435,9 @@ export const userPhoneNumbersInApp = app.table("user_phone_numbers", {
 			foreignColumns: [usersInApp.uuid],
 			name: "phone_user_id_fkey"
 		}).onDelete("cascade"),
-	unique("user_phone_numbers_country_code_phone_number_unique").on(table.phoneNumber, table.countryCode),
-	check("phone_check", sql`(country_code IS NULL) OR (phone_number IS NULL) OR ((length((country_code)::text) + length((phone_number)::text)) <= 14)`),
-	check("phone_country_code_check", sql`(country_code > 0) AND (country_code <= 9999)`),
+	unique("user_phone_numbers_phone_country_code_phone_number_unique").on(table.phoneNumber, table.phoneCountryCode),
+	check("phone_check", sql`(phone_country_code IS NULL) OR (phone_number IS NULL) OR ((length((phone_country_code)::text) + length((phone_number)::text)) <= 14)`),
+	check("phone_country_code_check", sql`(phone_country_code > 0) AND (phone_country_code <= 9999)`),
 ]);
 
 export const usersInApp = app.table("users", {

@@ -71,6 +71,13 @@
       "when": 1789700000000,
       "tag": "0009_locations_shown_name",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789800000000,
+      "tag": "0010_phone_country_code",
+      "breakpoints": true
     }
   ]
 }

@@ -170,10 +170,13 @@ export class AuthRepository {
   async findPrimaryPhone(
     dbOrTx: DbOrTx,
     userId: string,
-  ): Promise<{ countryCode: number | null; phoneNumber: string | null } | null> {
+  ): Promise<{
+    phoneCountryCode: number | null;
+    phoneNumber: string | null;
+  } | null> {
     const [row] = await dbOrTx
       .select({
-        countryCode: userPhoneNumbersInApp.countryCode,
+        phoneCountryCode: userPhoneNumbersInApp.phoneCountryCode,
         phoneNumber: userPhoneNumbersInApp.phoneNumber,
       })
       .from(userPhoneNumbersInApp)
