@@ -69,7 +69,7 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | POST | `/api/auth/reset-password` | Single-use token consume; revokes all sessions |
 | GET | `/api/users/me` | Current user; includes `profileComplete`, signed `avatars`, `primaryEmail`, `primaryPhone` |
 | POST | `/api/users/complete-profile` | Session required. `genderId` from `GET /api/reference/genders` |
-| PUT | `/api/users/avatars` | Session required. Multipart field `avatar` (JPEG, PNG, HEIC, HEIF, WebP, AVIF); server stores 384×384 / 96×96 / 32×32 AVIF as avatar1–3 on Scaleway |
+| PUT | `/api/users/avatars` | Session required. Multipart `avatar` File or Blob (JPEG/PNG/HEIC/HEIF/WebP/AVIF; MIME optional or octet-stream); stores 384×384 / 96×96 / 32×32 AVIF as avatar1–3 |
 | GET | `/api/users/avatars` | Session required. Signed GET URLs (1h) or null per slot |
 | GET | `/api/reference/genders` | Reference rows from `app.genders` (`{ id, gender }`) |
 
@@ -92,7 +92,7 @@ Any authenticated user can create a club and becomes its first admin (`club_admi
 | GET | `/api/clubs/activities` | Activity catalog |
 | GET | `/api/clubs/languages` | Language catalog |
 | GET | `/api/clubs` | Clubs the current user admins (summary cards + signed `avatar` from avatar2) |
-| POST | `/api/clubs` | Multipart create; creator becomes admin; optional `avatar` file |
+| POST | `/api/clubs` | Multipart create; creator becomes admin; optional `avatar` File or Blob |
 | GET | `/api/clubs/:clubId` | Club detail including signed `avatar` (**member/admin only**) |
 | PATCH | `/api/clubs/:clubId` | Update profile / activities / languages (admin) |
 | POST | `/api/clubs/:clubId/addresses` | Add structured address (admin) |
@@ -102,7 +102,7 @@ Any authenticated user can create a club and becomes its first admin (`club_admi
 | POST | `/api/clubs/:clubId/locations` | Create location; server sets `shownName` (admin) |
 | GET | `/api/clubs/:clubId/locations/:locationId` | Location detail (member/admin) |
 | PATCH | `/api/clubs/:clubId/locations/:locationId` | Update location; cascades `shownName` (admin) |
-| PUT | `/api/clubs/:clubId/avatars` | Multipart `avatar`; three size variants (admin) |
+| PUT | `/api/clubs/:clubId/avatars` | Multipart `avatar` File or Blob; three size variants (admin) |
 | GET | `/api/clubs/:clubId/avatars` | Signed avatar URLs (**member/admin only**) |
 
 ## API Documentation

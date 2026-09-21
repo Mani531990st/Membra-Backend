@@ -23,6 +23,21 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/heif",
 ]);
 
+/** MIME types often sent for Blob uploads; ignore and sniff from bytes. */
+const GENERIC_MIME_TYPES = new Set([
+  "application/octet-stream",
+  "binary/octet-stream",
+  "application/binary",
+]);
+
+function isGenericMime(mime: string): boolean {
+  return !mime || GENERIC_MIME_TYPES.has(mime);
+}
+
+function isAllowedImageMime(mime: string): boolean {
+  return ALLOWED_MIME_TYPES.has(mime);
+}
+
 function bufferStartsWith(buffer: Buffer, bytes: number[]): boolean {
   if (buffer.length < bytes.length) {
     return false;
@@ -53,7 +68,9 @@ export function detectAvatarFormat(
   }
 
   const normalizedMime = mimeType?.trim().toLowerCase() ?? "";
-  if (normalizedMime && !ALLOWED_MIME_TYPES.has(normalizedMime)) {
+  // File and Blob both arrive as multipart; Blobs often use octet-stream.
+  // Generic/missing MIME: sniff from magic bytes. Explicit wrong types: reject.
+  if (normalizedMime && !isGenericMime(normalizedMime) && !isAllowedImageMime(normalizedMime)) {
     throw new ValidationError(
       "Avatar must be JPEG, PNG, HEIC, HEIF, WebP, or AVIF",
     );

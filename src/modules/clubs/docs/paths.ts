@@ -27,7 +27,7 @@ const avatarBinaryField = z.string().openapi({
   type: "string",
   format: "binary",
   description:
-    "Single club image (JPEG, PNG, HEIC, HEIF, WebP, or AVIF, max 8 MB). Server creates 384×384, 96×96, and 32×32 AVIF variants.",
+    "Single club image as File or Blob (JPEG, PNG, HEIC, HEIF, WebP, or AVIF, max 8 MB). MIME may be omitted or application/octet-stream; format is detected from content. Server creates 384×384, 96×96, and 32×32 AVIF variants.",
 });
 
 const UploadClubAvatarsRequestSchema = z
@@ -66,7 +66,8 @@ const CreateClubMultipartSchema = z
         "Optional addresses as a JSON array. `primary` is optional/ignored — the first address becomes primary and the rest are non-primary. Do not wrap the whole value in extra quotes.",
     }),
     avatar: avatarBinaryField.optional().openapi({
-      description: "Optional club avatar; omitted leaves avatars null",
+      description:
+        "Optional club avatar as File or Blob; MIME may be omitted or application/octet-stream. Omitted leaves avatars null.",
     }),
   })
   .openapi("CreateClubMultipartRequest");
@@ -149,7 +150,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     tags: [CLUBS_TAG],
     summary: "Create club",
     description:
-      "Any authenticated user can create a club and becomes its first admin. Multipart form: text fields for club data (`activityIds`, `languages`, and `addresses` as JSON strings) plus optional `avatar` file (three AVIF size variants stored like PUT /avatars).",
+      "Any authenticated user can create a club and becomes its first admin. Multipart form: text fields for club data (`activityIds`, `languages`, and `addresses` as JSON strings) plus optional `avatar` File or Blob (three AVIF size variants stored like PUT /avatars; MIME may be omitted or octet-stream).",
     security: [{ SessionCookie: [] }],
     request: {
       body: {
@@ -303,6 +304,8 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     path: "/api/clubs/{clubId}/avatars",
     tags: [CLUBS_TAG],
     summary: "Upload club avatars",
+    description:
+      "Admin only. Multipart field `avatar` as File or Blob (JPEG, PNG, HEIC, HEIF, WebP, or AVIF). MIME may be omitted or application/octet-stream; format is sniffed from content. Stores three AVIF size variants.",
     security: [{ SessionCookie: [] }],
     request: {
       params: z.object({

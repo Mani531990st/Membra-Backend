@@ -29,7 +29,7 @@ const avatarBinaryField = z.string().openapi({
   type: "string",
   format: "binary",
   description:
-    "Single profile image (JPEG, PNG, HEIC, HEIF, WebP, or AVIF, max 8 MB). Server creates 384×384, 96×96, and 32×32 AVIF variants.",
+    "Single profile image as File or Blob (JPEG, PNG, HEIC, HEIF, WebP, or AVIF, max 8 MB). MIME may be omitted or application/octet-stream; format is detected from content. Server creates 384×384, 96×96, and 32×32 AVIF variants.",
 });
 
 const UploadAvatarsRequestSchema = z
@@ -232,7 +232,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [USERS_TAG],
     summary: "Upload or update avatar",
     description:
-      "Upload a single profile image for the authenticated user (multipart field `avatar`: JPEG, PNG, HEIC, HEIF, WebP, or AVIF). The API creates three square AVIF variants — avatar1 384×384, avatar2 96×96, avatar3 32×32 — stores them in Scaleway Object Storage, and returns signed GET URLs (1 hour).",
+      "Upload a single profile image for the authenticated user (multipart field `avatar`: File or Blob — JPEG, PNG, HEIC, HEIF, WebP, or AVIF). MIME may be omitted or `application/octet-stream`; content is sniffed. The API creates three square AVIF variants — avatar1 384×384, avatar2 96×96, avatar3 32×32 — stores them in Scaleway Object Storage, and returns signed GET URLs (1 hour).",
     security: [{ SessionCookie: [] }],
     request: {
       body: {
