@@ -225,6 +225,8 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     path: "/api/clubs/{clubId}/addresses",
     tags: [CLUBS_TAG],
     summary: "Add club address",
+    description:
+      "Admin only. If the club has no primary address yet, this row is forced primary (even when `primary` is false). Setting `primary: true` demotes other primaries. A primary address cannot be inactive.",
     security: [{ SessionCookie: [] }],
     request: {
       params: z.object({

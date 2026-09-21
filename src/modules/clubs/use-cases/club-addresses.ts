@@ -45,9 +45,18 @@ export class AddClubAddress {
   async execute(clubId: number, userId: string, input: ClubAddressBody) {
     await this.access.requireAdmin(clubId, userId);
 
+    const primaryCount = await this.addresses.countPrimaries(this.db, clubId);
+    // A club with addresses must have exactly one primary: force primary when none exist.
+    const primary = primaryCount === 0 ? true : input.primary;
+    const active = input.active ?? true;
+
+    if (primary && active === false) {
+      throw new ValidationError("primary address cannot be inactive");
+    }
+
     try {
       const row = await this.db.transaction(async (tx) => {
-        if (input.primary) {
+        if (primary) {
           await this.addresses.clearPrimaryExcept(tx, clubId);
         }
         return this.addresses.insert(tx, {
@@ -60,8 +69,8 @@ export class AddClubAddress {
           name: input.name,
           shortName: input.shortName,
           directions: input.directions ?? null,
-          primary: input.primary,
-          active: input.active ?? true,
+          primary,
+          active,
         });
       });
 
