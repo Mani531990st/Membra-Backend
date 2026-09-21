@@ -5,10 +5,7 @@ import type { Database } from "@/db/types";
 
 import { ClubAvatarsRepository } from "../repositories/club-avatars.repository";
 import { ClubsRepository } from "../repositories/clubs.repository";
-import {
-  ClubDetailAssembler,
-  type ClubAvatarsSigned,
-} from "./create-club";
+import { ClubDetailAssembler } from "./create-club";
 
 export type ClubSummary = {
   id: number;
@@ -18,7 +15,8 @@ export type ClubSummary = {
   active: boolean;
   countryCode: string;
   adminCount: number;
-  avatars: ClubAvatarsSigned;
+  /** Signed URL for avatar2 (96×96), or null when unset. */
+  avatar: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -48,9 +46,9 @@ export class ListAdminClubs {
 
     const clubs = await Promise.all(
       rows.map(async (club) => {
-        const [adminCount, avatars] = await Promise.all([
+        const [adminCount, avatar] = await Promise.all([
           this.clubs.countAdmins(this.db, club.id),
-          this.assembler.signAvatars(avatarMap.get(club.id) ?? null),
+          this.assembler.signAvatar(avatarMap.get(club.id) ?? null),
         ]);
 
         return {
@@ -61,7 +59,7 @@ export class ListAdminClubs {
           active: club.active,
           countryCode: club.countryCode,
           adminCount,
-          avatars,
+          avatar,
           createdAt: club.createdAt,
           updatedAt: club.updatedAt,
         };

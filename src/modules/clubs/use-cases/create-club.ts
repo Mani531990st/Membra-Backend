@@ -60,7 +60,8 @@ export type ClubDetail = {
     updatedAt: string;
   }>;
   adminCount: number;
-  avatars: ClubAvatarsSigned;
+  /** Signed URL for avatar2 (96×96), or null when unset. */
+  avatar: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -119,12 +120,21 @@ export class ClubDetailAssembler {
         updatedAt: row.updatedAt,
       })),
       adminCount,
-      avatars: await this.signAvatars(avatarSlots),
+      avatar: await this.signAvatar(avatarSlots),
       createdAt: club.createdAt,
       updatedAt: club.updatedAt,
     };
   }
 
+  /** Signed URL for the 96×96 (avatar2) slot only — used on club list/detail. */
+  async signAvatar(slots: ClubAvatarSlots | null): Promise<string | null> {
+    if (!slots?.avatar2) {
+      return null;
+    }
+    return this.storage.getSignedGetUrl(slots.avatar2);
+  }
+
+  /** All three signed slots — used by GET/PUT /clubs/:id/avatars. */
   async signAvatars(slots: ClubAvatarSlots | null): Promise<ClubAvatarsSigned> {
     if (!slots) {
       return { avatar1: null, avatar2: null, avatar3: null };

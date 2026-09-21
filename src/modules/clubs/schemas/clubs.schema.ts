@@ -321,7 +321,11 @@ export const ClubDetailResponseSchema = z
     languages: z.array(ClubLanguageResponseSchema),
     addresses: z.array(ClubAddressResponseSchema),
     adminCount: z.number().int().nonnegative(),
-    avatars: AvatarsResponseSchema,
+    avatar: z
+      .string()
+      .url()
+      .nullable()
+      .openapi({ description: "Signed URL for avatar2 (96×96), or null" }),
     createdAt: z.string(),
     updatedAt: z.string(),
   })
@@ -336,7 +340,11 @@ export const ClubSummaryResponseSchema = z
     active: z.boolean(),
     countryCode: z.string(),
     adminCount: z.number().int().nonnegative(),
-    avatars: AvatarsResponseSchema,
+    avatar: z
+      .string()
+      .url()
+      .nullable()
+      .openapi({ description: "Signed URL for avatar2 (96×96), or null" }),
     createdAt: z.string(),
     updatedAt: z.string(),
   })

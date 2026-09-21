@@ -96,7 +96,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     tags: [CLUBS_TAG],
     summary: "List clubs the current user admins",
     description:
-      "Returns summary cards for every club where the authenticated user is in `club_admins` (includes inactive clubs). Ordered by name. Use GET /api/clubs/{clubId} for full detail.",
+      "Returns summary cards for every club where the authenticated user is in `club_admins` (includes inactive clubs). Ordered by name. Each card includes a single signed `avatar` URL (96×96 / avatar2). Use GET /api/clubs/{clubId} for full detail.",
     security: [{ SessionCookie: [] }],
     responses: {
       200: {
@@ -176,7 +176,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     tags: [CLUBS_TAG],
     summary: "Get club",
     description:
-      "Returns club profile, addresses, activities, languages, admin count, and signed avatar URLs. Only club members (currently club admins) may read; strangers get 404.",
+      "Returns club profile, addresses, activities, languages, admin count, and a single signed `avatar` URL (96×96 / avatar2). Only club members (currently club admins) may read; strangers get 404.",
     security: [{ SessionCookie: [] }],
     request: {
       params: z.object({

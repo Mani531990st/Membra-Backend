@@ -79,7 +79,7 @@ describe("CreateClub", () => {
     });
     assembler.assemble.mockResolvedValue({
       id: 10,
-      avatars: { avatar1: null, avatar2: null, avatar3: null },
+      avatar: null,
     });
     buildAvatarVariantsMock.mockResolvedValue({
       original: Buffer.from("o"),
