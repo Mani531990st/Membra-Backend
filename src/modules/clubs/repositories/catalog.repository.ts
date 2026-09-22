@@ -28,7 +28,6 @@ export class CatalogRepository {
     return dbOrTx
       .select({
         id: languagesInApp.id,
-        code: languagesInApp.code,
         name: languagesInApp.name,
         active: languagesInApp.active,
       })
@@ -57,7 +56,6 @@ export class CatalogRepository {
     return dbOrTx
       .select({
         languageId: languagesInApp.id,
-        code: languagesInApp.code,
         name: languagesInApp.name,
         rank: clubLanguagesInApp.rank,
       })
@@ -92,7 +90,7 @@ export class CatalogRepository {
 
   async assertLanguageIdsExist(
     dbOrTx: DbOrTx,
-    languageIds: number[],
+    languageIds: string[],
   ): Promise<boolean> {
     if (languageIds.length === 0) {
       return true;

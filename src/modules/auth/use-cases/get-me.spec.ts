@@ -16,7 +16,7 @@ const userRow: AuthUserRow = {
   dob: "1815-12-10",
   genderId: 1,
   genderEnum: "female",
-  preferredLang: "en",
+  preferredLang: "en-US",
   passwordHash: null,
 };
 
@@ -70,7 +70,7 @@ describe("GetMe", () => {
         nickname: "Ada",
         dob: "1815-12-10",
         genderId: 1,
-        preferredLang: "en",
+        preferredLang: "en-US",
         profileComplete: true,
       },
       avatars: {

@@ -156,7 +156,7 @@ function parseLanguages(value: unknown): unknown {
     return JSON.parse(trimmed) as unknown;
   } catch {
     throw new ValidationError(
-      'languages must be valid JSON like [{"languageId":1,"rank":1}]',
+      'languages must be valid JSON like [{"languageId":"da","rank":1}]',
     );
   }
 }

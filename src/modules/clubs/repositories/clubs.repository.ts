@@ -154,7 +154,7 @@ export class ClubsRepository {
   async replaceLanguages(
     dbOrTx: DbOrTx,
     clubId: number,
-    languages: Array<{ languageId: number; rank: number }>,
+    languages: Array<{ languageId: string; rank: number }>,
   ): Promise<void> {
     await dbOrTx
       .delete(clubLanguagesInApp)

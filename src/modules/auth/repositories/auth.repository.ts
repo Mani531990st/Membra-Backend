@@ -4,6 +4,7 @@ import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/db/types";
 import {
   gendersInApp,
+  languagesInApp,
   passwordResetTokensInApp,
   userCredentialsInApp,
   userEmailsInApp,
@@ -72,6 +73,24 @@ export class AuthRepository {
       .select({ id: gendersInApp.id })
       .from(gendersInApp)
       .where(eq(gendersInApp.id, genderId))
+      .limit(1);
+
+    return Boolean(row);
+  }
+
+  async preferredLanguageIdExists(
+    dbOrTx: DbOrTx,
+    preferredLanguageId: string,
+  ): Promise<boolean> {
+    const [row] = await dbOrTx
+      .select({ id: languagesInApp.id })
+      .from(languagesInApp)
+      .where(
+        and(
+          eq(languagesInApp.id, preferredLanguageId),
+          eq(languagesInApp.active, true),
+        ),
+      )
       .limit(1);
 
     return Boolean(row);

@@ -69,7 +69,7 @@ export const clubQuestionnaireDetailsInApp = app.table("club_questionnaire_detai
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	questionnaireId: bigint("questionnaire_id", { mode: "number" }).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	languageId: bigint("language_id", { mode: "number" }).notNull(),
+	languageId: varchar("language_id", { length: 15 }).notNull(),
 	sort: smallint().notNull(),
 	question: varchar({ length: 254 }).notNull(),
 	active: boolean().notNull(),
@@ -173,7 +173,7 @@ export const clubQuestionnairesInApp = app.table("club_questionnaires", {
 	questionnaireName: varchar("questionnaire_name", { length: 60 }).notNull(),
 	multiLinguistic: boolean("multi_linguistic").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	languageId: bigint("language_id", { mode: "number" }),
+	languageId: varchar("language_id", { length: 15 }),
 	retentionDays: smallint("retention_days").default(90).notNull(),
 	active: boolean().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -214,15 +214,12 @@ export const activitiesInApp = app.table("activities", {
 ]);
 
 export const languagesInApp = app.table("languages", {
-	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.languages_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
-	code: varchar({ length: 15 }).notNull(),
+	id: varchar({ length: 15 }).primaryKey().notNull(),
 	name: varchar({ length: 80 }).notNull(),
 	active: boolean().default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-}, (table) => [
-	unique("languages_code_key").on(table.code),
-]);
+});
 
 export const clubAdminsInApp = app.table("club_admins", {
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
@@ -264,7 +261,7 @@ export const clubActivitiesInApp = app.table("club_activities", {
 
 export const clubLanguagesInApp = app.table("club_languages", {
 	clubId: bigint("club_id", { mode: "number" }).notNull(),
-	languageId: bigint("language_id", { mode: "number" }).notNull(),
+	languageId: varchar("language_id", { length: 15 }).notNull(),
 	rank: smallint().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -464,14 +461,14 @@ export const userPhoneNumbersInApp = app.table("user_phone_numbers", {
 
 export const usersInApp = app.table("users", {
 	uuid: uuid().default(sql`uuidv7()`).primaryKey().notNull(),
-	firstname: text(),
+	firstname: text("first_name"),
 	surname: text(),
 	nickname: text(),
-	dob: date(),
+	dob: date("birth_date"),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	genderId: bigint("gender_id", { mode: "number" }),
-	preferredLang: varchar("preferred_lang", { length: 15 }),
-	active: boolean().default(true).notNull(),
+	preferredLang: varchar("preferred_language_id", { length: 15 }),
+	active: boolean("is_active").default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
@@ -480,6 +477,11 @@ export const usersInApp = app.table("users", {
 			columns: [table.genderId],
 			foreignColumns: [gendersInApp.id],
 			name: "users_gender_id_fkey"
+		}).onUpdate("cascade").onDelete("restrict"),
+	foreignKey({
+			columns: [table.preferredLang],
+			foreignColumns: [languagesInApp.id],
+			name: "users_preferred_language_id_fkey"
 		}).onUpdate("cascade").onDelete("restrict"),
 ]);
 

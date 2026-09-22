@@ -12,7 +12,7 @@ describe("parseCreateClubMultipartBody", () => {
       active: "true",
       countryCode: "dk",
       activityIds: "[1,2]",
-      languages: '[{"languageId":1,"rank":1}]',
+      languages: '[{"languageId":"da","rank":1}]',
       addresses:
         '[{"streetName":"Lyngbyvej","streetNumber":"1","zip":"2100","city":"Copenhagen","name":"Main hall","shortName":"MH"}]',
     });
@@ -23,7 +23,7 @@ describe("parseCreateClubMultipartBody", () => {
       active: true,
       countryCode: "dk",
       activityIds: [1, 2],
-      languages: [{ languageId: 1, rank: 1 }],
+      languages: [{ languageId: "da", rank: 1 }],
       addresses: [
         {
           streetName: "Lyngbyvej",

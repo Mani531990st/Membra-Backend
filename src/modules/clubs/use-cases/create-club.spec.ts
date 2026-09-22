@@ -102,7 +102,7 @@ describe("CreateClub", () => {
       active: true,
       countryCode: "DK",
       activityIds: [1],
-      languages: [{ languageId: 2, rank: 1 }],
+      languages: [{ languageId: "en-US", rank: 1 }],
       addresses: [],
     });
 
@@ -116,7 +116,7 @@ describe("CreateClub", () => {
     expect(clubs.insertAdmin).toHaveBeenCalledWith(tx, 10, "user-1");
     expect(clubs.replaceActivities).toHaveBeenCalledWith(tx, 10, [1]);
     expect(clubs.replaceLanguages).toHaveBeenCalledWith(tx, 10, [
-      { languageId: 2, rank: 1 },
+      { languageId: "en-US", rank: 1 },
     ]);
     expect(addresses.insert).not.toHaveBeenCalled();
     expect(storage.putObject).not.toHaveBeenCalled();

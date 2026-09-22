@@ -39,8 +39,7 @@ export type ClubDetail = {
   countryCode: string;
   activities: Array<{ id: number; name: string; shortName: string }>;
   languages: Array<{
-    languageId: number;
-    code: string;
+    languageId: string;
     name: string;
     rank: number;
   }>;

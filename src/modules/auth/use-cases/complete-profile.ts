@@ -28,6 +28,14 @@ export class CompleteProfile {
       throw new ValidationError("Invalid genderId value");
     }
 
+    const languageExists = await this.authRepository.preferredLanguageIdExists(
+      this.db,
+      input.preferredLang,
+    );
+    if (!languageExists) {
+      throw new ValidationError("Invalid preferredLang value");
+    }
+
     await this.authRepository.updateUserProfile(this.db, userId, {
       firstname: input.firstname,
       surname: input.surname,

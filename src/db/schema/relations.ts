@@ -29,6 +29,10 @@ export const usersInAppRelations = relations(usersInApp, ({one, many}) => ({
 		fields: [usersInApp.genderId],
 		references: [gendersInApp.id]
 	}),
+	languagesInApp: one(languagesInApp, {
+		fields: [usersInApp.preferredLang],
+		references: [languagesInApp.id]
+	}),
 }));
 
 export const clubAgeGroupsInAppRelations = relations(clubAgeGroupsInApp, ({one}) => ({
@@ -63,6 +67,7 @@ export const activitiesInAppRelations = relations(activitiesInApp, ({many}) => (
 
 export const languagesInAppRelations = relations(languagesInApp, ({many}) => ({
 	clubLanguagesInApps: many(clubLanguagesInApp),
+	usersInApps: many(usersInApp),
 }));
 
 export const clubAdminsInAppRelations = relations(clubAdminsInApp, ({one}) => ({

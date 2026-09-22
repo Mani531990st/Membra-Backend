@@ -27,9 +27,12 @@ export const emailSchema = z
 export const preferredLangSchema = z
   .string()
   .trim()
-  .min(2)
+  .min(1)
   .max(15)
-  .openapi({ example: "en" });
+  .openapi({
+    example: "en-US",
+    description: "Language id from GET /api/clubs/languages",
+  });
 
 export const SignupSchema = z
   .object({

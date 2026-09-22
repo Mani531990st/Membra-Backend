@@ -55,9 +55,9 @@ const CreateClubMultipartSchema = z
         "Activity IDs from GET /api/clubs/activities. Enter as JSON `[1,2]` or comma-separated `1,2` (no extra quotes around the whole value).",
     }),
     languages: z.string().optional().openapi({
-      example: '[{"languageId":1,"rank":1},{"languageId":2,"rank":2}]',
+      example: '[{"languageId":"da","rank":1},{"languageId":"en-US","rank":2}]',
       description:
-        'Languages as JSON array, e.g. [{"languageId":1,"rank":1}] — do not wrap the whole value in extra quotes.',
+        'Languages as JSON array, e.g. [{"languageId":"da","rank":1}] — do not wrap the whole value in extra quotes.',
     }),
     addresses: z.string().optional().openapi({
       example:

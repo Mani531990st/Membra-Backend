@@ -12,7 +12,7 @@ const base: AuthUserRow = {
   dob: "1815-12-10",
   genderId: 1,
   genderEnum: "female",
-  preferredLang: "en",
+  preferredLang: "en-US",
   passwordHash: null,
 };
 

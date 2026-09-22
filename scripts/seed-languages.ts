@@ -7,9 +7,9 @@ import * as schema from "../src/db/schema";
 import { languagesInApp } from "../src/db/schema";
 
 const LANGUAGES = [
-  { code: "da", name: "Danish" },
-  { code: "en-US", name: "English (US)" },
-  { code: "en-GB", name: "English (UK)" },
+  { id: "da", name: "Danish" },
+  { id: "en-US", name: "English (US)" },
+  { id: "en-GB", name: "English (UK)" },
 ] as const;
 
 async function seedLanguages(): Promise<void> {
@@ -27,17 +27,15 @@ async function seedLanguages(): Promise<void> {
     const inserted = await db
       .insert(languagesInApp)
       .values(LANGUAGES.map((row) => ({ ...row, active: true })))
-      .onConflictDoNothing({ target: languagesInApp.code })
+      .onConflictDoNothing({ target: languagesInApp.id })
       .returning({
         id: languagesInApp.id,
-        code: languagesInApp.code,
         name: languagesInApp.name,
       });
 
     const all = await db
       .select({
         id: languagesInApp.id,
-        code: languagesInApp.code,
         name: languagesInApp.name,
       })
       .from(languagesInApp)
@@ -47,7 +45,7 @@ async function seedLanguages(): Promise<void> {
       `Seeded languages: inserted ${inserted.length} new row(s); ${all.length} total.`,
     );
     for (const row of all) {
-      console.log(`  id=${row.id} code=${row.code} name=${row.name}`);
+      console.log(`  id=${row.id} name=${row.name}`);
     }
   } finally {
     await client.end({ timeout: 5 });

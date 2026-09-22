@@ -14,9 +14,9 @@ export const isoDateSchema = z
 
 export const ClubLanguageInputSchema = z
   .object({
-    languageId: z.number().int().positive().openapi({
-      example: 1,
-      description: "ID from GET /api/clubs/languages",
+    languageId: z.string().trim().min(1).max(15).openapi({
+      example: "da",
+      description: "Language id from GET /api/clubs/languages",
     }),
     rank: z.number().int().min(1).max(20).openapi({
       example: 1,
@@ -86,8 +86,8 @@ export const CreateClubSchema = z
       .default([])
       .openapi({
         example: [
-          { languageId: 1, rank: 1 },
-          { languageId: 2, rank: 2 },
+          { languageId: "da", rank: 1 },
+          { languageId: "en-US", rank: 2 },
         ],
         description:
           "Club languages with rank; if non-empty, exactly one entry must have rank 1 (primary)",
@@ -165,8 +165,8 @@ export const CreateClubSchema = z
       countryCode: "DK",
       activityIds: [1, 2],
       languages: [
-        { languageId: 1, rank: 1 },
-        { languageId: 2, rank: 2 },
+        { languageId: "da", rank: 1 },
+        { languageId: "en-US", rank: 2 },
       ],
       addresses: [
         {
@@ -201,8 +201,8 @@ export const UpdateClubSchema = z
       .optional()
       .openapi({
         example: [
-          { languageId: 1, rank: 1 },
-          { languageId: 2, rank: 2 },
+          { languageId: "da", rank: 1 },
+          { languageId: "en-US", rank: 2 },
         ],
         description:
           "Replaces the club's languages when provided; if non-empty, one entry must have rank 1",
@@ -294,8 +294,7 @@ export const ClubAddressResponseSchema = z
 
 export const ClubLanguageResponseSchema = z
   .object({
-    languageId: z.number().int(),
-    code: z.string(),
+    languageId: z.string(),
     name: z.string(),
     rank: z.number().int(),
   })
@@ -367,8 +366,7 @@ export const ActivityCatalogItemSchema = z
 
 export const LanguageCatalogItemSchema = z
   .object({
-    id: z.number().int(),
-    code: z.string(),
+    id: z.string(),
     name: z.string(),
     active: z.boolean(),
   })

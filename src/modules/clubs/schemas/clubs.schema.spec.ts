@@ -71,8 +71,8 @@ describe("CreateClubSchema addresses", () => {
     const result = CreateClubSchema.safeParse({
       ...base,
       languages: [
-        { languageId: 1, rank: 1 },
-        { languageId: 1, rank: 2 },
+        { languageId: "da", rank: 1 },
+        { languageId: "da", rank: 2 },
       ],
     });
     expect(result.success).toBe(false);

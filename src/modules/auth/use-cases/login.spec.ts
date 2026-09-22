@@ -77,7 +77,7 @@ describe("Login", () => {
   });
 
   it("treats missing active users the same as unknown emails", async () => {
-    // findActiveUserByNormalizedEmail filters users.active = true in the repository.
+    // findActiveUserByNormalizedEmail filters users.is_active = true in the repository.
     authRepository.findActiveUserByNormalizedEmail.mockResolvedValue(null);
     passwordHasher.verifyLogin.mockResolvedValue(false);
 
