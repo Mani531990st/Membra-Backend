@@ -99,6 +99,13 @@
       "when": 1790100000000,
       "tag": "0013_user_is_primary_active",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790400000000,
+      "tag": "0014_club_column_renames",
+      "breakpoints": true
     }
   ]
 }
