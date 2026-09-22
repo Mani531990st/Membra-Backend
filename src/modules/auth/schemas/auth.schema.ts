@@ -126,6 +126,19 @@ export const GendersResponseSchema = z
   })
   .openapi("GendersResponse");
 
+export const ActivityRowSchema = z
+  .object({
+    id: z.number().int(),
+    activity: z.string().openapi({ example: "football" }),
+  })
+  .openapi("ActivityRow");
+
+export const ActivitiesResponseSchema = z
+  .object({
+    activities: z.array(ActivityRowSchema),
+  })
+  .openapi("ActivitiesResponse");
+
 export const SafeUserSchema = z
   .object({
     uuid: z.string().uuid(),

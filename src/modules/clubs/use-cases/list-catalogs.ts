@@ -6,19 +6,6 @@ import type { Database } from "@/db/types";
 import { CatalogRepository } from "../repositories/catalog.repository";
 
 @Injectable()
-export class ListActivities {
-  constructor(
-    @Inject(DRIZZLE) private readonly db: Database,
-    @Inject(CatalogRepository) private readonly catalog: CatalogRepository,
-  ) {}
-
-  async execute() {
-    const activities = await this.catalog.listActiveActivities(this.db);
-    return { activities };
-  }
-}
-
-@Injectable()
 export class ListLanguages {
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,

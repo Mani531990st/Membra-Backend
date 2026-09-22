@@ -113,6 +113,13 @@
       "when": 1790500000000,
       "tag": "0015_genders_short_active",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790600000000,
+      "tag": "0016_activities_rename",
+      "breakpoints": true
     }
   ]
 }

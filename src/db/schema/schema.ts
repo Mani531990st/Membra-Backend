@@ -207,13 +207,12 @@ export const clubsInApp = app.table("clubs", {
 
 export const activitiesInApp = app.table("activities", {
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.activities_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
-	name: varchar({ length: 80 }).notNull(),
-	shortName: varchar("short_name", { length: 10 }).notNull(),
-	active: boolean().default(true).notNull(),
+	activity: varchar({ length: 80 }).notNull(),
+	active: boolean("is_active").default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
-	unique("activities_short_name_key").on(table.shortName),
+	unique("activities_activity_key").on(table.activity),
 ]);
 
 export const languagesInApp = app.table("languages", {

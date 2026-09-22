@@ -37,7 +37,7 @@ export type ClubDetail = {
   establishedDate: string | null;
   active: boolean;
   countryCode: string;
-  activities: Array<{ id: number; name: string; shortName: string }>;
+  activities: Array<{ id: number; activity: string }>;
   languages: Array<{
     languageId: string;
     name: string;

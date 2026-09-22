@@ -15,9 +15,7 @@ export class CatalogRepository {
     return dbOrTx
       .select({
         id: activitiesInApp.id,
-        name: activitiesInApp.name,
-        shortName: activitiesInApp.shortName,
-        active: activitiesInApp.active,
+        activity: activitiesInApp.activity,
       })
       .from(activitiesInApp)
       .where(eq(activitiesInApp.active, true))
@@ -40,8 +38,7 @@ export class CatalogRepository {
     return dbOrTx
       .select({
         id: activitiesInApp.id,
-        name: activitiesInApp.name,
-        shortName: activitiesInApp.shortName,
+        activity: activitiesInApp.activity,
       })
       .from(clubActivitiesInApp)
       .innerJoin(

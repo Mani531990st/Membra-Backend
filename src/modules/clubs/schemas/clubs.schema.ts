@@ -79,7 +79,7 @@ export const CreateClubSchema = z
       .default([])
       .openapi({
         example: [1, 2],
-        description: "Activity IDs from GET /api/clubs/activities",
+        description: "Activity IDs from GET /api/reference/activities",
       }),
     languages: z
       .array(ClubLanguageInputSchema)
@@ -303,8 +303,7 @@ export const ClubLanguageResponseSchema = z
 export const ClubActivityResponseSchema = z
   .object({
     id: z.number().int(),
-    name: z.string(),
-    shortName: z.string(),
+    activity: z.string(),
   })
   .openapi("ClubActivityResponse");
 
@@ -355,15 +354,6 @@ export const AdminClubsResponseSchema = z
   })
   .openapi("AdminClubsResponse");
 
-export const ActivityCatalogItemSchema = z
-  .object({
-    id: z.number().int(),
-    name: z.string(),
-    shortName: z.string(),
-    active: z.boolean(),
-  })
-  .openapi("ActivityCatalogItem");
-
 export const LanguageCatalogItemSchema = z
   .object({
     id: z.string(),
@@ -371,12 +361,6 @@ export const LanguageCatalogItemSchema = z
     active: z.boolean(),
   })
   .openapi("LanguageCatalogItem");
-
-export const ActivitiesResponseSchema = z
-  .object({
-    activities: z.array(ActivityCatalogItemSchema),
-  })
-  .openapi("ActivitiesResponse");
 
 export const LanguagesResponseSchema = z
   .object({

@@ -4,7 +4,6 @@ import { standardErrorResponses } from "@/docs/openapi";
 import { z } from "@/shared/validation/zod";
 
 import {
-  ActivitiesResponseSchema,
   AdminClubsResponseSchema,
   AvatarsResponseSchema,
   ClubAddressBodySchema,
@@ -52,7 +51,7 @@ const CreateClubMultipartSchema = z
     activityIds: z.string().optional().openapi({
       example: "[1,2]",
       description:
-        "Activity IDs from GET /api/clubs/activities. Enter as JSON `[1,2]` or comma-separated `1,2` (no extra quotes around the whole value).",
+        "Activity IDs from GET /api/reference/activities. Enter as JSON `[1,2]` or comma-separated `1,2` (no extra quotes around the whole value).",
     }),
     languages: z.string().optional().openapi({
       example: '[{"languageId":"da","rank":1},{"languageId":"en-US","rank":2}]',
@@ -82,7 +81,6 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
   registry.register("AdminClubsResponse", AdminClubsResponseSchema);
   registry.register("ClubAddressResponse", ClubAddressResponseSchema);
   registry.register("ClubAvatarsResponse", AvatarsResponseSchema);
-  registry.register("ActivitiesResponse", ActivitiesResponseSchema);
   registry.register("LanguagesResponse", LanguagesResponseSchema);
   registry.register("UploadClubAvatarsRequest", UploadClubAvatarsRequestSchema);
   registry.register("CreateClubMultipartRequest", CreateClubMultipartSchema);
@@ -104,23 +102,6 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
         description: "Admin clubs",
         content: {
           "application/json": { schema: AdminClubsResponseSchema },
-        },
-      },
-      ...standardErrorResponses([401, 500]),
-    },
-  });
-
-  registry.registerPath({
-    method: "get",
-    path: "/api/clubs/activities",
-    tags: [CLUBS_TAG],
-    summary: "List activities catalog",
-    security: [{ SessionCookie: [] }],
-    responses: {
-      200: {
-        description: "Active activities",
-        content: {
-          "application/json": { schema: ActivitiesResponseSchema },
         },
       },
       ...standardErrorResponses([401, 500]),

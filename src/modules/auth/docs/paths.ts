@@ -5,6 +5,7 @@ import { z } from "@/shared/validation/zod";
 
 import {
   ActiveSessionsResponseSchema,
+  ActivitiesResponseSchema,
   AvatarsResponseSchema,
   CompleteProfileResponseSchema,
   CompleteProfileSchema,
@@ -279,6 +280,22 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
       200: {
         description: "Gender reference data",
         content: { "application/json": { schema: GendersResponseSchema } },
+      },
+      ...standardErrorResponses([500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/reference/activities",
+    tags: [REFERENCE_TAG],
+    summary: "List activities",
+    description:
+      "Active reference rows from app.activities (`id`, `activity`). Use `id` as activityIds when creating/updating clubs.",
+    responses: {
+      200: {
+        description: "Activity reference data",
+        content: { "application/json": { schema: ActivitiesResponseSchema } },
       },
       ...standardErrorResponses([500]),
     },

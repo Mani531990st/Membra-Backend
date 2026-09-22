@@ -46,7 +46,7 @@ import { GetClubAvatars, UpdateClubAvatars } from "../use-cases/club-avatars";
 import { CreateClub } from "../use-cases/create-club";
 import { GetClub } from "../use-cases/get-club";
 import { ListAdminClubs } from "../use-cases/list-admin-clubs";
-import { ListActivities, ListLanguages } from "../use-cases/list-catalogs";
+import { ListLanguages } from "../use-cases/list-catalogs";
 import {
   CreateLocation,
   GetLocation,
@@ -78,18 +78,12 @@ export class ClubsController {
     @Inject(UpdateClubAvatars)
     private readonly updateAvatars: UpdateClubAvatars,
     @Inject(GetClubAvatars) private readonly getAvatars: GetClubAvatars,
-    @Inject(ListActivities) private readonly listActivities: ListActivities,
     @Inject(ListLanguages) private readonly listLanguages: ListLanguages,
     @Inject(CreateLocation) private readonly createLocation: CreateLocation,
     @Inject(UpdateLocation) private readonly updateLocation: UpdateLocation,
     @Inject(GetLocation) private readonly getLocation: GetLocation,
     @Inject(ListLocations) private readonly listLocations: ListLocations,
   ) {}
-
-  @Get("activities")
-  async activities() {
-    return this.listActivities.execute();
-  }
 
   @Get("languages")
   async languages() {

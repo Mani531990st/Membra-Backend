@@ -3,6 +3,7 @@ import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
 
 import type { DbOrTx } from "@/db/types";
 import {
+  activitiesInApp,
   gendersInApp,
   languagesInApp,
   passwordResetTokensInApp,
@@ -58,6 +59,19 @@ export class AuthRepository {
       .from(gendersInApp)
       .where(eq(gendersInApp.active, true))
       .orderBy(asc(gendersInApp.id));
+  }
+
+  async listActivities(
+    dbOrTx: DbOrTx,
+  ): Promise<{ id: number; activity: string }[]> {
+    return dbOrTx
+      .select({
+        id: activitiesInApp.id,
+        activity: activitiesInApp.activity,
+      })
+      .from(activitiesInApp)
+      .where(eq(activitiesInApp.active, true))
+      .orderBy(asc(activitiesInApp.id));
   }
 
   async findGenderIdByEnum(

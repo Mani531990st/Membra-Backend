@@ -2,6 +2,7 @@ import type { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 
 import {
   ActiveSessionsResponseSchema,
+  ActivitiesResponseSchema,
   AvatarsResponseSchema,
   CompleteProfileResponseSchema,
   CompleteProfileSchema,
@@ -30,6 +31,7 @@ export function registerAuthSchemas(registry: OpenAPIRegistry): void {
   registry.register("MeResponse", MeResponseSchema);
   registry.register("ActiveSessionsResponse", ActiveSessionsResponseSchema);
   registry.register("GendersResponse", GendersResponseSchema);
+  registry.register("ActivitiesResponse", ActivitiesResponseSchema);
   registry.register("MessageResponse", MessageResponseSchema);
   registry.register("AvatarsResponse", AvatarsResponseSchema);
 }

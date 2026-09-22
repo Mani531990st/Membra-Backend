@@ -4,19 +4,18 @@ import { DRIZZLE } from "@/db/drizzle.token";
 import type { Database } from "@/db/types";
 
 import { AuthRepository } from "../repositories/auth.repository";
-import type { GenderEnum } from "../types/auth.types";
 
 @Injectable()
-export class ListGenders {
+export class ListActivities {
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     @Inject(AuthRepository) private readonly authRepository: AuthRepository,
   ) {}
 
   async execute(): Promise<{
-    genders: { id: number; gender: GenderEnum; genderShort: string }[];
+    activities: { id: number; activity: string }[];
   }> {
-    const genders = await this.authRepository.listGenders(this.db);
-    return { genders };
+    const activities = await this.authRepository.listActivities(this.db);
+    return { activities };
   }
 }

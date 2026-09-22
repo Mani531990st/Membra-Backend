@@ -72,6 +72,7 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | PUT | `/api/users/avatars` | Session required. Multipart `avatar` File or Blob (JPEG/PNG/HEIC/HEIF/WebP/AVIF; MIME optional or octet-stream); stores 384×384 / 96×96 / 32×32 AVIF as avatar1–3 |
 | GET | `/api/users/avatars` | Session required. Signed GET URLs (1h) or null per slot |
 | GET | `/api/reference/genders` | Reference rows from `app.genders` (`{ id, gender, genderShort }`) |
+| GET | `/api/reference/activities` | Reference rows from `app.activities` (`{ id, activity }`) |
 
 Signup / login / forgot-password / reset-password are rate limited (5 requests / minute / IP).
 
@@ -89,7 +90,6 @@ Any authenticated user can create a club and becomes its first admin (`club_admi
 
 | Method | Path | Notes |
 |--------|------|-------|
-| GET | `/api/clubs/activities` | Activity catalog |
 | GET | `/api/clubs/languages` | Language catalog |
 | GET | `/api/clubs` | Clubs the current user admins (summary cards + signed `avatar` from avatar2) |
 | POST | `/api/clubs` | Multipart create; creator becomes admin; optional `avatar` File or Blob |
