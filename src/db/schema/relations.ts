@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInApp, userSecurityNumbersInApp, clubsInApp, clubAgeGroupsInApp, clubEmailsInApp, clubQuestionnairesInApp, clubQuestionnaireDetailsInApp, clubWaitlistsInApp, gendersInApp, userAddressesInApp, clubPhoneNumbersInApp, locationGroupsInApp, locationRelationsInApp, locationsInApp, clubAddressesInApp, userAliasesInApp, userEmailsInApp, userPhoneNumbersInApp, userCredentialsInApp, authSessionsInApp, passwordResetTokensInApp, userAvatarsInApp, clubAdminsInApp, clubActivitiesInApp, clubLanguagesInApp, clubAvatarsInApp, activitiesInApp, languagesInApp } from "./schema";
+import { usersInApp, userSecurityNumbersInApp, clubsInApp, clubAgeGroupsInApp, clubEmailsInApp, clubQuestionnairesInApp, clubQuestionnaireDetailsInApp, clubWaitlistsInApp, gendersInApp, userAddressesInApp, clubPhoneNumbersInApp, locationGroupsInApp, locationRelationsInApp, locationsInApp, seasonsInApp, clubAddressesInApp, userAliasesInApp, userEmailsInApp, userPhoneNumbersInApp, userCredentialsInApp, authSessionsInApp, passwordResetTokensInApp, userAvatarsInApp, clubAdminsInApp, clubActivitiesInApp, clubLanguagesInApp, clubAvatarsInApp, activitiesInApp, languagesInApp } from "./schema";
 
 export const userSecurityNumbersInAppRelations = relations(userSecurityNumbersInApp, ({one}) => ({
 	usersInApp: one(usersInApp, {
@@ -46,6 +46,7 @@ export const clubsInAppRelations = relations(clubsInApp, ({one, many}) => ({
 	clubQuestionnairesInApps: many(clubQuestionnairesInApp),
 	locationGroupsInApps: many(locationGroupsInApp),
 	locationsInApps: many(locationsInApp),
+	seasonsInApps: many(seasonsInApp),
 	clubAddressesInApps: many(clubAddressesInApp),
 	clubAdminsInApps: many(clubAdminsInApp),
 	clubActivitiesInApps: many(clubActivitiesInApp),
@@ -197,6 +198,13 @@ export const locationsInAppRelations = relations(locationsInApp, ({one, many}) =
 	}),
 	locationsInApps: many(locationsInApp, {
 		relationName: "locationsInApp_parentLocationId_locationsInApp_id"
+	}),
+}));
+
+export const seasonsInAppRelations = relations(seasonsInApp, ({one}) => ({
+	clubsInApp: one(clubsInApp, {
+		fields: [seasonsInApp.clubId],
+		references: [clubsInApp.id]
 	}),
 }));
 

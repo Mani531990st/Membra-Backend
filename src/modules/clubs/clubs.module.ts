@@ -3,12 +3,14 @@ import { Module } from "@nestjs/common";
 import { AuthModule } from "@/modules/auth/auth.module";
 
 import { ClubsController } from "./controllers/clubs.controller";
+import { SeasonsController } from "./controllers/seasons.controller";
 import { ClubAccess } from "./lib/club-access";
 import { CatalogRepository } from "./repositories/catalog.repository";
 import { ClubAddressesRepository } from "./repositories/club-addresses.repository";
 import { ClubAvatarsRepository } from "./repositories/club-avatars.repository";
 import { ClubsRepository } from "./repositories/clubs.repository";
 import { LocationsRepository } from "./repositories/locations.repository";
+import { SeasonsRepository } from "./repositories/seasons.repository";
 import {
   AddClubAddress,
   MakeClubAddressPrimary,
@@ -25,16 +27,23 @@ import {
   ListLocations,
   UpdateLocation,
 } from "./use-cases/locations";
+import {
+  CreateSeason,
+  GetSeason,
+  ListSeasons,
+  UpdateSeason,
+} from "./use-cases/seasons";
 import { UpdateClub } from "./use-cases/update-club";
 
 @Module({
   imports: [AuthModule],
-  controllers: [ClubsController],
+  controllers: [ClubsController, SeasonsController],
   providers: [
     ClubsRepository,
     ClubAddressesRepository,
     ClubAvatarsRepository,
     LocationsRepository,
+    SeasonsRepository,
     CatalogRepository,
     ClubAccess,
     ClubDetailAssembler,
@@ -53,6 +62,10 @@ import { UpdateClub } from "./use-cases/update-club";
     UpdateLocation,
     GetLocation,
     ListLocations,
+    CreateSeason,
+    UpdateSeason,
+    GetSeason,
+    ListSeasons,
   ],
 })
 export class ClubsModule {}

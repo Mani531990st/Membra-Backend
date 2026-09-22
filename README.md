@@ -105,6 +105,17 @@ Any authenticated user can create a club and becomes its first admin (`club_admi
 | PUT | `/api/clubs/:clubId/avatars` | Multipart `avatar` File or Blob; three size variants (admin) |
 | GET | `/api/clubs/:clubId/avatars` | Signed avatar URLs (**member/admin only**) |
 
+## Club Seasons
+
+Nested under a club; documented under the **Club Seasons** Swagger tag (separate from Clubs).
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/api/clubs/:clubId/seasons` | List seasons (member/admin) |
+| POST | `/api/clubs/:clubId/seasons` | Create season; `shortName` unique per club (admin) |
+| GET | `/api/clubs/:clubId/seasons/:seasonId` | Season detail (member/admin) |
+| PATCH | `/api/clubs/:clubId/seasons/:seasonId` | Update season; soft-off via `active` (admin) |
+
 ## API Documentation
 
 | `ENABLE_API_DOCS` | Behavior |

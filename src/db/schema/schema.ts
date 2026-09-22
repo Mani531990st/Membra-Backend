@@ -383,6 +383,28 @@ export const locationsInApp = app.table("locations", {
 	check("locations_member_req_to_book_check", sql`(member_req_to_book > 0) AND (member_req_to_book <= 30)`),
 ]);
 
+export const seasonsInApp = app.table("seasons", {
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.seasons_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
+	clubId: bigint("club_id", { mode: "number" }).notNull(),
+	name: varchar({ length: 30 }).notNull(),
+	shortName: varchar("short_name", { length: 8 }).notNull(),
+	seasonStart: date("season_start").notNull(),
+	seasonEnd: date("season_end").notNull(),
+	forTeams: boolean("for_teams").notNull(),
+	forLocations: boolean("for_locations").notNull(),
+	active: boolean().default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.clubId],
+			foreignColumns: [clubsInApp.id],
+			name: "seasons_club_id_fkey"
+		}).onDelete("cascade"),
+	unique("seasons_club_id_short_name_key").on(table.clubId, table.shortName),
+	check("seasons_end_gte_start_check", sql`season_end >= season_start`),
+]);
+
 export const userAliasesInApp = app.table("user_aliases", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.alias_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),

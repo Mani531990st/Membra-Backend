@@ -59,7 +59,11 @@ export function generateOpenApiDocument(): OpenApiDocument {
       },
       {
         name: "Clubs",
-        description: "Club profile, addresses, catalogs, and avatars",
+        description: "Club profile, addresses, catalogs, locations, and avatars",
+      },
+      {
+        name: "Club Seasons",
+        description: "Club seasons (date ranges, teams/locations flags)",
       },
     ],
   });
