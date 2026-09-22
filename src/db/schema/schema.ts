@@ -140,8 +140,11 @@ export const gendersInApp = app.table("genders", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.gender_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	gender: genderTypeInApp().notNull(),
+	genderShort: varchar("gender_short", { length: 10 }).notNull(),
+	active: boolean("is_active").default(true).notNull(),
 }, (table) => [
 	unique("genders_gender_key").on(table.gender),
+	unique("genders_gender_short_key").on(table.genderShort),
 ]);
 
 export const clubPhoneNumbersInApp = app.table("club_phone_numbers", {

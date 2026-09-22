@@ -274,7 +274,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
     tags: [REFERENCE_TAG],
     summary: "List genders",
     description:
-      "Reference rows from app.genders. Use `id` as `genderId` on complete-profile.",
+      "Active reference rows from app.genders (`id`, `gender`, `genderShort`). Use `id` as `genderId` on complete-profile.",
     responses: {
       200: {
         description: "Gender reference data",

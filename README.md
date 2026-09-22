@@ -71,7 +71,7 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | POST | `/api/users/complete-profile` | Session required. `genderId` from `GET /api/reference/genders` |
 | PUT | `/api/users/avatars` | Session required. Multipart `avatar` File or Blob (JPEG/PNG/HEIC/HEIF/WebP/AVIF; MIME optional or octet-stream); stores 384×384 / 96×96 / 32×32 AVIF as avatar1–3 |
 | GET | `/api/users/avatars` | Session required. Signed GET URLs (1h) or null per slot |
-| GET | `/api/reference/genders` | Reference rows from `app.genders` (`{ id, gender }`) |
+| GET | `/api/reference/genders` | Reference rows from `app.genders` (`{ id, gender, genderShort }`) |
 
 Signup / login / forgot-password / reset-password are rate limited (5 requests / minute / IP).
 

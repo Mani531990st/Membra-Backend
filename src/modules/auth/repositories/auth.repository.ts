@@ -48,10 +48,15 @@ function mapAuthUser(row: {
 export class AuthRepository {
   async listGenders(
     dbOrTx: DbOrTx,
-  ): Promise<{ id: number; gender: GenderEnum }[]> {
+  ): Promise<{ id: number; gender: GenderEnum; genderShort: string }[]> {
     return dbOrTx
-      .select({ id: gendersInApp.id, gender: gendersInApp.gender })
+      .select({
+        id: gendersInApp.id,
+        gender: gendersInApp.gender,
+        genderShort: gendersInApp.genderShort,
+      })
       .from(gendersInApp)
+      .where(eq(gendersInApp.active, true))
       .orderBy(asc(gendersInApp.id));
   }
 
@@ -62,7 +67,9 @@ export class AuthRepository {
     const [row] = await dbOrTx
       .select({ id: gendersInApp.id })
       .from(gendersInApp)
-      .where(eq(gendersInApp.gender, gender))
+      .where(
+        and(eq(gendersInApp.gender, gender), eq(gendersInApp.active, true)),
+      )
       .limit(1);
 
     return row?.id ?? null;
@@ -72,7 +79,9 @@ export class AuthRepository {
     const [row] = await dbOrTx
       .select({ id: gendersInApp.id })
       .from(gendersInApp)
-      .where(eq(gendersInApp.id, genderId))
+      .where(
+        and(eq(gendersInApp.id, genderId), eq(gendersInApp.active, true)),
+      )
       .limit(1);
 
     return Boolean(row);

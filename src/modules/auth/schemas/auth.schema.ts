@@ -116,6 +116,7 @@ export const GenderRowSchema = z
   .object({
     id: z.number().int(),
     gender: genderEnumSchema,
+    genderShort: z.string().openapi({ example: "m" }),
   })
   .openapi("GenderRow");
 
