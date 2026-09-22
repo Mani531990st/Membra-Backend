@@ -17,6 +17,7 @@ import {
   MeResponseSchema,
   MessageResponseSchema,
   ResetPasswordSchema,
+  RolesResponseSchema,
   SignupResponseSchema,
   SignupSchema,
 } from "../schemas/auth.schema";
@@ -296,6 +297,22 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
       200: {
         description: "Activity reference data",
         content: { "application/json": { schema: ActivitiesResponseSchema } },
+      },
+      ...standardErrorResponses([500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/reference/roles",
+    tags: [REFERENCE_TAG],
+    summary: "List roles",
+    description:
+      "Active reference rows from app.roles (`id`, `role`, `roleShort`).",
+    responses: {
+      200: {
+        description: "Role reference data",
+        content: { "application/json": { schema: RolesResponseSchema } },
       },
       ...standardErrorResponses([500]),
     },

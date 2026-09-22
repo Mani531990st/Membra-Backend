@@ -14,6 +14,7 @@ import {
   MeResponseSchema,
   MessageResponseSchema,
   ResetPasswordSchema,
+  RolesResponseSchema,
   SignupResponseSchema,
   SignupSchema,
 } from "../schemas/auth.schema";
@@ -32,6 +33,7 @@ export function registerAuthSchemas(registry: OpenAPIRegistry): void {
   registry.register("ActiveSessionsResponse", ActiveSessionsResponseSchema);
   registry.register("GendersResponse", GendersResponseSchema);
   registry.register("ActivitiesResponse", ActivitiesResponseSchema);
+  registry.register("RolesResponse", RolesResponseSchema);
   registry.register("MessageResponse", MessageResponseSchema);
   registry.register("AvatarsResponse", AvatarsResponseSchema);
 }

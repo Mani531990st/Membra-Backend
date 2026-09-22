@@ -139,6 +139,20 @@ export const ActivitiesResponseSchema = z
   })
   .openapi("ActivitiesResponse");
 
+export const RoleRowSchema = z
+  .object({
+    id: z.number().int(),
+    role: z.string().openapi({ example: "member" }),
+    roleShort: z.string().openapi({ example: "mbr" }),
+  })
+  .openapi("RoleRow");
+
+export const RolesResponseSchema = z
+  .object({
+    roles: z.array(RoleRowSchema),
+  })
+  .openapi("RolesResponse");
+
 export const SafeUserSchema = z
   .object({
     uuid: z.string().uuid(),

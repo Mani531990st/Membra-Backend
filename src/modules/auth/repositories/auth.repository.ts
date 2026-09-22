@@ -7,6 +7,7 @@ import {
   gendersInApp,
   languagesInApp,
   passwordResetTokensInApp,
+  rolesInApp,
   userCredentialsInApp,
   userEmailsInApp,
   userPhoneNumbersInApp,
@@ -72,6 +73,20 @@ export class AuthRepository {
       .from(activitiesInApp)
       .where(eq(activitiesInApp.active, true))
       .orderBy(asc(activitiesInApp.id));
+  }
+
+  async listRoles(
+    dbOrTx: DbOrTx,
+  ): Promise<{ id: number; role: string; roleShort: string }[]> {
+    return dbOrTx
+      .select({
+        id: rolesInApp.id,
+        role: rolesInApp.role,
+        roleShort: rolesInApp.roleShort,
+      })
+      .from(rolesInApp)
+      .where(eq(rolesInApp.active, true))
+      .orderBy(asc(rolesInApp.id));
   }
 
   async findGenderIdByEnum(

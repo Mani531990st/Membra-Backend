@@ -20,6 +20,7 @@ import { GetMe } from "./use-cases/get-me";
 import { ListActiveSessions } from "./use-cases/list-active-sessions";
 import { ListGenders } from "./use-cases/list-genders";
 import { ListActivities } from "./use-cases/list-activities";
+import { ListRoles } from "./use-cases/list-roles";
 import { Login } from "./use-cases/login";
 import { Logout } from "./use-cases/logout";
 import { ResetPassword } from "./use-cases/reset-password";
@@ -49,6 +50,7 @@ import { UpdateAvatars } from "./use-cases/update-avatars";
     ResetPassword,
     ListGenders,
     ListActivities,
+    ListRoles,
     UpdateAvatars,
     GetAvatars,
   ],

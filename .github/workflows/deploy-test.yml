@@ -73,6 +73,7 @@ jobs:
           npm run db:seed:genders
           npm run db:seed:activities
           npm run db:seed:languages
+          npm run db:seed:roles
 
       - name: Install Scaleway CLI
         run: |

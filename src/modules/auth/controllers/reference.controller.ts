@@ -2,6 +2,7 @@ import { Controller, Get, HttpCode, Inject } from "@nestjs/common";
 
 import { ListActivities } from "../use-cases/list-activities";
 import { ListGenders } from "../use-cases/list-genders";
+import { ListRoles } from "../use-cases/list-roles";
 
 @Controller("reference")
 export class ReferenceController {
@@ -9,6 +10,7 @@ export class ReferenceController {
     @Inject(ListGenders) private readonly listGendersUseCase: ListGenders,
     @Inject(ListActivities)
     private readonly listActivitiesUseCase: ListActivities,
+    @Inject(ListRoles) private readonly listRolesUseCase: ListRoles,
   ) {}
 
   @Get("genders")
@@ -21,5 +23,11 @@ export class ReferenceController {
   @HttpCode(200)
   async activities() {
     return this.listActivitiesUseCase.execute();
+  }
+
+  @Get("roles")
+  @HttpCode(200)
+  async roles() {
+    return this.listRolesUseCase.execute();
   }
 }

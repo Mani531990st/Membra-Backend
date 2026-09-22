@@ -120,6 +120,13 @@
       "when": 1790600000000,
       "tag": "0016_activities_rename",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790700000000,
+      "tag": "0017_roles",
+      "breakpoints": true
     }
   ]
 }

@@ -16,6 +16,7 @@ npm run db:migrate
 npm run db:seed:genders
 npm run db:seed:activities
 npm run db:seed:languages
+npm run db:seed:roles
 npm run dev
 ```
 
@@ -73,6 +74,7 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | GET | `/api/users/avatars` | Session required. Signed GET URLs (1h) or null per slot |
 | GET | `/api/reference/genders` | Reference rows from `app.genders` (`{ id, gender, genderShort }`) |
 | GET | `/api/reference/activities` | Reference rows from `app.activities` (`{ id, activity }`) |
+| GET | `/api/reference/roles` | Reference rows from `app.roles` (`{ id, role, roleShort }`) |
 
 Signup / login / forgot-password / reset-password are rate limited (5 requests / minute / IP).
 
@@ -190,7 +192,7 @@ These `SCW_ACCESS_KEY` / `SCW_SECRET_KEY` values are the **container** key, not 
 
 Create the Environment under the repo **Settings → Environments → test**.
 
-Optional catalogs seed (genders, activities, languages): **Actions → Deploy test → Run workflow → seed catalogs**. Do not seed `db:seed:dev-user` unless you want a test account.
+Optional catalogs seed (genders, activities, languages, roles): **Actions → Deploy test → Run workflow → seed catalogs**. Do not seed `db:seed:dev-user` unless you want a test account.
 
 ### Scaleway console (test, region `nl-ams`)
 
