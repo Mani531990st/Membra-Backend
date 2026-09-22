@@ -124,8 +124,8 @@ export const userAddressesInApp = app.table("user_addresses", {
 	city: varchar({ length: 100 }).notNull(),
 	region: varchar({ length: 100 }),
 	countryId: uuid("country_id").notNull(),
-	primary: boolean().default(false).notNull(),
-	active: boolean().default(false).notNull(),
+	primary: boolean("is_primary").default(false).notNull(),
+	active: boolean("is_active").default(false).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
@@ -407,8 +407,8 @@ export const userAliasesInApp = app.table("user_aliases", {
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.alias_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
 	alias: varchar({ length: 11 }).notNull(),
-	primary: boolean().default(false).notNull(),
-	active: boolean().default(false).notNull(),
+	primary: boolean("is_primary").default(false).notNull(),
+	active: boolean("is_active").default(false).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
@@ -425,8 +425,8 @@ export const userEmailsInApp = app.table("user_emails", {
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.mail_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
 	userId: uuid("user_id").notNull(),
 	email: varchar({ length: 254 }),
-	primary: boolean().default(false),
-	active: boolean().default(false),
+	primary: boolean("is_primary").default(false),
+	active: boolean("is_active").default(false),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
@@ -444,8 +444,8 @@ export const userPhoneNumbersInApp = app.table("user_phone_numbers", {
 	userId: uuid("user_id").notNull(),
 	phoneCountryCode: integer("phone_country_code"),
 	phoneNumber: varchar("phone_number", { length: 14 }),
-	primary: boolean().default(false),
-	active: boolean().default(false),
+	primary: boolean("is_primary").default(false),
+	active: boolean("is_active").default(false),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
