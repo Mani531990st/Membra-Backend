@@ -14,16 +14,21 @@ ALTER TABLE "app"."club_languages" DROP COLUMN "language_id";--> statement-break
 ALTER TABLE "app"."club_languages" RENAME COLUMN "language_code" TO "language_id";--> statement-breakpoint
 
 -- 2. Remap questionnaire language_id columns (no FK today; align type to varchar)
-ALTER TABLE "app"."club_questionnaire_details"
-	ALTER COLUMN "language_id" TYPE varchar(15)
-	USING (
-		(SELECT l."code" FROM "app"."languages" AS l WHERE l."id" = "language_id")
-	);--> statement-breakpoint
-ALTER TABLE "app"."club_questionnaires"
-	ALTER COLUMN "language_id" TYPE varchar(15)
-	USING (
-		(SELECT l."code" FROM "app"."languages" AS l WHERE l."id" = "language_id")
-	);--> statement-breakpoint
+-- Postgres forbids subqueries in ALTER COLUMN ... USING, so add/update/drop/rename.
+ALTER TABLE "app"."club_questionnaire_details" ADD COLUMN "language_code" varchar(15);--> statement-breakpoint
+UPDATE "app"."club_questionnaire_details" AS d
+SET "language_code" = l."code"
+FROM "app"."languages" AS l
+WHERE d."language_id" = l."id";--> statement-breakpoint
+ALTER TABLE "app"."club_questionnaire_details" DROP COLUMN "language_id";--> statement-breakpoint
+ALTER TABLE "app"."club_questionnaire_details" RENAME COLUMN "language_code" TO "language_id";--> statement-breakpoint
+ALTER TABLE "app"."club_questionnaires" ADD COLUMN "language_code" varchar(15);--> statement-breakpoint
+UPDATE "app"."club_questionnaires" AS q
+SET "language_code" = l."code"
+FROM "app"."languages" AS l
+WHERE q."language_id" = l."id";--> statement-breakpoint
+ALTER TABLE "app"."club_questionnaires" DROP COLUMN "language_id";--> statement-breakpoint
+ALTER TABLE "app"."club_questionnaires" RENAME COLUMN "language_code" TO "language_id";--> statement-breakpoint
 
 -- 3. Rebuild languages: code becomes varchar PK id
 ALTER TABLE "app"."languages" DROP CONSTRAINT "languages_pkey";--> statement-breakpoint
