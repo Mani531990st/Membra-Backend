@@ -22,6 +22,7 @@ import { ListActivities } from "./use-cases/list-activities";
 import { ListColors } from "./use-cases/list-colors";
 import { ListGenders } from "./use-cases/list-genders";
 import { ListRoles } from "./use-cases/list-roles";
+import { ListStatuses } from "./use-cases/list-statuses";
 import { Login } from "./use-cases/login";
 import { Logout } from "./use-cases/logout";
 import { ResetPassword } from "./use-cases/reset-password";
@@ -53,6 +54,7 @@ import { UpdateAvatars } from "./use-cases/update-avatars";
     ListActivities,
     ListRoles,
     ListColors,
+    ListStatuses,
     UpdateAvatars,
     GetAvatars,
   ],

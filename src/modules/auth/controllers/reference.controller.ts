@@ -4,6 +4,7 @@ import { ListActivities } from "../use-cases/list-activities";
 import { ListColors } from "../use-cases/list-colors";
 import { ListGenders } from "../use-cases/list-genders";
 import { ListRoles } from "../use-cases/list-roles";
+import { ListStatuses } from "../use-cases/list-statuses";
 
 @Controller("reference")
 export class ReferenceController {
@@ -13,6 +14,7 @@ export class ReferenceController {
     private readonly listActivitiesUseCase: ListActivities,
     @Inject(ListRoles) private readonly listRolesUseCase: ListRoles,
     @Inject(ListColors) private readonly listColorsUseCase: ListColors,
+    @Inject(ListStatuses) private readonly listStatusesUseCase: ListStatuses,
   ) {}
 
   @Get("genders")
@@ -37,5 +39,11 @@ export class ReferenceController {
   @HttpCode(200)
   async colors() {
     return this.listColorsUseCase.execute();
+  }
+
+  @Get("statuses")
+  @HttpCode(200)
+  async statuses() {
+    return this.listStatusesUseCase.execute();
   }
 }

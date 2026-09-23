@@ -170,6 +170,15 @@ export const colorsInApp = app.table("colors", {
 	unique("colors_color_key").on(table.color),
 ]);
 
+export const statusesInApp = app.table("statuses", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.statuses_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
+	status: varchar({ length: 30 }).notNull(),
+	active: boolean("is_active").default(true).notNull(),
+}, (table) => [
+	unique("statuses_status_key").on(table.status),
+]);
+
 export const clubPhoneNumbersInApp = app.table("club_phone_numbers", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_telephone_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),

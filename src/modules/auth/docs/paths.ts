@@ -21,6 +21,7 @@ import {
   RolesResponseSchema,
   SignupResponseSchema,
   SignupSchema,
+  StatusesResponseSchema,
 } from "../schemas/auth.schema";
 import { registerAuthSchemas } from "./schemas";
 
@@ -330,6 +331,22 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
       200: {
         description: "Color reference data",
         content: { "application/json": { schema: ColorsResponseSchema } },
+      },
+      ...standardErrorResponses([500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/reference/statuses",
+    tags: [REFERENCE_TAG],
+    summary: "List statuses",
+    description:
+      "Active reference rows from app.statuses (`id`, `status`), ordered by id.",
+    responses: {
+      200: {
+        description: "Status reference data",
+        content: { "application/json": { schema: StatusesResponseSchema } },
       },
       ...standardErrorResponses([500]),
     },

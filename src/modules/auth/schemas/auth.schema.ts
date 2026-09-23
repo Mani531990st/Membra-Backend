@@ -169,6 +169,19 @@ export const ColorsResponseSchema = z
   })
   .openapi("ColorsResponse");
 
+export const StatusRowSchema = z
+  .object({
+    id: z.number().int(),
+    status: z.string().openapi({ example: "open" }),
+  })
+  .openapi("StatusRow");
+
+export const StatusesResponseSchema = z
+  .object({
+    statuses: z.array(StatusRowSchema),
+  })
+  .openapi("StatusesResponse");
+
 export const SafeUserSchema = z
   .object({
     uuid: z.string().uuid(),

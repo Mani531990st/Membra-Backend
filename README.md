@@ -18,6 +18,7 @@ npm run db:seed:activities
 npm run db:seed:languages
 npm run db:seed:roles
 npm run db:seed:colors
+npm run db:seed:statuses
 npm run dev
 ```
 
@@ -77,6 +78,7 @@ Session TTL is 24 hours by default (signup and login). `rememberMe: true` on log
 | GET | `/api/reference/activities` | Reference rows from `app.activities` (`{ id, activity }`) |
 | GET | `/api/reference/roles` | Reference rows from `app.roles` (`{ id, role, roleShort }`) |
 | GET | `/api/reference/colors` | Reference rows from `app.colors` (`{ id, color, hex, isPublic, isTextBlack }`) |
+| GET | `/api/reference/statuses` | Reference rows from `app.statuses` (`{ id, status }`) |
 
 Signup / login / forgot-password / reset-password are rate limited (5 requests / minute / IP).
 

@@ -9,6 +9,7 @@ import {
   languagesInApp,
   passwordResetTokensInApp,
   rolesInApp,
+  statusesInApp,
   userCredentialsInApp,
   userEmailsInApp,
   userPhoneNumbersInApp,
@@ -112,6 +113,19 @@ export class AuthRepository {
       .from(colorsInApp)
       .where(eq(colorsInApp.active, true))
       .orderBy(asc(colorsInApp.id));
+  }
+
+  async listStatuses(
+    dbOrTx: DbOrTx,
+  ): Promise<{ id: number; status: string }[]> {
+    return dbOrTx
+      .select({
+        id: statusesInApp.id,
+        status: statusesInApp.status,
+      })
+      .from(statusesInApp)
+      .where(eq(statusesInApp.active, true))
+      .orderBy(asc(statusesInApp.id));
   }
 
   async findGenderIdByEnum(
