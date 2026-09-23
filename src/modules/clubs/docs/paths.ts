@@ -8,6 +8,7 @@ import {
   AvatarsResponseSchema,
   ClubAddressBodySchema,
   ClubAddressResponseSchema,
+  ClubAddressesListResponseSchema,
   ClubDetailResponseSchema,
   ClubSummaryResponseSchema,
   CreateClubSchema,
@@ -15,9 +16,11 @@ import {
   LanguagesResponseSchema,
   LocationResponseSchema,
   LocationsListResponseSchema,
+  DeleteLocationResponseSchema,
   UpdateClubAddressSchema,
   UpdateClubSchema,
   UpdateLocationSchema,
+  UpdateLocationResponseSchema,
 } from "../schemas/clubs.schema";
 
 const CLUBS_TAG = "Clubs";
@@ -80,6 +83,10 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
   registry.register("ClubSummaryResponse", ClubSummaryResponseSchema);
   registry.register("AdminClubsResponse", AdminClubsResponseSchema);
   registry.register("ClubAddressResponse", ClubAddressResponseSchema);
+  registry.register(
+    "ClubAddressesListResponse",
+    ClubAddressesListResponseSchema,
+  );
   registry.register("ClubAvatarsResponse", AvatarsResponseSchema);
   registry.register("LanguagesResponse", LanguagesResponseSchema);
   registry.register("UploadClubAvatarsRequest", UploadClubAvatarsRequestSchema);
@@ -88,6 +95,8 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
   registry.register("UpdateLocationRequest", UpdateLocationSchema);
   registry.register("LocationResponse", LocationResponseSchema);
   registry.register("LocationsListResponse", LocationsListResponseSchema);
+  registry.register("UpdateLocationResponse", UpdateLocationResponseSchema);
+  registry.register("DeleteLocationResponse", DeleteLocationResponseSchema);
 
   registry.registerPath({
     method: "get",
@@ -199,6 +208,30 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
         },
       },
       ...standardErrorResponses([400, 401, 403, 404, 409, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/clubs/{clubId}/addresses",
+    tags: [CLUBS_TAG],
+    summary: "List club addresses",
+    description:
+      "Returns all addresses for the club ordered by id. Member/admin only.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Club addresses",
+        content: {
+          "application/json": { schema: ClubAddressesListResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 404, 500]),
     },
   });
 
@@ -415,7 +448,7 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     tags: [CLUBS_TAG],
     summary: "Update club location",
     description:
-      "Updates a location. Changing shortName or parentLocationId recomputes shownName for this node and all descendants. Admin only.",
+      "Updates a location. Changing shortName or parentLocationId recomputes shownName for this node and all descendants. Setting active to false also deactivates all descendants; setting active to true also activates inactive ancestors up to the root. Response includes `location` (the target) and `affected` (other rows changed by cascades). Admin only.",
     security: [{ SessionCookie: [] }],
     request: {
       params: z.object({
@@ -429,12 +462,37 @@ export function registerClubsDocs(registry: OpenAPIRegistry): void {
     },
     responses: {
       200: {
-        description: "Location updated",
+        description: "Location updated (with cascade side effects)",
         content: {
-          "application/json": { schema: LocationResponseSchema },
+          "application/json": { schema: UpdateLocationResponseSchema },
         },
       },
       ...standardErrorResponses([400, 401, 403, 404, 500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "delete",
+    path: "/api/clubs/{clubId}/locations/{locationId}",
+    tags: [CLUBS_TAG],
+    summary: "Delete club location",
+    description:
+      "Hard-deletes a location and all of its descendant child locations. Returns deletedIds (including the target). Admin only.",
+    security: [{ SessionCookie: [] }],
+    request: {
+      params: z.object({
+        clubId: z.coerce.number().int().positive(),
+        locationId: z.coerce.number().int().positive(),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Location and descendants deleted",
+        content: {
+          "application/json": { schema: DeleteLocationResponseSchema },
+        },
+      },
+      ...standardErrorResponses([401, 403, 404, 500]),
     },
   });
 }

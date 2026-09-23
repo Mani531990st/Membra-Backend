@@ -292,6 +292,12 @@ export const ClubAddressResponseSchema = z
   })
   .openapi("ClubAddressResponse");
 
+export const ClubAddressesListResponseSchema = z
+  .object({
+    addresses: z.array(ClubAddressResponseSchema),
+  })
+  .openapi("ClubAddressesListResponse");
+
 export const ClubLanguageResponseSchema = z
   .object({
     languageId: z.string(),
@@ -449,6 +455,26 @@ export const LocationsListResponseSchema = z
     locations: z.array(LocationResponseSchema),
   })
   .openapi("LocationsListResponse");
+
+export const UpdateLocationResponseSchema = z
+  .object({
+    location: LocationResponseSchema,
+    affected: z.array(LocationResponseSchema).openapi({
+      description:
+        "Other locations changed by this request (active cascade and/or shownName cascade). Excludes location.id.",
+    }),
+  })
+  .openapi("UpdateLocationResponse");
+
+export const DeleteLocationResponseSchema = z
+  .object({
+    deletedIds: z.array(z.number().int()).openapi({
+      description:
+        "Ids of the deleted location and all descendants (deepest-first)",
+      example: [3, 2, 1],
+    }),
+  })
+  .openapi("DeleteLocationResponse");
 
 export type CreateClubInput = z.infer<typeof CreateClubSchema>;
 export type UpdateClubInput = z.infer<typeof UpdateClubSchema>;

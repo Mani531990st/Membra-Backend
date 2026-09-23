@@ -34,6 +34,24 @@ function mapAddress(row: ClubAddressRow) {
 }
 
 @Injectable()
+export class ListClubAddresses {
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(ClubAccess) private readonly access: ClubAccess,
+    @Inject(ClubAddressesRepository)
+    private readonly addresses: ClubAddressesRepository,
+  ) {}
+
+  async execute(clubId: number, userId: string) {
+    await this.access.requireMember(clubId, userId);
+    const rows = await this.addresses.listByClubId(this.db, clubId);
+    return {
+      addresses: rows.map(mapAddress),
+    };
+  }
+}
+
+@Injectable()
 export class AddClubAddress {
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,

@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ValidationError } from "@/shared/errors";
 
-import { AddClubAddress, UpdateClubAddress } from "../use-cases/club-addresses";
+import {
+  AddClubAddress,
+  ListClubAddresses,
+  UpdateClubAddress,
+} from "../use-cases/club-addresses";
 
 const baseAddressInput = {
   streetName: "Lyngbyvej",
@@ -14,6 +18,62 @@ const baseAddressInput = {
   primary: false,
   active: true,
 };
+
+describe("ListClubAddresses", () => {
+  const access = { requireMember: vi.fn() };
+  const addresses = { listByClubId: vi.fn() };
+  const db = {} as never;
+  const useCase = new ListClubAddresses(
+    db,
+    access as never,
+    addresses as never,
+  );
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    access.requireMember.mockResolvedValue(undefined);
+  });
+
+  it("returns mapped addresses for the club", async () => {
+    addresses.listByClubId.mockResolvedValue([
+      {
+        id: 1,
+        clubId: 12,
+        streetName: "Lyngbyvej",
+        streetNumber: "1",
+        zip: "2100",
+        city: "Copenhagen",
+        region: null,
+        name: "Main",
+        shortName: "MH",
+        directions: null,
+        primary: true,
+        active: true,
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+    ]);
+
+    const result = await useCase.execute(12, "user-1");
+
+    expect(access.requireMember).toHaveBeenCalledWith(12, "user-1");
+    expect(addresses.listByClubId).toHaveBeenCalledWith(db, 12);
+    expect(result.addresses).toHaveLength(1);
+    expect(result.addresses[0]).toEqual(
+      expect.objectContaining({
+        id: 1,
+        streetName: "Lyngbyvej",
+        primary: true,
+      }),
+    );
+  });
+
+  it("returns empty list when club has no addresses", async () => {
+    addresses.listByClubId.mockResolvedValue([]);
+    const result = await useCase.execute(12, "user-1");
+    expect(result.addresses).toEqual([]);
+  });
+});
 
 describe("AddClubAddress", () => {
   const access = {

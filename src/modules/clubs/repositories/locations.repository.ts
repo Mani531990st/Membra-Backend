@@ -94,6 +94,43 @@ export class LocationsRepository {
     }
   }
 
+  async updateActiveByIds(
+    dbOrTx: DbOrTx,
+    clubId: number,
+    ids: number[],
+    active: boolean,
+  ): Promise<void> {
+    for (const id of ids) {
+      await dbOrTx
+        .update(locationsInApp)
+        .set({
+          active,
+          updatedAt: sql`CURRENT_TIMESTAMP`,
+        })
+        .where(
+          and(eq(locationsInApp.id, id), eq(locationsInApp.clubId, clubId)),
+        );
+    }
+  }
+
+  /**
+   * Deletes locations by id in the given order (caller must pass deepest-first).
+   * Scoped to clubId so ids from another club are ignored.
+   */
+  async deleteByIds(
+    dbOrTx: DbOrTx,
+    clubId: number,
+    ids: number[],
+  ): Promise<void> {
+    for (const id of ids) {
+      await dbOrTx
+        .delete(locationsInApp)
+        .where(
+          and(eq(locationsInApp.id, id), eq(locationsInApp.clubId, clubId)),
+        );
+    }
+  }
+
   async addressBelongsToClub(
     dbOrTx: DbOrTx,
     clubId: number,

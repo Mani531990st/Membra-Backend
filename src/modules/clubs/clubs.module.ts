@@ -13,6 +13,7 @@ import { LocationsRepository } from "./repositories/locations.repository";
 import { SeasonsRepository } from "./repositories/seasons.repository";
 import {
   AddClubAddress,
+  ListClubAddresses,
   MakeClubAddressPrimary,
   UpdateClubAddress,
 } from "./use-cases/club-addresses";
@@ -23,6 +24,7 @@ import { ListAdminClubs } from "./use-cases/list-admin-clubs";
 import { ListLanguages } from "./use-cases/list-catalogs";
 import {
   CreateLocation,
+  DeleteLocation,
   GetLocation,
   ListLocations,
   UpdateLocation,
@@ -54,6 +56,7 @@ import { UpdateClub } from "./use-cases/update-club";
     AddClubAddress,
     UpdateClubAddress,
     MakeClubAddressPrimary,
+    ListClubAddresses,
     UpdateClubAvatars,
     GetClubAvatars,
     ListLanguages,
@@ -61,6 +64,7 @@ import { UpdateClub } from "./use-cases/update-club";
     UpdateLocation,
     GetLocation,
     ListLocations,
+    DeleteLocation,
     CreateSeason,
     UpdateSeason,
     GetSeason,

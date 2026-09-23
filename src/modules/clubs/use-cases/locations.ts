@@ -8,6 +8,8 @@ import { ClubAccess } from "../lib/club-access";
 import {
   buildShownName,
   cascadeShownNames,
+  collectAncestorIds,
+  collectSubtreeIds,
   sortLocationsHierarchically,
   wouldCreateCycle,
   type LocationTreeNode,
@@ -195,6 +197,13 @@ export class UpdateLocation {
       nextShortName !== existing.shortName ||
       nextParentId !== existing.parentLocationId;
 
+    const activeChanged =
+      input.active !== undefined && input.active !== existing.active;
+
+    // Working copy of club rows so we can return cascade side effects without re-querying.
+    const working = new Map(all.map((loc) => [loc.id, { ...loc }]));
+    const affectedIds = new Set<number>();
+
     const row = await this.db.transaction(async (tx) => {
       const patch: Partial<{
         name: string;
@@ -247,6 +256,65 @@ export class UpdateLocation {
         const descendantUpdates = updates.filter((u) => u.id !== locationId);
         if (descendantUpdates.length > 0) {
           await this.locations.updateShownNames(tx, descendantUpdates);
+          for (const update of descendantUpdates) {
+            const current = working.get(update.id);
+            if (current) {
+              working.set(update.id, {
+                ...current,
+                shownName: update.shownName,
+              });
+              affectedIds.add(update.id);
+            }
+          }
+        }
+      }
+
+      if (activeChanged && input.active === false) {
+        const descendantIds = collectSubtreeIds(all, locationId).filter(
+          (id) => id !== locationId,
+        );
+        if (descendantIds.length > 0) {
+          await this.locations.updateActiveByIds(
+            tx,
+            clubId,
+            descendantIds,
+            false,
+          );
+          for (const id of descendantIds) {
+            const current = working.get(id);
+            if (current) {
+              working.set(id, { ...current, active: false });
+              affectedIds.add(id);
+            }
+          }
+        }
+      }
+
+      if (activeChanged && input.active === true) {
+        const forAncestors = all.map((loc) =>
+          loc.id === locationId
+            ? { ...loc, parentLocationId: nextParentId }
+            : loc,
+        );
+        const byId = new Map(forAncestors.map((loc) => [loc.id, loc]));
+        const inactiveAncestorIds = collectAncestorIds(
+          forAncestors,
+          locationId,
+        ).filter((id) => byId.get(id)?.active === false);
+        if (inactiveAncestorIds.length > 0) {
+          await this.locations.updateActiveByIds(
+            tx,
+            clubId,
+            inactiveAncestorIds,
+            true,
+          );
+          for (const id of inactiveAncestorIds) {
+            const current = working.get(id);
+            if (current) {
+              working.set(id, { ...current, active: true });
+              affectedIds.add(id);
+            }
+          }
         }
       }
 
@@ -256,7 +324,13 @@ export class UpdateLocation {
     if (!row) {
       throw new NotFoundError("Location not found");
     }
-    return mapLocation(row);
+
+    return {
+      location: mapLocation(row),
+      affected: [...affectedIds]
+        .sort((a, b) => a - b)
+        .map((id) => mapLocation(working.get(id)!)),
+    };
   }
 }
 
@@ -300,5 +374,40 @@ export class ListLocations {
     return {
       locations: ordered.map((node) => mapLocation(byId.get(node.id)!)),
     };
+  }
+}
+
+@Injectable()
+export class DeleteLocation {
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(ClubAccess) private readonly access: ClubAccess,
+    @Inject(LocationsRepository)
+    private readonly locations: LocationsRepository,
+  ) {}
+
+  async execute(clubId: number, locationId: number, userId: string) {
+    await this.access.requireAdmin(clubId, userId);
+
+    const existing = await this.locations.findByIdForClub(
+      this.db,
+      clubId,
+      locationId,
+    );
+    if (!existing) {
+      throw new NotFoundError("Location not found");
+    }
+
+    const all = await this.locations.listByClubId(this.db, clubId);
+    const ids = collectSubtreeIds(all, locationId);
+    if (ids.length === 0) {
+      throw new NotFoundError("Location not found");
+    }
+
+    await this.db.transaction(async (tx) => {
+      await this.locations.deleteByIds(tx, clubId, ids);
+    });
+
+    return { deletedIds: ids };
   }
 }

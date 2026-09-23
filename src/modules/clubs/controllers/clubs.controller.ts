@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
@@ -39,6 +40,7 @@ import {
 } from "../schemas/clubs.schema";
 import {
   AddClubAddress,
+  ListClubAddresses,
   MakeClubAddressPrimary,
   UpdateClubAddress,
 } from "../use-cases/club-addresses";
@@ -49,6 +51,7 @@ import { ListAdminClubs } from "../use-cases/list-admin-clubs";
 import { ListLanguages } from "../use-cases/list-catalogs";
 import {
   CreateLocation,
+  DeleteLocation,
   GetLocation,
   ListLocations,
   UpdateLocation,
@@ -75,6 +78,8 @@ export class ClubsController {
     private readonly updateAddress: UpdateClubAddress,
     @Inject(MakeClubAddressPrimary)
     private readonly makePrimary: MakeClubAddressPrimary,
+    @Inject(ListClubAddresses)
+    private readonly listClubAddresses: ListClubAddresses,
     @Inject(UpdateClubAvatars)
     private readonly updateAvatars: UpdateClubAvatars,
     @Inject(GetClubAvatars) private readonly getAvatars: GetClubAvatars,
@@ -83,6 +88,7 @@ export class ClubsController {
     @Inject(UpdateLocation) private readonly updateLocation: UpdateLocation,
     @Inject(GetLocation) private readonly getLocation: GetLocation,
     @Inject(ListLocations) private readonly listLocations: ListLocations,
+    @Inject(DeleteLocation) private readonly deleteLocation: DeleteLocation,
   ) {}
 
   @Get("languages")
@@ -139,6 +145,15 @@ export class ClubsController {
     @Body(new ZodValidationPipe(UpdateClubSchema)) body: UpdateClubInput,
   ) {
     return this.updateClub.execute(params.clubId, session.userId, body);
+  }
+
+  @Get(":clubId/addresses")
+  async getClubAddresses(
+    @AuthSession() session: AuthSessionContext,
+    @Param(new ZodValidationPipe(ClubIdParamSchema))
+    params: { clubId: number },
+  ) {
+    return this.listClubAddresses.execute(params.clubId, session.userId);
   }
 
   @Post(":clubId/addresses")
@@ -229,6 +244,19 @@ export class ClubsController {
       params.locationId,
       session.userId,
       body,
+    );
+  }
+
+  @Delete(":clubId/locations/:locationId")
+  async deleteClubLocation(
+    @AuthSession() session: AuthSessionContext,
+    @Param(new ZodValidationPipe(ClubLocationIdParamSchema))
+    params: { clubId: number; locationId: number },
+  ) {
+    return this.deleteLocation.execute(
+      params.clubId,
+      params.locationId,
+      session.userId,
     );
   }
 

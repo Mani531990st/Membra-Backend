@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildShownName,
   cascadeShownNames,
+  collectAncestorIds,
+  collectSubtreeIds,
   sortLocationsHierarchically,
   wouldCreateCycle,
 } from "./location-shown-name";
@@ -65,5 +67,47 @@ describe("cascadeShownNames", () => {
         { id: 3, shownName: "HH.in.JJ" },
       ]),
     );
+  });
+});
+
+describe("collectSubtreeIds", () => {
+  const tree = [
+    { id: 1, parentLocationId: null },
+    { id: 2, parentLocationId: 1 },
+    { id: 3, parentLocationId: 2 },
+    { id: 4, parentLocationId: null },
+  ];
+
+  it("returns deepest-first ids for a root and descendants", () => {
+    expect(collectSubtreeIds(tree, 1)).toEqual([3, 2, 1]);
+  });
+
+  it("returns only the leaf for a leaf node", () => {
+    expect(collectSubtreeIds(tree, 3)).toEqual([3]);
+  });
+
+  it("returns empty when root is missing", () => {
+    expect(collectSubtreeIds(tree, 99)).toEqual([]);
+  });
+});
+
+describe("collectAncestorIds", () => {
+  const tree = [
+    { id: 1, parentLocationId: null },
+    { id: 2, parentLocationId: 1 },
+    { id: 3, parentLocationId: 2 },
+    { id: 4, parentLocationId: null },
+  ];
+
+  it("returns nearest-parent-first chain for a mid-tree node", () => {
+    expect(collectAncestorIds(tree, 3)).toEqual([2, 1]);
+  });
+
+  it("returns empty for a root", () => {
+    expect(collectAncestorIds(tree, 1)).toEqual([]);
+  });
+
+  it("returns empty when node is missing", () => {
+    expect(collectAncestorIds(tree, 99)).toEqual([]);
   });
 });

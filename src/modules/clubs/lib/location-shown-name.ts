@@ -100,6 +100,73 @@ export function cascadeShownNames(
 }
 
 /**
+ * Ids for `rootId` and all descendants, deepest-first (safe for parent FK deletes).
+ * Empty if `rootId` is not in `allInClub`.
+ */
+export function collectSubtreeIds(
+  allInClub: Array<{ id: number; parentLocationId: number | null }>,
+  rootId: number,
+): number[] {
+  if (!allInClub.some((row) => row.id === rootId)) {
+    return [];
+  }
+
+  const childrenByParent = new Map<number, number[]>();
+  for (const row of allInClub) {
+    if (row.parentLocationId !== null) {
+      const list = childrenByParent.get(row.parentLocationId) ?? [];
+      list.push(row.id);
+      childrenByParent.set(row.parentLocationId, list);
+    }
+  }
+
+  const depth = new Map<number, number>();
+  depth.set(rootId, 0);
+  const queue = [rootId];
+  const ids: number[] = [];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    ids.push(current);
+    for (const childId of childrenByParent.get(current) ?? []) {
+      depth.set(childId, (depth.get(current) ?? 0) + 1);
+      queue.push(childId);
+    }
+  }
+
+  return ids.sort((a, b) => (depth.get(b) ?? 0) - (depth.get(a) ?? 0));
+}
+
+/**
+ * Parent chain from nearest parent to root. Empty for roots or missing nodes.
+ */
+export function collectAncestorIds(
+  allInClub: Array<{ id: number; parentLocationId: number | null }>,
+  nodeId: number,
+): number[] {
+  const byId = new Map(allInClub.map((row) => [row.id, row]));
+  if (!byId.has(nodeId)) {
+    return [];
+  }
+
+  const ancestors: number[] = [];
+  const seen = new Set<number>();
+  let current = byId.get(nodeId)?.parentLocationId ?? null;
+  while (current !== null) {
+    if (seen.has(current)) {
+      break;
+    }
+    seen.add(current);
+    const parent = byId.get(current);
+    if (!parent) {
+      break;
+    }
+    ancestors.push(current);
+    current = parent.parentLocationId;
+  }
+  return ancestors;
+}
+
+/**
  * True if `candidateParentId` is `nodeId` or any descendant of `nodeId`.
  */
 export function wouldCreateCycle(
