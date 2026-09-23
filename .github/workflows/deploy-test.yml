@@ -3,7 +3,7 @@ name: Deploy test
 on:
   push:
     branches:
-      - development
+      - test
   workflow_dispatch:
     inputs:
       seed_catalogs:
