@@ -209,7 +209,6 @@ export const clubsInApp = app.table("clubs", {
 	shortName: varchar("short_name", { length: 10 }).notNull(),
 	establishedDate: date("established_date"),
 	active: boolean("is_active").default(true).notNull(),
-	countryCode: varchar("country_code", { length: 2 }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [

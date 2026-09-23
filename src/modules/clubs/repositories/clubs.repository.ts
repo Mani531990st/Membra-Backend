@@ -20,7 +20,6 @@ export class ClubsRepository {
       shortName: string;
       establishedDate: string | null;
       active: boolean;
-      countryCode: string;
     },
   ): Promise<ClubRow> {
     const [row] = await dbOrTx
@@ -30,7 +29,6 @@ export class ClubsRepository {
         shortName: values.shortName,
         establishedDate: values.establishedDate,
         active: values.active,
-        countryCode: values.countryCode,
       })
       .returning();
 
@@ -67,7 +65,6 @@ export class ClubsRepository {
         shortName: clubsInApp.shortName,
         establishedDate: clubsInApp.establishedDate,
         active: clubsInApp.active,
-        countryCode: clubsInApp.countryCode,
         createdAt: clubsInApp.createdAt,
         updatedAt: clubsInApp.updatedAt,
       })
@@ -85,7 +82,6 @@ export class ClubsRepository {
       shortName: string;
       establishedDate: string | null;
       active: boolean;
-      countryCode: string;
     }>,
   ): Promise<ClubRow | null> {
     const [row] = await dbOrTx

@@ -1,12 +1,5 @@
 import { z } from "@/shared/validation/zod";
 
-export const countryCodeSchema = z
-  .string()
-  .trim()
-  .toUpperCase()
-  .regex(/^[A-Z]{2}$/, "countryCode must be a 2-letter ISO code")
-  .openapi({ example: "DK" });
-
 export const isoDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "establishedDate must be YYYY-MM-DD")
@@ -73,7 +66,6 @@ export const CreateClubSchema = z
     shortName: z.string().trim().min(1).max(10).openapi({ example: "ExC" }),
     establishedDate: isoDateSchema.optional().nullable(),
     active: z.boolean().optional().default(true).openapi({ example: true }),
-    countryCode: countryCodeSchema,
     activityIds: z
       .array(z.number().int().positive())
       .default([])
@@ -162,7 +154,6 @@ export const CreateClubSchema = z
       shortName: "ExC",
       establishedDate: "2020-05-04",
       active: true,
-      countryCode: "DK",
       activityIds: [1, 2],
       languages: [
         { languageId: "da", rank: 1 },
@@ -188,7 +179,6 @@ export const UpdateClubSchema = z
     shortName: z.string().trim().min(1).max(10).optional(),
     establishedDate: isoDateSchema.nullable().optional(),
     active: z.boolean().optional(),
-    countryCode: countryCodeSchema.optional(),
     activityIds: z
       .array(z.number().int().positive())
       .optional()
@@ -320,7 +310,6 @@ export const ClubDetailResponseSchema = z
     shortName: z.string(),
     establishedDate: z.string().nullable(),
     active: z.boolean(),
-    countryCode: z.string(),
     activities: z.array(ClubActivityResponseSchema),
     languages: z.array(ClubLanguageResponseSchema),
     addresses: z.array(ClubAddressResponseSchema),
@@ -342,7 +331,6 @@ export const ClubSummaryResponseSchema = z
     shortName: z.string(),
     establishedDate: z.string().nullable(),
     active: z.boolean(),
-    countryCode: z.string(),
     adminCount: z.number().int().nonnegative(),
     avatar: z
       .string()

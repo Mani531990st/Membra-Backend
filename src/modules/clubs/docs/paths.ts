@@ -50,7 +50,6 @@ const CreateClubMultipartSchema = z
       example: "true",
       description: "Boolean as string: true/false",
     }),
-    countryCode: z.string().openapi({ example: "DK" }),
     activityIds: z.string().optional().openapi({
       example: "[1,2]",
       description:

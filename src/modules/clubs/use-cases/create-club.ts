@@ -36,7 +36,6 @@ export type ClubDetail = {
   shortName: string;
   establishedDate: string | null;
   active: boolean;
-  countryCode: string;
   activities: Array<{ id: number; activity: string }>;
   languages: Array<{
     languageId: string;
@@ -100,7 +99,6 @@ export class ClubDetailAssembler {
       shortName: club.shortName,
       establishedDate: club.establishedDate,
       active: club.active,
-      countryCode: club.countryCode,
       activities,
       languages,
       addresses: addresses.map((row) => ({
@@ -209,7 +207,6 @@ export class CreateClub {
           shortName: input.shortName,
           establishedDate: input.establishedDate ?? null,
           active: input.active,
-          countryCode: input.countryCode,
         });
         await this.clubs.insertAdmin(tx, created.id, userId);
         await this.clubs.replaceActivities(tx, created.id, input.activityIds);

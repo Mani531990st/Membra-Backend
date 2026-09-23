@@ -88,7 +88,7 @@ CORS and CSRF Origin checks use `APP_BASE_URL` (and optional `CORS_ORIGINS`). Br
 
 ## Clubs
 
-Any authenticated user can create a club and becomes its first admin (`club_admins`). Until a members table exists, **admins are the only members** — GET club detail and avatars require membership (404 for strangers). Country is stored as ISO alpha-2 `countryCode` (no countries table). Club avatars mirror user avatars (three AVIF sizes on Scaleway).
+Any authenticated user can create a club and becomes its first admin (`club_admins`). Until a members table exists, **admins are the only members** — GET club detail and avatars require membership (404 for strangers). Club avatars mirror user avatars (three AVIF sizes on Scaleway).
 
 | Method | Path | Notes |
 |--------|------|-------|

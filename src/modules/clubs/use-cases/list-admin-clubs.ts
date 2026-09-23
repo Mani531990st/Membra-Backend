@@ -13,7 +13,6 @@ export type ClubSummary = {
   shortName: string;
   establishedDate: string | null;
   active: boolean;
-  countryCode: string;
   adminCount: number;
   /** Signed URL for avatar2 (96×96), or null when unset. */
   avatar: string | null;
@@ -57,7 +56,6 @@ export class ListAdminClubs {
           shortName: club.shortName,
           establishedDate: club.establishedDate,
           active: club.active,
-          countryCode: club.countryCode,
           adminCount,
           avatar,
           createdAt: club.createdAt,

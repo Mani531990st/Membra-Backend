@@ -10,7 +10,6 @@ describe("parseCreateClubMultipartBody", () => {
       name: "Example Club",
       shortName: "ExC",
       active: "true",
-      countryCode: "dk",
       activityIds: "[1,2]",
       languages: '[{"languageId":"da","rank":1}]',
       addresses:
@@ -21,7 +20,6 @@ describe("parseCreateClubMultipartBody", () => {
       name: "Example Club",
       shortName: "ExC",
       active: true,
-      countryCode: "dk",
       activityIds: [1, 2],
       languages: [{ languageId: "da", rank: 1 }],
       addresses: [

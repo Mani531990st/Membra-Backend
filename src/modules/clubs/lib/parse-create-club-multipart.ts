@@ -35,9 +35,6 @@ export function parseCreateClubMultipartBody(
     result.active = coerceBoolean(active, "active");
   }
 
-  const countryCode = get("countryCode");
-  if (countryCode !== undefined) result.countryCode = countryCode;
-
   const activityIds = get("activityIds");
   if (activityIds !== undefined) {
     result.activityIds = parseActivityIds(activityIds);

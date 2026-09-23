@@ -73,7 +73,6 @@ describe("CreateClub", () => {
       shortName: "ExC",
       establishedDate: null,
       active: true,
-      countryCode: "DK",
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",
     });
@@ -100,7 +99,6 @@ describe("CreateClub", () => {
       shortName: "ExC",
       establishedDate: null,
       active: true,
-      countryCode: "DK",
       activityIds: [1],
       languages: [{ languageId: "en-US", rank: 1 }],
       addresses: [],
@@ -111,7 +109,6 @@ describe("CreateClub", () => {
       shortName: "ExC",
       establishedDate: null,
       active: true,
-      countryCode: "DK",
     });
     expect(clubs.insertAdmin).toHaveBeenCalledWith(tx, 10, "user-1");
     expect(clubs.replaceActivities).toHaveBeenCalledWith(tx, 10, [1]);
@@ -128,7 +125,6 @@ describe("CreateClub", () => {
       shortName: "ExC",
       establishedDate: null,
       active: true,
-      countryCode: "DK",
       activityIds: [],
       languages: [],
       addresses: [
@@ -189,7 +185,6 @@ describe("CreateClub", () => {
         shortName: "ExC",
         establishedDate: null,
         active: true,
-        countryCode: "DK",
         activityIds: [],
         languages: [],
         addresses: [],
@@ -222,7 +217,6 @@ describe("CreateClub", () => {
         shortName: "ExC",
         establishedDate: null,
         active: true,
-        countryCode: "DK",
         activityIds: [],
         languages: [],
         addresses: [],
@@ -251,7 +245,6 @@ describe("CreateClub", () => {
         shortName: "ExC",
         establishedDate: null,
         active: true,
-        countryCode: "DK",
         activityIds: [],
         languages: [],
         addresses: [],
@@ -279,7 +272,6 @@ describe("CreateClub", () => {
         shortName: "ExC",
         establishedDate: null,
         active: true,
-        countryCode: "DK",
         activityIds: [],
         languages: [],
         addresses: [],
@@ -295,7 +287,6 @@ describe("CreateClub", () => {
         shortName: "ExC",
         establishedDate: null,
         active: true,
-        countryCode: "DK",
         activityIds: [999],
         languages: [],
         addresses: [],

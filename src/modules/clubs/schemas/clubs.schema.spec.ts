@@ -5,7 +5,6 @@ import { CreateClubSchema } from "./clubs.schema";
 const base = {
   name: "Example Club",
   shortName: "ExC",
-  countryCode: "DK",
 };
 
 const address = {

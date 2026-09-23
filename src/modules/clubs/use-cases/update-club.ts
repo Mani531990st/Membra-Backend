@@ -67,15 +67,12 @@ export class UpdateClub {
           shortName: string;
           establishedDate: string | null;
           active: boolean;
-          countryCode: string;
         }> = {};
         if (input.name !== undefined) patch.name = input.name;
         if (input.shortName !== undefined) patch.shortName = input.shortName;
         if (input.establishedDate !== undefined)
           patch.establishedDate = input.establishedDate;
         if (input.active !== undefined) patch.active = input.active;
-        if (input.countryCode !== undefined)
-          patch.countryCode = input.countryCode;
 
         const updated =
           Object.keys(patch).length > 0
