@@ -134,6 +134,13 @@
       "when": 1790800000000,
       "tag": "0018_clubs_drop_country_code",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790900000000,
+      "tag": "0019_colors",
+      "breakpoints": true
     }
   ]
 }

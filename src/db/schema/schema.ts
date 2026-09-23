@@ -158,6 +158,18 @@ export const rolesInApp = app.table("roles", {
 	unique("roles_role_short_key").on(table.roleShort),
 ]);
 
+export const colorsInApp = app.table("colors", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.colors_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),
+	color: varchar({ length: 30 }).notNull(),
+	hex: varchar({ length: 7 }).notNull(),
+	isPublic: boolean("is_public").default(true).notNull(),
+	isTextBlack: boolean("is_text_black").default(true).notNull(),
+	active: boolean("is_active").default(true).notNull(),
+}, (table) => [
+	unique("colors_color_key").on(table.color),
+]);
+
 export const clubPhoneNumbersInApp = app.table("club_phone_numbers", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "app.club_telephone_id_seq", startWith: 1, increment: 1, minValue: 1, cache: 1 }),

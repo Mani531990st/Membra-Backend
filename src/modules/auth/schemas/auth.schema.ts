@@ -153,6 +153,22 @@ export const RolesResponseSchema = z
   })
   .openapi("RolesResponse");
 
+export const ColorRowSchema = z
+  .object({
+    id: z.number().int(),
+    color: z.string().openapi({ example: "blue1" }),
+    hex: z.string().openapi({ example: "#88a1bc" }),
+    isPublic: z.boolean().openapi({ example: true }),
+    isTextBlack: z.boolean().openapi({ example: true }),
+  })
+  .openapi("ColorRow");
+
+export const ColorsResponseSchema = z
+  .object({
+    colors: z.array(ColorRowSchema),
+  })
+  .openapi("ColorsResponse");
+
 export const SafeUserSchema = z
   .object({
     uuid: z.string().uuid(),

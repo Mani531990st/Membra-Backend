@@ -4,6 +4,7 @@ import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/db/types";
 import {
   activitiesInApp,
+  colorsInApp,
   gendersInApp,
   languagesInApp,
   passwordResetTokensInApp,
@@ -87,6 +88,30 @@ export class AuthRepository {
       .from(rolesInApp)
       .where(eq(rolesInApp.active, true))
       .orderBy(asc(rolesInApp.id));
+  }
+
+  async listColors(
+    dbOrTx: DbOrTx,
+  ): Promise<
+    {
+      id: number;
+      color: string;
+      hex: string;
+      isPublic: boolean;
+      isTextBlack: boolean;
+    }[]
+  > {
+    return dbOrTx
+      .select({
+        id: colorsInApp.id,
+        color: colorsInApp.color,
+        hex: colorsInApp.hex,
+        isPublic: colorsInApp.isPublic,
+        isTextBlack: colorsInApp.isTextBlack,
+      })
+      .from(colorsInApp)
+      .where(eq(colorsInApp.active, true))
+      .orderBy(asc(colorsInApp.id));
   }
 
   async findGenderIdByEnum(

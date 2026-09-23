@@ -7,6 +7,7 @@ import {
   ActiveSessionsResponseSchema,
   ActivitiesResponseSchema,
   AvatarsResponseSchema,
+  ColorsResponseSchema,
   CompleteProfileResponseSchema,
   CompleteProfileSchema,
   ForgotPasswordSchema,
@@ -313,6 +314,22 @@ export function registerAuthDocs(registry: OpenAPIRegistry): void {
       200: {
         description: "Role reference data",
         content: { "application/json": { schema: RolesResponseSchema } },
+      },
+      ...standardErrorResponses([500]),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/api/reference/colors",
+    tags: [REFERENCE_TAG],
+    summary: "List colors",
+    description:
+      "Active reference rows from app.colors (`id`, `color`, `hex`, `isPublic`, `isTextBlack`). Includes non-public colors; filter client-side with `isPublic` when needed.",
+    responses: {
+      200: {
+        description: "Color reference data",
+        content: { "application/json": { schema: ColorsResponseSchema } },
       },
       ...standardErrorResponses([500]),
     },

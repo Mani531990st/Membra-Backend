@@ -20,6 +20,7 @@
     "db:seed:activities": "tsx scripts/seed-activities.ts",
     "db:seed:languages": "tsx scripts/seed-languages.ts",
     "db:seed:roles": "tsx scripts/seed-roles.ts",
+    "db:seed:colors": "tsx scripts/seed-colors.ts",
     "db:seed:dev-user": "tsx scripts/seed-dev-user.ts"
   },
   "dependencies": {

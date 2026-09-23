@@ -4,6 +4,7 @@ import {
   ActiveSessionsResponseSchema,
   ActivitiesResponseSchema,
   AvatarsResponseSchema,
+  ColorsResponseSchema,
   CompleteProfileResponseSchema,
   CompleteProfileSchema,
   ForgotPasswordSchema,
@@ -34,6 +35,7 @@ export function registerAuthSchemas(registry: OpenAPIRegistry): void {
   registry.register("GendersResponse", GendersResponseSchema);
   registry.register("ActivitiesResponse", ActivitiesResponseSchema);
   registry.register("RolesResponse", RolesResponseSchema);
+  registry.register("ColorsResponse", ColorsResponseSchema);
   registry.register("MessageResponse", MessageResponseSchema);
   registry.register("AvatarsResponse", AvatarsResponseSchema);
 }

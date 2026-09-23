@@ -18,8 +18,9 @@ import { ForgotPassword } from "./use-cases/forgot-password";
 import { GetAvatars } from "./use-cases/get-avatars";
 import { GetMe } from "./use-cases/get-me";
 import { ListActiveSessions } from "./use-cases/list-active-sessions";
-import { ListGenders } from "./use-cases/list-genders";
 import { ListActivities } from "./use-cases/list-activities";
+import { ListColors } from "./use-cases/list-colors";
+import { ListGenders } from "./use-cases/list-genders";
 import { ListRoles } from "./use-cases/list-roles";
 import { Login } from "./use-cases/login";
 import { Logout } from "./use-cases/logout";
@@ -51,6 +52,7 @@ import { UpdateAvatars } from "./use-cases/update-avatars";
     ListGenders,
     ListActivities,
     ListRoles,
+    ListColors,
     UpdateAvatars,
     GetAvatars,
   ],
