@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       seed_catalogs:
-        description: Seed genders, activities, and languages after migrate
+        description: Seed genders, activities, languages, roles, colors, and statuses after migrate
         type: boolean
         default: false
 
@@ -74,6 +74,8 @@ jobs:
           npm run db:seed:activities
           npm run db:seed:languages
           npm run db:seed:roles
+          npm run db:seed:colors
+          npm run db:seed:statuses
 
       - name: Install Scaleway CLI
         run: |
